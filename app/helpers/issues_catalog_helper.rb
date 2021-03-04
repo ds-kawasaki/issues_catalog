@@ -1,0 +1,2 @@
+module IssuesCatalogHelper
+end
