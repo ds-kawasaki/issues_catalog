@@ -1,5 +1,5 @@
 # Japanese strings go here for Rails i18n
 ja:
   issues_catalog: "チケットカタログ"
-  label_issues_catalog_plural: "カタログ"
+  label_catalog: "カタログ"
   project_module_issues_catalog: "チケットカタログ"

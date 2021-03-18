@@ -1,5 +1,5 @@
 # English strings go here for Rails i18n
 en:
   issues_catalog: "Issues Catalog"
-  label_issues_catalog_plural: "Issues Catalog"
+  label_catalog: "Catalog"
   project_module_issues_catalog: "Issues Catalog"

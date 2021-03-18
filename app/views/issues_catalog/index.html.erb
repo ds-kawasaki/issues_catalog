@@ -1,1 +1,13 @@
-<h2>IssuesCatalogController#index</h2>
+<h2><%= l :label_catalog %></h2>
+
+<% if true %>
+<%= render :partial => 'issues/list', :locals => {:issues => @issues, :query => @query} %>
+<span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
+<% end %>
+
+
+<% content_for :sidebar do %>
+  <%= render :partial => 'issues/sidebar' %>
+<% end %>
+
+<%= context_menu %>
