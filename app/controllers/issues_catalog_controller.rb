@@ -15,7 +15,11 @@ class IssuesCatalogController < ApplicationController
     @issue_count = @query.issue_count
     @issue_pages = Paginator.new @issue_count, per_page_option, params['page']
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
-    # debugger
+
+    if params.dig('values', 'category_id')
+      category = @project.issue_categories.find(params['values']['category_id'])
+      @select_category = category[0].name
+    end
   end
 
 
