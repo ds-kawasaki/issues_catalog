@@ -16,12 +16,18 @@ class IssuesCatalogController < ApplicationController
     @issue_pages = Paginator.new @issue_count, per_page_option, params['page']
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
-    if params.dig('values', 'category_id')
-      category = @project.issue_categories.find(params['values']['category_id'])
-      @select_category = category[0].name
+    @select_filters = []
+    if params.dig('v', 'category_id')
+      c_id = params['v']['category_id']
+      @select_category = @project.issue_categories.find(c_id[0])
+      @select_filters <<= [:category_id, '=', @select_category.id]
+    end
+    if params.dig('v', 'tags')
+      # 複数選択できるので配列として取得 
+      @select_tags = params['v']['tags']
+      @select_filters <<= [:tags, '=', @select_tags]
     end
   end
-
 
   private
 
