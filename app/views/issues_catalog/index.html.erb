@@ -1,39 +1,44 @@
-<div>
-  <% unless @select_category.nil? %>
-    <h3>
-      <%= link_to l(:label_catalog_top), controller: 'issues_catalog', action: 'index' %> 
-      <%= '>' %> 
-      <%= l :field_category %>：<%= @select_category.name %>
-    </h3>
-  <% else %>
-    <h3><%= l :field_category %></h3>
-    <%= render_catalog_categories %>
-  <% end %>
+<div class="catalog-selector">
+  <div class="catalog-selector-categories">
+    <% unless @select_category.nil? %>
+      <h3>
+        <%= link_to l(:label_catalog_top), controller: 'issues_catalog', action: 'index' %> 
+        <%= '>' %> 
+        <%= l :field_category %>：<%= @select_category.name %>
+      </h3>
+    <% else %>
+      <h3><%= l :field_category %></h3>
+      <%= render_catalog_categories %>
+    <% end %>
+  </div>
+  <div class="catalog-selector-tags">
+    <%= stylesheet_link_tag 'jquery.tagit.css', plugin: 'redmine_tags' %>
+    <%= stylesheet_link_tag 'redmine_tags', plugin: 'redmine_tags' %>
+    <% unless @select_tags.nil? %>
+      <h3>
+        <%= l :label_tag %>：
+        <% @select_tags.each_with_index do |tag, i| %>
+          <%= 'and' if i > 0 %>
+          <%= tag %> 
+        <% end %>
+      </h3>
+    <% else %>
+      <h3><%= l :label_tag %></h3>
+    <% end %>
+    <%= render_catalog_tags %>
+  </div>
 </div>
 
-<div>
-  <% unless @select_tags.nil? %>
-    <h3>
-      <%= l :label_tag %>：
-      <% @select_tags.each_with_index do |tag, i| %>
-        <%= 'and' if i > 0 %>
-        <%= tag %> 
-      <% end %>
-    </h3>
-  <% else %>
-    <h3><%= l :label_tag %></h3>
-  <% end %>
-  <%= render_catalog_tags %>
-</div>
-
-<% if true %>
+<span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 <%= render :partial => 'issues/list', :locals => {:issues => @issues, :query => @query} %>
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
+
+<% if false %>
+  <% content_for :sidebar do %>
+    <%= render :partial => 'issues/sidebar' %>
+  <% end %>
 <% end %>
 
-
-<% content_for :sidebar do %>
-  <%= render :partial => 'issues/sidebar' %>
+<% if false %>
+  <%= context_menu %>
 <% end %>
-
-<%= context_menu %>
