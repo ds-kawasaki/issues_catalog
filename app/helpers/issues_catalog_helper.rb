@@ -95,14 +95,9 @@ module IssuesCatalogHelper
     filters.each do |f|
       name, operator, value = f
 
-      options[:fields].push(name)
       options[:f].push(name)
-
-      options[:operators][name] = operator
-      options[:op][name]        = operator
-
-      options[:values][name] = [value]
-      options[:v][name]      = [value]
+      options[:op][name] = operator
+      options[:v][name] = value.instance_of?(Array) ? value : [value]
     end
     options
   end
@@ -113,6 +108,10 @@ module IssuesCatalogHelper
     filters.each do |f|
       if f[0] == add_type
         f[2] <<= add_value
+        # タグの複数選択時はアンド検索 
+        if add_type == :tags
+          f[1] = 'and'
+        end
         is_add = true
       end
     end
