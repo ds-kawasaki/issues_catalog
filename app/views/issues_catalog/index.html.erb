@@ -15,7 +15,8 @@
   <% unless @select_tags.nil? %>
     <h3>
       <%= l :label_tag %>：
-      <% @select_tags.each do |tag| %>
+      <% @select_tags.each_with_index do |tag, i| %>
+        <%= 'and' if i > 0 %>
         <%= tag %> 
       <% end %>
     </h3>
