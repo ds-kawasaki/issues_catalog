@@ -1,9 +1,12 @@
 <div class="catalog-selector">
+  <% unless @select_filters.empty? %>
+    <h3>
+      <%= link_to l(:label_catalog_top), controller: 'issues_catalog', action: 'index' %> 
+    </h3>
+  <% end %>
   <div class="catalog-selector-categories">
     <% unless @select_category.nil? %>
       <h3>
-        <%= link_to l(:label_catalog_top), controller: 'issues_catalog', action: 'index' %> 
-        <%= '>' %> 
         <%= l :field_category %>：<%= @select_category.name %>
       </h3>
     <% else %>

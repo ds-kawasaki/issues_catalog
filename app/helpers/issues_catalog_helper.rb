@@ -3,11 +3,18 @@ module IssuesCatalogHelper
 
   def catalog_tags
     unless @catalog_tags
-      @catalog_tags = []
-      if :none != RedmineTags.settings[:issues_sidebar].to_sym
-        @catalog_tags = Issue.available_tags project: @project,
-          open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)
-      end
+      issues_scope = Issue.visible.select('issues.id').joins(:project)
+      issues_scope = issues_scope.on_project(@project) unless @project.nil?
+      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
+      issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+
+      @catalog_tags = ActsAsTaggableOn::Tag
+        .joins(:taggings)
+        .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
+        .group('tags.id, tags.name, tags.taggings_count')
+        .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
+        .order('tags.name')
     end
     @catalog_tags
   end
@@ -48,9 +55,32 @@ module IssuesCatalogHelper
     end
   end
 
+
+  def catalog_categories
+    unless @catalog_categories
+      unless @select_tags.nil?
+        issues_scope = Issue.visible.select('issues.category_id').joins(:project)
+        issues_scope = issues_scope.on_project(@project) unless @project.nil?
+        issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+        issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+  
+        # @catalog_categories = IssueCategory.find(issues_scope)
+        @catalog_categories = IssueCategory.where(id: issues_scope)
+      else
+        @catalog_categories = @project.issue_categories.to_a
+      end
+    end
+    @catalog_categories
+  end
+
   def render_catalog_categories
+    render_catalog_categories_list catalog_categories, {
+      style: RedmineTags.settings[:issues_sidebar].to_sym }
+  end
+
+  def render_catalog_categories_list(categories, options = {})
     content = ''.html_safe
-    @project.issue_categories.each do |category|
+    categories.each do |category|
       content << ' '.html_safe << render_catalog_link_category(category)
     end
     content_tag 'div', content, class: 'categories'
