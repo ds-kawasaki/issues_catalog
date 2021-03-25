@@ -33,7 +33,7 @@ class IssuesCatalogController < ApplicationController
 
     def retrieve_issues_catalog(params={})
       @issues_catalog = Redmine::Helpers::IssuesCatalog.new(params)
-      retrieve_query
+      retrieve_query IssueQuery, false
     end
 
 end
