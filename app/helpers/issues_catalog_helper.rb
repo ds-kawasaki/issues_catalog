@@ -20,9 +20,31 @@ module IssuesCatalogHelper
   end
 
   def render_catalog_tags
-    render_catalog_tags_list catalog_tags, {
+    tags = catalog_tags
+
+    content = ''.html_safe
+    content << stylesheet_link_tag('jquery.tagit.css', plugin: 'redmine_tags') << "\n"
+    content << stylesheet_link_tag('redmine_tags', plugin: 'redmine_tags') << "\n"
+
+    content_h3 = ''.html_safe
+    content_h3 << l(:label_tag)
+    unless @select_tags.nil?
+      content_h3 << ":"
+      @select_tags.each_with_index do |t, i|
+        content_h3 << " and " if i > 0
+        tag = tags.find { |tt| tt.name == t }
+        content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: (RedmineTags.settings[:issues_show_count].to_i == 1)),
+                      class: "tag-nube-8", style: 'font-size: 1em;')
+      end
+    end
+    content << content_tag(:h3, content_h3)
+
+    content << render_catalog_tags_list(tags, {
+      show_count: (RedmineTags.settings[:issues_show_count].to_i == 1),
       open_only: (RedmineTags.settings[:issues_open_only].to_i == 1),
-      style: RedmineTags.settings[:issues_sidebar].to_sym }
+      style: RedmineTags.settings[:issues_sidebar].to_sym })
+
+      content_tag :div, content, class: "catalog-selector-tags"
   end
 
   def render_catalog_tags_list(tags, options = {})
@@ -44,11 +66,13 @@ module IssuesCatalogHelper
       end
       content = content.html_safe
       tag_cloud tags, (1..8).to_a do |tag, weight|
-        content << ' '.html_safe <<
+        unless !@select_tags.nil? && @select_tags.include?(tag.name)
+          content << ' '.html_safe <<
           content_tag(item_el, render_catalog_link_tag(tag, options),
-            class: "tag-nube-#{ weight }",
-            style: (:simple_cloud == style ? 'font-size: 1em;' : '')) <<
+            { class: "tag-nube-#{ weight }",
+            style: (:simple_cloud == style ? 'font-size: 1em;' : '') } ) <<
           ' '.html_safe
+        end
       end
       content_tag list_el, content, class: 'tags',
         style: (:simple_cloud == style ? 'text-align: left;' : '')
@@ -64,7 +88,6 @@ module IssuesCatalogHelper
         issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
         issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
   
-        # @catalog_categories = IssueCategory.find(issues_scope)
         @catalog_categories = IssueCategory.where(id: issues_scope)
       else
         @catalog_categories = @project.issue_categories.to_a
@@ -75,6 +98,7 @@ module IssuesCatalogHelper
 
   def render_catalog_categories
     render_catalog_categories_list catalog_categories, {
+      show_count: (RedmineTags.settings[:issues_show_count].to_i == 1),
       style: RedmineTags.settings[:issues_sidebar].to_sym }
   end
 
@@ -154,10 +178,12 @@ module IssuesCatalogHelper
     is_add = false
     filters.each do |f|
       if f[0] == add_type
-        f[2] <<= add_value
-        # タグの複数選択時はアンド検索 
-        if add_type == :tags
-          f[1] = 'and'
+        unless f[2].include?(add_value)
+          f[2] <<= add_value
+          # タグの複数選択時はアンド検索 
+          if add_type == :tags
+            f[1] = 'and'
+          end
         end
         is_add = true
       end
