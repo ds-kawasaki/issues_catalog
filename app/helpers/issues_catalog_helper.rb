@@ -23,8 +23,6 @@ module IssuesCatalogHelper
     tags = catalog_tags
 
     content = ''.html_safe
-    content << stylesheet_link_tag('jquery.tagit.css', plugin: 'redmine_tags') << "\n"
-    content << stylesheet_link_tag('redmine_tags', plugin: 'redmine_tags') << "\n"
 
     content_h3 = ''.html_safe
     content_h3 << l(:label_tag)
@@ -33,18 +31,18 @@ module IssuesCatalogHelper
       @select_tags.each_with_index do |t, i|
         content_h3 << " and " if i > 0
         tag = tags.find { |tt| tt.name == t }
-        content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: (RedmineTags.settings[:issues_show_count].to_i == 1)),
+        content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
                       class: "tag-nube-8", style: 'font-size: 1em;')
       end
     end
     content << content_tag(:h3, content_h3)
 
     content << render_catalog_tags_list(tags, {
-      show_count: (RedmineTags.settings[:issues_show_count].to_i == 1),
+      show_count: true,
       open_only: (RedmineTags.settings[:issues_open_only].to_i == 1),
       style: RedmineTags.settings[:issues_sidebar].to_sym })
 
-      content_tag :div, content, class: "catalog-selector-tags"
+    content_tag :div, content, class: "catalog-selector-tags"
   end
 
   def render_catalog_tags_list(tags, options = {})
@@ -97,27 +95,55 @@ module IssuesCatalogHelper
   end
 
   def render_catalog_categories
-    render_catalog_categories_list catalog_categories, {
-      show_count: (RedmineTags.settings[:issues_show_count].to_i == 1),
-      style: RedmineTags.settings[:issues_sidebar].to_sym }
+    content = ''.html_safe
+
+    content_h3 = ''.html_safe
+    content_h3 << l(:field_category)
+    unless @select_category.nil?
+      content_h3 << ":"
+      content_h3 << render_catalog_link_category(@select_category)
+    end
+    content << content_tag(:h3, content_h3)
+
+    if @select_category.nil?
+      content << render_catalog_categories_list(catalog_categories, {
+        show_count: true,
+        style: RedmineTags.settings[:issues_sidebar].to_sym })
+    end
+
+    content_tag :div, content, class: "catalog-selector-categories"
   end
 
   def render_catalog_categories_list(categories, options = {})
-    content = ''.html_safe
-    categories.each do |category|
-      content << ' '.html_safe << render_catalog_link_category(category)
+    unless categories.nil? or categories.empty?
+      content = ''.html_safe
+      categories.each do |category|
+        content << ' '.html_safe << render_catalog_link_category(category)
+      end
+      content_tag 'div', content, class: 'categories', style: 'text-align: left;'
     end
-    content_tag 'div', content, class: 'categories'
   end
 
   # カテゴリのリンク
   def render_catalog_link_category(category, options = {})
+    use_colors = RedmineTags.settings[:issues_use_colors].to_i > 0
+    if use_colors
+      tag_bg_color = tag_color(category)
+      tag_fg_color = tag_fg_color(tag_bg_color)
+      tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
+    end
+
     filters = make_filters(:category_id, category.id)
     filters << [:status_id, 'o'] if options[:open_only]
 
     content = link_to_catalog_filter category.name, filters, project_id: @project
 
-    content_tag 'span', content
+    style = if use_colors
+      { class: 'tag-label-color', style: tag_style }
+    else
+      { class: 'tag-label' }
+    end
+    content_tag 'span', content, style
   end
 
   # タグのリンク

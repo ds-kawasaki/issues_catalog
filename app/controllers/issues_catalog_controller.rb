@@ -22,7 +22,7 @@ class IssuesCatalogController < ApplicationController
       unless category_ids.nil?
         # カテゴリは複数選択しない想定
         @select_category = @project.issue_categories.find(category_ids[0])
-        @select_filters <<= [:category_id, '=', category_ids[0]]
+        @select_filters <<= [:category_id, '=', [category_ids[0]]]
       end
     end
     if @query.filters['tags']
