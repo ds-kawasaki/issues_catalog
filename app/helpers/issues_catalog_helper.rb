@@ -27,7 +27,7 @@ module IssuesCatalogHelper
     content_h3 = ''.html_safe
     content_h3 << l(:label_tag)
     unless @select_tags.nil?
-      content_h3 << ":"
+      content_h3 << " : "
       @select_tags.each_with_index do |t, i|
         content_h3 << " and " if i > 0
         tag = tags.find { |tt| tt.name == t }
@@ -80,16 +80,15 @@ module IssuesCatalogHelper
 
   def catalog_categories
     unless @catalog_categories
-      unless @select_tags.nil?
-        issues_scope = Issue.visible.select('issues.category_id').joins(:project)
-        issues_scope = issues_scope.on_project(@project) unless @project.nil?
-        issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
-        issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-  
-        @catalog_categories = IssueCategory.where(id: issues_scope)
-      else
-        @catalog_categories = @project.issue_categories.to_a
-      end
+      issues_scope = Issue.visible.select('issues.category_id').joins(:project)
+      issues_scope = issues_scope.on_project(@project) unless @project.nil?
+      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+
+      logger.debug "catalog_categories: #{issues_scope.size}"
+
+      @catalog_categories = IssueCategory.where(id: issues_scope)
+        .order('issue_categories.name')
     end
     @catalog_categories
   end
@@ -100,7 +99,7 @@ module IssuesCatalogHelper
     content_h3 = ''.html_safe
     content_h3 << l(:field_category)
     unless @select_category.nil?
-      content_h3 << ":"
+      content_h3 << " : "
       content_h3 << render_catalog_link_category(@select_category)
     end
     content << content_tag(:h3, content_h3)
@@ -118,7 +117,7 @@ module IssuesCatalogHelper
     unless categories.nil? or categories.empty?
       content = ''.html_safe
       categories.each do |category|
-        content << ' '.html_safe << render_catalog_link_category(category)
+        content << ' '.html_safe << render_catalog_link_category(category, options)
       end
       content_tag 'div', content, class: 'categories', style: 'text-align: left;'
     end
@@ -137,6 +136,9 @@ module IssuesCatalogHelper
     filters << [:status_id, 'o'] if options[:open_only]
 
     content = link_to_catalog_filter category.name, filters, project_id: @project
+    if options[:show_count] && category.respond_to?(:count)
+      content << content_tag('span', "(#{ category.count })", class: 'tag-count')
+    end
 
     style = if use_colors
       { class: 'tag-label-color', style: tag_style }
