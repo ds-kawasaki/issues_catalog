@@ -17,14 +17,17 @@ class IssuesCatalogController < ApplicationController
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
     @select_filters = []
-    if params.dig('v', 'category_id')
-      c_id = params['v']['category_id']
-      @select_category = @project.issue_categories.find(c_id[0])
-      @select_filters <<= [:category_id, '=', @select_category.id]
+    if @query.filters['category_id']
+      category_ids = @query.filters['category_id'][:values]
+      unless category_ids.nil?
+        # カテゴリは複数選択しない想定
+        @select_category = @project.issue_categories.find(category_ids[0])
+        @select_filters <<= [:category_id, '=', category_ids[0]]
+      end
     end
-    if params.dig('v', 'tags')
-      # 複数選択できるので配列として取得 
-      @select_tags = params['v']['tags']
+    if @query.filters['tags']
+      # タグは複数選択できるので配列として取得 
+      @select_tags = @query.filters['tags'][:values]
       @select_filters <<= [:tags, '=', @select_tags]
     end
   end
