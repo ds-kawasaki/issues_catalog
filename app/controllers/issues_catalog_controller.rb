@@ -11,7 +11,7 @@ class IssuesCatalogController < ApplicationController
   include QueriesHelper
 
   def index
-    retrieve_issues_catalog(params)
+    retrieve_query IssueQuery, false
     @issue_count = @query.issue_count
     @issue_pages = Paginator.new @issue_count, per_page_option, params['page']
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
@@ -28,12 +28,5 @@ class IssuesCatalogController < ApplicationController
       @select_filters <<= [:tags, '=', @select_tags]
     end
   end
-
-  private
-
-    def retrieve_issues_catalog(params={})
-      @issues_catalog = Redmine::Helpers::IssuesCatalog.new(params)
-      retrieve_query IssueQuery, false
-    end
 
 end
