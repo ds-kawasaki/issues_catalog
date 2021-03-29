@@ -94,18 +94,21 @@ module IssuesCatalogHelper
   end
 
   def render_catalog_categories
+    categories = catalog_categories
+
     content = ''.html_safe
 
     content_h3 = ''.html_safe
     content_h3 << l(:field_category)
     unless @select_category.nil?
       content_h3 << " : "
-      content_h3 << render_catalog_link_category(@select_category)
+      category = categories.find { |c| c.name == @select_category.name }
+      content_h3 << render_catalog_link_category(category)
     end
     content << content_tag(:h3, content_h3)
 
     if @select_category.nil?
-      content << render_catalog_categories_list(catalog_categories, {
+      content << render_catalog_categories_list(categories, {
         show_count: true,
         style: RedmineTags.settings[:issues_sidebar].to_sym })
     end
