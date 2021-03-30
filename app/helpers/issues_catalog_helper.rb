@@ -140,13 +140,13 @@ module IssuesCatalogHelper
 
     content = link_to_catalog_filter category.name, filters, project_id: @project
     if options[:show_count] && category.respond_to?(:count)
-      content << content_tag('span', "(#{ category.count })", class: 'tag-count')
+      content << content_tag('span', "(#{ category.count })", class: 'category-count')
     end
 
     style = if use_colors
-      { class: 'tag-label-color', style: tag_style }
+      { class: 'category-label-color', style: tag_style }
     else
-      { class: 'tag-label' }
+      { class: 'category-label' }
     end
     content_tag 'span', content, style
   end

@@ -1,0 +1,17 @@
+.category-label-color {
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 4px 10px;
+  margin: 2px 1px;
+  display: inline-block;
+}
+
+.category-label-color a {
+  color: white;
+}
+
+table.list tr.issue .category-label-color a,
+.categories .category-label-color a,
+.issue .category-label-color a {
+  color: inherit;
+}
