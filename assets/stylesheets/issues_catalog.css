@@ -15,3 +15,9 @@ table.list tr.issue .category-label-color a,
 .issue .category-label-color a {
   color: inherit;
 }
+
+
+/* サイドバーを左に配置 */
+#main {
+  flex-direction: row;
+}
