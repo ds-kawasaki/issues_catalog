@@ -3,7 +3,7 @@
 <% end %>
 
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
-<%= render :partial => 'issues/list', :locals => {:issues => @issues, :query => @query} %>
+<%= render_catalog_issues %>
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
 <% if false %>

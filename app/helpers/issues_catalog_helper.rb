@@ -1,6 +1,13 @@
 module IssuesCatalogHelper
   include ActsAsTaggableOn::TagsHelper
 
+  def render_catalog_issues
+    html_text = ''
+    # チケット一覧のタグリンクをissuesからissues_catalogに置き換える
+    html_text += render(partial: 'issues/list', locals: {issues: @issues, query: @query}).gsub(/\/issues\?/, '/issues_catalog?')
+    return raw(html_text)
+  end
+
   def catalog_tags
     unless @catalog_tags
       issues_scope = Issue.visible.select('issues.id').joins(:project)
