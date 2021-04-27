@@ -13,6 +13,4 @@ Redmine::Plugin.register :issues_catalog do
 
   # menu setting
   menu :project_menu, :issues_catalog, { controller: 'issues_catalog', action: 'index' }, caption: :label_catalog, before: :issues, param: :project_id
-
-  require_dependency 'issues_catalog_views_hook'
 end
