@@ -1,14 +1,3 @@
-<div class="catalog-selector">
-  <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
-  <% unless @select_filters.empty? %>
-    <h3>
-      <%= link_to l(:label_catalog_top), controller: 'issues_catalog', action: 'index' %> 
-    </h3>
-  <% end %>
-  <%= render_catalog_categories %>
-  <%= render_catalog_tags %>
-</div>
-
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 <%= render :partial => 'issues/list', :locals => {:issues => @issues, :query => @query} %>
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
