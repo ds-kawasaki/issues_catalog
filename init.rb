@@ -1,3 +1,6 @@
+require 'redmine'
+require 'issues_catalog_projects_helper_patch'
+
 Redmine::Plugin.register :issues_catalog do
   name 'Issues Catalog plugin'
   author 'ds-kawasaki'
