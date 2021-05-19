@@ -7,7 +7,7 @@ module ProjectsHelperMethodsIssuesCatalog
     action = { name: 'issues_catalog',
       action: :show,
       partial: 'issues_catalog_settings/show',
-      label: :label_catalog }
+      label: :issues_catalog }
     tabs << action if @project.module_enabled?(:issues_catalog)
 
     tabs

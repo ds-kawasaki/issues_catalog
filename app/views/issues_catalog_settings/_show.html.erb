@@ -1,3 +1,60 @@
-<div id="issues_catalog_settings">
-  "hello world"
-</div>
+<% html_title l(:label_settings), l(:issues_catalog) %>
+
+<fieldset class="box tabular" id="issues_catalog_manage_categories">
+  <legend><%= l(:label_categories)%></legend>
+  <div><%= link_to l(:label_catalog_category_new), new_project_issue_category_path(@project), :class => 'icon icon-add' %></div>
+  <% categories = [ { name: 'テスト1', description: 'あいうえお' }, { name: '素材系', description: 'かきくけこ' } ] %>
+  <% unless categories.empty? %>
+    <table class="list">
+      <thead><tr>
+        <th><%= l(:label_categories) %></th>
+        <th><%= l(:label_optional_description) %></th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+      <% for category in categories %>
+        <tr>
+          <td class="name"><%= category[:name] %></td>
+          <td class="description"><%= category[:description] %></td>
+          <td class="buttons">
+            <%= link_to l(:button_edit), edit_issue_category_path(category), :class => 'icon icon-edit' %>
+            <%= delete_link issue_category_path(category) %>
+          </td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="nodata"><%= l :label_no_data %></p>
+  <% end %>
+</fieldset>
+
+<fieldset class="box tabular" id="issues_catalog_manage_tags">
+  <legend><%= l(:label_tags)%></legend>
+  <% tags = Issue.available_tags %>
+  <% unless tags.empty? %>
+    <table class="list">
+      <thead><tr>
+        <th><%= l(:field_name) %></th>
+        <th><%= l(:label_categories) %></th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+        <% tags.each do |tag| %>
+          <tr class="issue">
+            <td class="name"><%= render_tag_link(tag) %></td>
+            <td></td>
+            <td class="buttons">
+              <%= link_to l(:button_edit), edit_tag_path(tag),
+                    class: 'icon icon-edit' %>
+              <%= link_to l(:button_delete), tags_path(ids: tag), method: :delete,
+                    confirm: l(:text_are_you_sure), class: 'icon icon-del' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="nodata"><%= l :label_no_data %></p>
+  <% end %>
+</fieldset>

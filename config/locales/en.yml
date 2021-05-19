@@ -4,3 +4,6 @@ en:
   label_catalog: "Catalog"
   label_catalog_top: "Top"
   project_module_issues_catalog: "Issues Catalog"
+  label_tags: "Tags"
+  label_categories: "Tag Categories"
+  label_catalog_category_new: "New Tag Category"
