@@ -1,5 +1,12 @@
 require 'redmine'
-require 'issues_catalog_projects_helper_patch'
+
+ActiveSupport::Reloader.to_prepare do
+  paths = '/lib/issues_catalog/{patches/*_patch,hooks/*_hook}.rb'
+  Dir.glob(File.dirname(__FILE__) + paths).each do |file|
+    require_dependency file
+  end
+end
+
 
 Redmine::Plugin.register :issues_catalog do
   name 'Issues Catalog plugin'

@@ -1,5 +1,6 @@
 module IssuesCatalogHelper
   include ActsAsTaggableOn::TagsHelper
+  include TagsHelper
 
   def render_catalog_issues
     html_text = ''
@@ -212,6 +213,9 @@ module IssuesCatalogHelper
   end
 
   def make_filters(add_type, add_value)
+    if @select_filters.nil?
+      @select_filters = []
+    end
     filters = Marshal.load(Marshal.dump(@select_filters))
     is_add = false
     filters.each do |f|

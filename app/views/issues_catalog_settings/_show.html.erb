@@ -42,7 +42,7 @@
       <tbody>
         <% tags.each do |tag| %>
           <tr class="issue">
-            <td class="name"><%= render_tag_link(tag) %></td>
+            <td class="name"><%= render_catalog_link_tag(tag) %></td>
             <td></td>
             <td class="buttons">
               <%= link_to l(:button_edit), edit_tag_path(tag),
