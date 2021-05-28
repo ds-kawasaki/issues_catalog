@@ -1,6 +1,7 @@
 class CatalogTagCategoriesController < ApplicationController
   def new
-    @category = CatalogTagCategory.new
+    @category = @project.catalog_tag_categories.build
+    @category.safe_attributes = params[:catalog_tag_category]
   end
 
   def create
