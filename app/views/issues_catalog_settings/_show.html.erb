@@ -3,7 +3,7 @@
 <fieldset class="box tabular" id="issues_catalog_manage_categories">
   <legend><%= l(:label_categories)%></legend>
   <div><%= link_to l(:label_catalog_category_new), new_project_issue_category_path(@project), :class => 'icon icon-add' %></div>
-  <% categories = [ { name: 'テスト1', description: 'あいうえお' }, { name: '素材系', description: 'かきくけこ' } ] %>
+  <% categories = @project.catalog_tag_categories %>
   <% unless categories.empty? %>
     <table class="list">
       <thead><tr>
@@ -31,7 +31,7 @@
 
 <fieldset class="box tabular" id="issues_catalog_manage_tags">
   <legend><%= l(:label_tags)%></legend>
-  <% tags = Issue.available_tags %>
+  <% tags = @project.tags %>
   <% unless tags.empty? %>
     <table class="list">
       <thead><tr>
