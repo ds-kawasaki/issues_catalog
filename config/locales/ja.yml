@@ -5,5 +5,5 @@ ja:
   label_catalog_top: "トップ"
   project_module_issues_catalog: "チケットカタログ"
   label_tags: "タグ"
-  label_categories: "タグカテゴリ"
-  label_catalog_category_new: "新しいタグカテゴリ"
+  label_catalog_tag_categories: "タグカテゴリ"
+  label_catalog_tag_category_new: "新しいタグカテゴリ"

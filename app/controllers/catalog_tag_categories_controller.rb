@@ -1,12 +1,39 @@
 class CatalogTagCategoriesController < ApplicationController
+  menu_item :settings
+  model_object IssueCategory
+  before_action :find_model_object, :except => [:index, :new, :create]
+  before_action :find_project_from_association, :except => [:index, :new, :create]
+  before_action :find_project_by_project_id, :only => [:index, :new, :create]
+  accept_api_auth :index, :show, :create, :update, :destroy
+
+  def index
+    respond_to do |format|
+      format.html { redirect_to_settings_in_projects }
+      format.api { @categories = @project.catalog_tag_categories.to_a }
+    end
+  end
+
+  def show
+    respond_to do |format|
+      format.html { redirect_to_settings_in_projects }
+      format.api
+    end
+  end
+
   def new
     @category = @project.catalog_tag_categories.build
     @category.safe_attributes = params[:catalog_tag_category]
+
+    respond_to do |format|
+      format.html
+      format.js
+    end
   end
 
   def create
     @category = @project.catalog_tag_categories.build
     @category.safe_attributes = params[:catalog_tag_category]
+    @category.project_id = params[:project_id]
     if @category.save
       respond_to do |format|
         format.html do
@@ -25,6 +52,12 @@ class CatalogTagCategoriesController < ApplicationController
     end
   end
 
+  def edit
+  end
+
+  def update
+  end
+
   def destroy
   end
 
@@ -32,5 +65,10 @@ class CatalogTagCategoriesController < ApplicationController
 
   def redirect_to_settings_in_projects
     redirect_to settings_project_path(@project, :tab => 'issues_catalog')
+  end
+
+  def find_model_object
+    super
+    @category = @object
   end
 end
