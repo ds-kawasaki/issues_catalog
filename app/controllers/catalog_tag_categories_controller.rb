@@ -33,7 +33,7 @@ class CatalogTagCategoriesController < ApplicationController
   def create
     @category = @project.catalog_tag_categories.build
     @category.safe_attributes = params[:catalog_tag_category]
-    @category.project_id = params[:project_id]
+    @category.project = @project
     if @category.save
       respond_to do |format|
         format.html do
