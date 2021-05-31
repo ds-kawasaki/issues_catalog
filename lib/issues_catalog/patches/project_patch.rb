@@ -9,6 +9,7 @@ module IssuesCatalog
         def catalog_tag_categories
           # CatalogTagCategory.search_by_project(project_id: self.id)
           CatalogTagCategory.where(project_id: self.id)
+                            .order('name')
         end
       end
     end

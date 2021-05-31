@@ -3,8 +3,8 @@
 <fieldset class="box tabular" id="issues_catalog_manage_categories">
   <legend><%= l(:label_catalog_tag_categories)%></legend>
   <div><%= link_to l(:label_catalog_tag_category_new), new_project_catalog_tag_category_path(@project), :class => 'icon icon-add' %></div>
-  <% categories = @project.catalog_tag_categories %>
-  <% unless categories.empty? %>
+  <% catalog_tag_categories = @project.catalog_tag_categories %>
+  <% unless catalog_tag_categories.empty? %>
     <table class="list">
       <thead><tr>
         <th><%= l(:label_catalog_tag_categories) %></th>
@@ -12,13 +12,13 @@
         <th></th>
       </tr></thead>
       <tbody>
-      <% for category in categories %>
+      <% for catalog_tag_category in catalog_tag_categories %>
         <tr>
-          <td class="name"><%= category[:name] %></td>
-          <td class="description"><%= category[:description] %></td>
+          <td class="name"><%= catalog_tag_category[:name] %></td>
+          <td class="description"><%= catalog_tag_category[:description] %></td>
           <td class="buttons">
-            <%= link_to l(:button_edit), edit_catalog_tag_category_path(category), :class => 'icon icon-edit' %>
-            <%= delete_link catalog_tag_category_path(category) %>
+            <%= link_to l(:button_edit), edit_catalog_tag_category_path(catalog_tag_category), :class => 'icon icon-edit' %>
+            <%= delete_link catalog_tag_category_path(catalog_tag_category) %>
           </td>
         </tr>
       <% end %>
