@@ -5,23 +5,23 @@ class CatalogTagCategory < ActiveRecord::Base
   has_many :taggings, :foreign_key => 'catalog_category_id', :dependent => :nullify
 
   validates_presence_of :name
-  validates_uniqueness_of :name, :scope => [:project_id]
+  validates_uniqueness_of :name, :scope => [:project_id], conditions: -> { where(status: 0) }
   validates_length_of :name, :maximum => 60
 
   safe_attributes 'name', 'description'
 
-  scope :search_by_project, lambda { |prolect_id|
-    where(project_id: prolect_id)
-  }
+  def self.search_by_project(project_id)
+    CatalogTagCategory.where(project_id: project_id, status: 0)
+                      .order('name')
+  end
 
-  # alias :destroy_without_reassign :destroy
+  def set_status_alive
+    self.status = 0
+  end
 
-  # def destroy(reassign_to = nil)
-  #   if reassign_to && reassign_to.is_a?(CatalogTagCategory) && reassign_to.project == self.project
-  #     ActsAsTaggableOn::Taggins.where({:catalog_category_id => id}).update_all({:catalog_category_id => reassign_to.id})
-  #   end
-  #   destroy_without_reassign
-  # end
+  def set_status_deleted
+    self.status = 1
+  end
 
   def <=>(tag_category)
     name <=> tag_category.name

@@ -7,9 +7,7 @@ module IssuesCatalog
 
       module InstanceMethods
         def catalog_tag_categories
-          # CatalogTagCategory.search_by_project(project_id: self.id)
-          CatalogTagCategory.where(project_id: self.id)
-                            .order('name')
+          CatalogTagCategory.search_by_project(self.id)
         end
       end
     end

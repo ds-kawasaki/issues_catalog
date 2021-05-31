@@ -9,7 +9,7 @@ class CatalogTagCategoriesController < ApplicationController
   def index
     respond_to do |format|
       format.html { redirect_to_settings_in_projects }
-      format.api { @categories = @project.catalog_tag_categories.to_a }
+      format.api { @catalog_tag_category = @project.catalog_tag_categories.to_a }
     end
   end
 
@@ -74,6 +74,20 @@ class CatalogTagCategoriesController < ApplicationController
   end
 
   def destroy
+    # todo ここでカテゴリ割り当ててるタグを開放する 
+
+    @catalog_tag_category.set_status_deleted
+    if @catalog_tag_category.save
+      respond_to do |format|
+        format.html { redirect_to_settings_in_projects }
+        format.api { render_api_ok }
+      end
+    else
+      respond_to do |format|
+        format.html { redirect_to_settings_in_projects }
+        format.api { render_validation_errors(@catalog_tag_category) }
+      end
+    end
   end
 
   private
