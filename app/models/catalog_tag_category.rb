@@ -2,7 +2,7 @@ class CatalogTagCategory < ActiveRecord::Base
   include Redmine::SafeAttributes
   belongs_to :project
   validates :project_id, presence: true
-  has_many :tags, :foreign_key => 'catalog_tag_category_id', :dependent => :nullify
+  has_many :tags, :class_name => 'ActsAsTaggableOn::Tag', :foreign_key => 'catalog_tag_category_id', :dependent => :nullify
 
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:project_id], conditions: -> { active }
@@ -12,6 +12,7 @@ class CatalogTagCategory < ActiveRecord::Base
 
   scope :active, -> { where(status: -Float::INFINITY...100) }
   scope :search_by_project, -> (project_id) { active.where(project_id: project_id).order('name') }
+  scope :find_by_tag, ->(tag_id) { active.find(tag_id) }
 
   def set_status_alive
     self.status = 0

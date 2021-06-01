@@ -6,4 +6,5 @@ ja:
   project_module_issues_catalog: "チケットカタログ"
   label_tags: "タグ"
   label_catalog_tag_categories: "タグカテゴリ"
+  label_catalog_tag_category: "タグカテゴリ"
   label_catalog_tag_category_new: "新しいタグカテゴリ"

@@ -31,7 +31,7 @@
 
 <fieldset class="box tabular" id="issues_catalog_manage_tags">
   <legend><%= l(:label_tags)%></legend>
-  <% tags = @project.tags %>
+  <% tags = @project.catalog_tags %>
   <% unless tags.empty? %>
     <table class="list">
       <thead><tr>
@@ -43,9 +43,9 @@
         <% tags.each do |tag| %>
           <tr class="issue">
             <td class="name"><%= render_catalog_link_tag(tag) %></td>
-            <td></td>
+            <td class="category"><%= tag.catalog_tag_category_name %></td>
             <td class="buttons">
-              <%= link_to l(:button_edit), edit_catalog_tag_path(tag),
+              <%= link_to l(:button_edit), edit_project_catalog_tag_path(tag),
                     class: 'icon icon-edit' %>
               <%= link_to l(:button_delete), tags_path(ids: tag), method: :delete,
                     confirm: l(:text_are_you_sure), class: 'icon icon-del' %>

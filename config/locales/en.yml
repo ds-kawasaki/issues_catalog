@@ -6,4 +6,5 @@ en:
   project_module_issues_catalog: "Issues Catalog"
   label_tags: "Tags"
   label_catalog_tag_categories: "Tag Categories"
+  label_catalog_tag_category: "Tag Category"
   label_catalog_tag_category_new: "New Tag Category"

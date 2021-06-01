@@ -1,12 +1,14 @@
 class CatalogTagsController < ApplicationController
+  before_action :find_project_by_project_id, only: [:edit, :update]
   before_action :find_tag, only: [:edit, :update]
+  accept_api_auth :update
+
 
   def edit
   end
 
   def update
-    # ここにパラメータ更新
-    if @catalog_tag.save
+    if @catalog_tag.update_attributes(catalog_tag_params)
       respond_to do |format|
         format.html {
           flash[:notice] = l(:notice_successful_update)
@@ -23,6 +25,10 @@ class CatalogTagsController < ApplicationController
   end
 
   private
+
+  def catalog_tag_params
+    params.require(:catalog_tag).permit(:name, :catalog_tag_category_id)
+  end
 
   def redirect_to_settings_in_projects
     redirect_to settings_project_path(@project, :tab => 'issues_catalog')

@@ -2,9 +2,16 @@
 
 <%= labelled_form_for @catalog_tag, :as => :catalog_tag,
                      :url => catalog_tag_path(@catalog_tag), :html => {:method => :put} do |f| %>
+  <input type="hidden" name="project_id" value=<%= @project.id.to_s %> >
   <%= error_messages_for 'catalog_tag' %>
   <div class="box tabular">
     <p><%= f.text_field :name, :size => 60, :required => true %></p>
+    <p><%= f.select :catalog_tag_category_id,
+                @project.catalog_tag_categories.collect { |c| [ c.name, c.id ] },
+                { :include_blank => true, :label => :label_catalog_tag_category } %></p>
   </div>
   <%= submit_tag l(:button_save) %>
 <% end %>
+
+
+
