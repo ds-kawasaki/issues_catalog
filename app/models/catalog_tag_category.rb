@@ -5,22 +5,20 @@ class CatalogTagCategory < ActiveRecord::Base
   has_many :taggings, :foreign_key => 'catalog_category_id', :dependent => :nullify
 
   validates_presence_of :name
-  validates_uniqueness_of :name, :scope => [:project_id], conditions: -> { where(status: 0) }
+  validates_uniqueness_of :name, :scope => [:project_id], conditions: -> { active }
   validates_length_of :name, :maximum => 60
 
   safe_attributes 'name', 'description'
 
-  def self.search_by_project(project_id)
-    CatalogTagCategory.where(project_id: project_id, status: 0)
-                      .order('name')
-  end
+  scope :active, -> { where(status: -Float::INFINITY...100) }
+  scope :search_by_project, -> (project_id) { active.where(project_id: project_id).order('name') }
 
   def set_status_alive
     self.status = 0
   end
 
   def set_status_deleted
-    self.status = 1
+    self.status = 100
   end
 
   def <=>(tag_category)
