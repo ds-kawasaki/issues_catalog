@@ -1,4 +1,3 @@
-# get 'issues_catalog', to: 'issues_catalog#index'
 get '/projects/:project_id/issues_catalog', to: 'issues_catalog#index'
 
 resources :projects do
@@ -6,3 +5,5 @@ resources :projects do
     resources :catalog_tag_categories
   end
 end
+
+resources :catalog_tags, only: [:edit, :update]
