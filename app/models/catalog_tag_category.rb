@@ -2,7 +2,7 @@ class CatalogTagCategory < ActiveRecord::Base
   include Redmine::SafeAttributes
   belongs_to :project
   validates :project_id, presence: true
-  has_many :taggings, :foreign_key => 'catalog_category_id', :dependent => :nullify
+  has_many :tags, :foreign_key => 'catalog_tag_category_id', :dependent => :nullify
 
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:project_id], conditions: -> { active }
