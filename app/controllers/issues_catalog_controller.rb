@@ -30,6 +30,26 @@ class IssuesCatalogController < ApplicationController
       @select_tags = @query.filters['tags'][:values]
       @select_filters <<= [:tags, '=', @select_tags]
     end
+
+    catalog_all_tags
   end
+
+  private
+
+  def catalog_all_tags
+    issues_scope = Issue.visible.select('issues.id').joins(:project)
+    issues_scope = issues_scope.on_project(@project) unless @project.nil?
+    issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+    # issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
+    # issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+
+    @catalog_all_tags = ActsAsTaggableOn::Tag
+      .joins(:taggings)
+      .select('tags.id, tags.name, tags.taggings_count, tags.catalog_tag_category_id, COUNT(taggings.id) as count')
+      .group('tags.id, tags.name, tags.taggings_count, tags.catalog_tag_category_id')
+      .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
+      .order('tags.name')
+  end
+
 
 end
