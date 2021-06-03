@@ -2,6 +2,13 @@ module IssuesCatalogHelper
   include ActsAsTaggableOn::TagsHelper
   include TagsHelper
 
+  # content_tagのネスト用 参考 https://qiita.com/EastResident/items/59856cbc7d8e73138a49
+  def content_tag_push(type, *option)
+    tags = []
+    yield tags
+    content_tag(type, tags.reduce(:+), *option)
+  end
+
   def render_catalog_issues
     html_text = ''
     # チケット一覧のタグリンクをissuesからissues_catalogに置き換える
@@ -16,12 +23,54 @@ module IssuesCatalogHelper
         content << content_tag(:span, " and ") if i > 0
         tag = @catalog_all_tags.find { |tt| tt.name == t }
         content << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
-                      class: "tag-nube-8", style: 'font-size: 1em;')
+                               class: "tag-nube-8", style: 'font-size: 1em;')
       end
       content << content_tag(:span, " : ")
       content << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
     end
     content
+  end
+
+  def render_catalog_tag_tabs
+    catalog_tag_categories = @project.catalog_tag_categories
+    if catalog_tag_categories.any?
+      # selected_tab = params[:tab]
+      # selected_tab ||= catalog_tag_categories.first.name
+
+      content_tag_push(:div) do |div_wrap|
+        div_wrap << content_tag_push(:div, class: 'catalog_category_tabs') do |div_tabs|
+          catalog_tag_categories.each_with_index do |tag_category, i|
+            tab_id = "catalog_category_tab_id_#{i}"
+            is_selected = (i == 0)
+            div_tabs << radio_button_tag('catalog_category_tab_name', '', is_selected, id: tab_id, class: 'catalog_category_switch_class')
+            div_tabs << label_tag(tab_id, tag_category.name, class: 'catalog_category_tab_class')
+            div_tabs << content_tag_push(:div, class: 'catalog_category_content_class') do |div_page|
+              # div_page << content_tag(:h3, tag_category.name)
+              div_page << content_tag(:p, tag_category.description)
+              div_page << content_tag_push(:div, class: 'catalog_tags_category') do |div_category|
+                @catalog_all_tags.each do |tag|
+                  if tag.catalog_tag_category_id == tag_category.id
+                    div_category << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
+                                                class: "tag-nube-8", style: 'font-size: 1em;')
+                  end
+                end
+              end
+            end
+          end
+        end
+        div_wrap << content_tag(:hr, '', class: 'catalog_separator')
+        div_wrap << content_tag_push(:div, class: 'catalog_other_tags') do |div_other|
+          @catalog_all_tags.each do |tag|
+            if tag.catalog_tag_category.nil?
+              div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
+                                        class: "tag-nube-8", style: 'font-size: 1em;')
+            end
+          end
+        end
+      end
+    else
+      render_catalog_tags
+    end
   end
 
   def catalog_tags

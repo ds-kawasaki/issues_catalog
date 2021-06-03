@@ -11,6 +11,41 @@
 }
 
 
+.catalog_category_tabs {
+  flex-wrap: wrap;
+  display: flex;
+  margin-top: 15px;
+}
+.catalog_category_tab_class {
+  color: #999;
+  order: -1;
+  padding: 4px 2px;
+  font-size: medium;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.catalog_category_content_class {
+  width: 100%;
+  display: none;
+  border-top: 2px solid rgba(0, 0, 0, 0.2);
+  margin-top: -1px;
+}
+.catalog_category_switch_class:checked+.catalog_category_tab_class {
+  color: black;
+}
+.catalog_category_switch_class:checked+.catalog_category_tab_class+.catalog_category_content_class {
+  display: block;
+}
+.catalog_category_switch_class {
+  display: none;
+}
+
+#sidebar hr.catalog_separator {
+  margin: 20px 10px;
+}
+
+
 /* サイドバーを左に配置 */
 #main {
   flex-direction: row;

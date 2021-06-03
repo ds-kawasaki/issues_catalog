@@ -1,6 +1,6 @@
 <div class="catalog-selector">
   <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
-  <%= render_catalog_tags %>
+  <%= render_catalog_tag_tabs %>
 </div>
 <div>
   <%= debug(@query.filters) if Rails.env.development? %>
