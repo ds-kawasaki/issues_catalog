@@ -13,11 +13,13 @@ module IssuesCatalogHelper
     content = ''.html_safe
     unless @select_tags.nil?
       @select_tags.each_with_index do |t, i|
-        content << " and " if i > 0
+        content << content_tag(:span, " and ") if i > 0
         tag = @catalog_all_tags.find { |tt| tt.name == t }
         content << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
                       class: "tag-nube-8", style: 'font-size: 1em;')
       end
+      content << content_tag(:span, " : ")
+      content << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
     end
     content
   end

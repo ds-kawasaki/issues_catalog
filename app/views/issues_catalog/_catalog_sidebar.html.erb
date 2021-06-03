@@ -1,10 +1,5 @@
 <div class="catalog-selector">
   <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
-  <% unless @select_filters.empty? %>
-    <h3>
-      <%= link_to l(:label_catalog_top), controller: 'issues_catalog', action: 'index' %> 
-    </h3>
-  <% end %>
   <%= render_catalog_tags %>
 </div>
 <div>

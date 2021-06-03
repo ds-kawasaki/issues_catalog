@@ -2,7 +2,7 @@
 en:
   issues_catalog: "Issues Catalog"
   label_catalog: "Catalog"
-  label_catalog_top: "Top"
+  label_clear_select: "Clear Select"
   project_module_issues_catalog: "Issues Catalog"
   label_tags: "Tags"
   label_catalog_tag_categories: "Tag Categories"
