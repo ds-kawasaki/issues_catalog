@@ -9,7 +9,9 @@
 .category-label-color a {
   color: inherit;
 }
-
+.tag-label-color a {
+  color: inherit;
+}
 
 .catalog_category_tabs {
   flex-wrap: wrap;
