@@ -1,4 +1,4 @@
-require_dependency 'projects_helper'
+require 'projects_helper'
 
 module IssuesCatalog
   module Patches
@@ -19,4 +19,6 @@ module IssuesCatalog
 end
 
 
-ProjectsHelper.prepend(IssuesCatalog::Patches::ProjectsHelperMethodsIssuesCatalog)
+# prependだと本番環境で動かない 暫定対応
+# ProjectsHelper.prepend(IssuesCatalog::Patches::ProjectsHelperMethodsIssuesCatalog)
+ProjectsController.send :helper, IssuesCatalog::Patches::ProjectsHelperMethodsIssuesCatalog
