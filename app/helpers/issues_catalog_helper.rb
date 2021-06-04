@@ -207,7 +207,7 @@ module IssuesCatalogHelper
   def render_catalog_link_tag(tag, options = {})
     use_colors = RedmineTags.settings[:issues_use_colors].to_i > 0
     if use_colors
-      tag_bg_color = tag_color(tag)
+      tag_bg_color = '#d0d0d0'  # tag_color(tag)
       tag_fg_color = tag_fg_color(tag_bg_color)
       tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
     end
