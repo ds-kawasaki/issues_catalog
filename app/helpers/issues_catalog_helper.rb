@@ -71,26 +71,8 @@ module IssuesCatalogHelper
     end
   end
 
-  def catalog_tags
-    unless @catalog_tags
-      issues_scope = Issue.visible.select('issues.id').joins(:project)
-      issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
-      issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
-      issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-
-      @catalog_tags = ActsAsTaggableOn::Tag
-        .joins(:taggings)
-        .select('tags.id, tags.name, tags.taggings_count, tags.catalog_tag_category_id, COUNT(taggings.id) as count')
-        .group('tags.id, tags.name, tags.taggings_count, tags.catalog_tag_category_id')
-        .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-        .order('tags.name')
-    end
-    @catalog_tags
-  end
-
   def render_catalog_tags
-    tags = catalog_tags
+    tags = @catalog_selected_tags
 
     content = ''.html_safe
 
@@ -241,7 +223,13 @@ module IssuesCatalogHelper
       content = link_to_catalog_filter tag.name, filters, project_id: @project
     end
     if options[:show_count]
-      content << content_tag('span', "(#{ tag.count })", class: 'tag-count')
+      if @catalog_selected_tags.empty?
+        count = tag.count
+      else
+        t = @catalog_selected_tags.find { |tt| tt.name == tag.name }
+        count = t ? t.count : 0
+      end
+      content << content_tag('span', "(#{count})", class: 'tag-count')
     end
     if options[:del_btn_selected]
       content << content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
