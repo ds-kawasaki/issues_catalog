@@ -20,10 +20,11 @@ module IssuesCatalogHelper
     content = ''.html_safe
     unless @select_tags.nil?
       @select_tags.each_with_index do |t, i|
-        content << content_tag(:span, " and ") if i > 0
         tag = @catalog_all_tags.find { |tt| tt.name == t }
-        content << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
-                               class: "tag-nube-8", style: 'font-size: 1em;')
+        unless tag.nil?
+          content << content_tag(:span, " and ") if i > 0
+          content << render_catalog_link_tag(tag, show_count: true, del_btn_selected: true)
+        end
       end
       content << content_tag(:span, " : ")
       content << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
@@ -45,13 +46,11 @@ module IssuesCatalogHelper
             div_tabs << radio_button_tag('catalog_category_tab_name', '', is_selected, id: tab_id, class: 'catalog_category_switch_class')
             div_tabs << label_tag(tab_id, tag_category.name, class: 'catalog_category_tab_class')
             div_tabs << content_tag_push(:div, class: 'catalog_category_content_class') do |div_page|
-              # div_page << content_tag(:h3, tag_category.name)
               div_page << content_tag(:p, tag_category.description)
-              div_page << content_tag_push(:div, class: 'catalog_tags_category') do |div_category|
+              div_page << content_tag_push(:ul, class: 'catalog_tags_category') do |div_category|
                 @catalog_all_tags.each do |tag|
                   if tag.catalog_tag_category_id == tag_category.id
-                    div_category << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
-                                                class: "tag-nube-8", style: 'font-size: 1em;')
+                    div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
                   end
                 end
               end
@@ -62,8 +61,7 @@ module IssuesCatalogHelper
         div_wrap << content_tag_push(:div, class: 'catalog_other_tags') do |div_other|
           @catalog_all_tags.each do |tag|
             if tag.catalog_tag_category.nil?
-              div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
-                                        class: "tag-nube-8", style: 'font-size: 1em;')
+              div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
             end
           end
         end
@@ -244,6 +242,9 @@ module IssuesCatalogHelper
     end
     if options[:show_count]
       content << content_tag('span', "(#{ tag.count })", class: 'tag-count')
+    end
+    if options[:del_btn_selected]
+      content << content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
     end
 
     style = if use_colors
