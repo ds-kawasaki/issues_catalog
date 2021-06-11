@@ -212,7 +212,7 @@ module IssuesCatalogHelper
       tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
     end
 
-    filters = make_filters(:tags, tag.name)
+    filters = options[:del_btn_selected] ? make_minus_filters(:tags, tag.name) : make_filters(:tags, tag.name)
     filters << [:status_id, 'o'] if options[:open_only]
 
     if options[:use_search]
@@ -220,7 +220,12 @@ module IssuesCatalogHelper
         id: @project, q: tag.name, wiki_pages: true, issues: true,
         style: tag_style }
     else
-      content = link_to_catalog_filter tag.name, filters, project_id: @project
+      tag_name = tag.name
+      if options[:del_btn_selected]
+        tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
+        tag_name << tag.name
+      end
+      content = link_to_catalog_filter(tag_name, filters, project_id: @project)
     end
     if options[:show_count]
       if @catalog_selected_tags.empty?
@@ -230,9 +235,6 @@ module IssuesCatalogHelper
         count = t ? t.count : 0
       end
       content << content_tag('span', "(#{count})", class: 'tag-count')
-    end
-    if options[:del_btn_selected]
-      content << content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
     end
 
     style = if use_colors
@@ -285,6 +287,26 @@ module IssuesCatalogHelper
     end
     unless is_add
       filters <<= [add_type, '=', add_value]
+    end
+    filters
+  end
+
+  def make_minus_filters(minus_type, minus_value)
+    if @select_filters.nil?
+      @select_filters = []
+    end
+    filters = Marshal.load(Marshal.dump(@select_filters))
+    filters.each do |f|
+      if f[0] == minus_type
+        f[2].each do |f2|
+          if f2 == minus_value
+            f[2].delete(f2)
+          end
+        end
+        if f[2].length < 1
+          filters.delete(f)
+        end
+      end
     end
     filters
   end
