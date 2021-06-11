@@ -72,7 +72,7 @@ module IssuesCatalogHelper
   end
 
   def render_catalog_tags
-    tags = @catalog_selected_tags
+    tags = @catalog_all_tags
 
     content = ''.html_safe
 
