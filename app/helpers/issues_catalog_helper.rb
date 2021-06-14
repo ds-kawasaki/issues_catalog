@@ -49,8 +49,10 @@ module IssuesCatalogHelper
               div_page << content_tag(:p, tag_category.description)
               div_page << content_tag_push(:ul, class: 'catalog_tags_category') do |div_category|
                 @catalog_all_tags.each do |tag|
-                  if tag.catalog_tag_category_id == tag_category.id
-                    div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+                  tag.catalog_tag_categories.each do |tc|
+                    if tc.catalog_tag_category_id == tag_category.id
+                      div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+                    end
                   end
                 end
               end
@@ -60,7 +62,7 @@ module IssuesCatalogHelper
         div_wrap << content_tag(:hr, '', class: 'catalog_separator')
         div_wrap << content_tag_push(:div, class: 'catalog_other_tags') do |div_other|
           @catalog_all_tags.each do |tag|
-            if tag.catalog_tag_category.nil?
+            if tag.catalog_tag_categories.empty?
               div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
             end
           end

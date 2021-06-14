@@ -4,13 +4,18 @@ module IssuesCatalog
       def self.included(base)
         base.send(:include, InstanceMethods)
         base.class_eval do
-          belongs_to :catalog_tag_category
+          has_many :catalog_relation_tag_categories
+          has_many :catalog_tag_categories, :through => :catalog_relation_tag_categories
         end
       end
 
       module InstanceMethods
         def catalog_tag_category_name
-          self.catalog_tag_category ? self.catalog_tag_category.name : ""
+          if self.catalog_tag_categories.any?
+            self.catalog_tag_categories.map { |i| i.name }.join(', ')
+          else
+            ""
+          end
         end
       end
     end
