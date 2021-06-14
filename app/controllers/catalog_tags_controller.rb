@@ -8,7 +8,17 @@ class CatalogTagsController < ApplicationController
   end
 
   def update
-    if @catalog_tag.update_attributes(catalog_tag_params)
+    # if @catalog_tag.update_attributes(catalog_tag_params)
+    @catalog_tag.name = params[:catalog_tag][:name]
+    @catalog_tag.catalog_relation_tag_categories.clear
+    params[:catalog_tag][:catalog_tag_categories].reject(&:blank?).each do |tc|
+      rtc = CatalogRelationTagCategory.new do |r|
+        r.tag_id = @catalog_tag.id
+        r.catalog_tag_category_id = tc.to_i
+      end
+      @catalog_tag.catalog_relation_tag_categories << rtc
+    end
+    if @catalog_tag.save
       respond_to do |format|
         format.html {
           flash[:notice] = l(:notice_successful_update)
@@ -27,7 +37,7 @@ class CatalogTagsController < ApplicationController
   private
 
   def catalog_tag_params
-    params.require(:catalog_tag).permit(:name, :catalog_tag_category_id)
+    params.require(:catalog_tag).permit(:name, catalog_tag_categories: [])
   end
 
   def redirect_to_settings_in_projects
