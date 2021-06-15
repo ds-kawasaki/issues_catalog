@@ -7,6 +7,8 @@ class CatalogTagCategory < ActiveRecord::Base
   has_many :catalog_relation_tag_categories
   has_many :tags, :through => :catalog_relation_tag_categories
 
+  accepts_nested_attributes_for :catalog_relation_tag_categories, allow_destroy: true
+
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:project_id], :conditions => -> { active }
   validates_length_of :name, :maximum => 60
@@ -23,6 +25,10 @@ class CatalogTagCategory < ActiveRecord::Base
 
   def set_status_deleted
     self.status = 100
+  end
+
+  def is_active?
+    self.status < 100
   end
 
   def <=>(tag_category)

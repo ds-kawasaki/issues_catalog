@@ -74,8 +74,8 @@ class CatalogTagCategoriesController < ApplicationController
   end
 
   def destroy
-    # todo ここでカテゴリ割り当ててるタグを開放する 
-
+    # ここでカテゴリ割り当ててるタグを開放する 
+    @catalog_tag_category.catalog_relation_tag_categories.destroy_all
     @catalog_tag_category.set_status_deleted
     if @catalog_tag_category.save
       respond_to do |format|

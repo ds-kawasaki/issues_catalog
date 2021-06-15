@@ -6,13 +6,14 @@ module IssuesCatalog
         base.class_eval do
           has_many :catalog_relation_tag_categories
           has_many :catalog_tag_categories, :through => :catalog_relation_tag_categories
+          accepts_nested_attributes_for :catalog_relation_tag_categories, allow_destroy: true
         end
       end
 
       module InstanceMethods
-        def catalog_tag_category_name
+        def catalog_tag_category_names(project_id)
           if self.catalog_tag_categories.any?
-            self.catalog_tag_categories.map { |i| i.name }.join(', ')
+            self.catalog_tag_categories.map { |i| i.name if i.is_active? && i.project_id == project_id }.join(', ')
           else
             ""
           end

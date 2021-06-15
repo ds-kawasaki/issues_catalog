@@ -43,7 +43,7 @@
         <% tags.each do |tag| %>
           <tr class="issue">
             <td class="name"><%= render_catalog_link_tag(tag) %></td>
-            <td class="category"><%= tag.catalog_tag_category_name %></td>
+            <td class="category"><%= tag.catalog_tag_category_names(@project.id) %></td>
             <td class="buttons">
               <%= link_to l(:button_edit), edit_project_catalog_tag_path(tag),
                     class: 'icon icon-edit' %>

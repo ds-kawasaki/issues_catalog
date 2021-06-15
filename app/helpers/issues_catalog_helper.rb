@@ -50,7 +50,7 @@ module IssuesCatalogHelper
               div_page << content_tag_push(:ul, class: 'catalog_tags_category') do |div_category|
                 @catalog_all_tags.each do |tag|
                   tag.catalog_tag_categories.each do |tc|
-                    if tc.catalog_tag_category_id == tag_category.id
+                    if tc.id == tag_category.id
                       div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
                     end
                   end
