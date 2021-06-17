@@ -9,10 +9,55 @@ module IssuesCatalogHelper
     content_tag(type, tags.reduce(:+), *option)
   end
 
+  def render_catalog_issues_new
+    html_text = ''
+    form_tag({}, :data => {:cm_url => issues_context_menu_path}) do
+      html_text << hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
+      html_text << query_columns_hidden_tags(@query)
+      html_text << "\n"
+      html_text << content_tag_push(:div, class: 'autoscroll') do |div_autoscroll|
+        div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' + @query.css_classes) do |div_table|
+          div_table << content_tag(:thead)
+          div_table << content_tag_push(:tbody) do |div_tbody|
+            grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
+              tr_id = 'issue-' + issue.id.to_s
+              tr_class = 'hascontextmenu ' + cycle('odd', 'even') + issue.css_classes
+              tr_class << "idnt idnt-#{level}" if level > 0
+              div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
+                div_tr << content_tag(:td, check_box_tag("ids[]", issue.id, false, id: nil), class: 'checkbox hide-when-print')
+                div_tr << "\n"
+                @query.inline_columns.each do |column|
+                  div_tr << content_tag(:td, column_content(column, issue), class: column.css_classes)
+                  div_tr << "\n"
+                end
+                div_tr << content_tag(:td, link_to_context_menu, class: 'buttons')
+              end
+              @query.block_columns.each do |column|
+                if (text = column_content(column, issue)) && text.present?
+                  div_tbody << content_tag_push(:tr, class: current_cycle) do |div_tr|
+                    td_class = column.css_classes + ' block_column'
+                    td_colspan = @query.inline_columns.size + 2
+                    div_tr << content_tag_push(:td, class: td_class, colspan: td_colspan.to_s) do |div_td|
+                      if @query.block_columns.count > 1
+                        div_td << content_tag(:span, column.caption)
+                      end
+                    end
+                  end
+                end
+              end
+              div_tbody << "\n"
+            end
+          end
+        end
+      end
+    end
+    return raw(html_text)
+  end
+
   def render_catalog_issues
     html_text = ''
     # チケット一覧のタグリンクをissuesからissues_catalogに置き換える
-    html_text += render(partial: 'issues/list', locals: {issues: @issues, query: @query}).gsub(/\/issues\?/, '/issues_catalog?')
+    html_text << render(partial: 'issues/list', locals: {issues: @issues, query: @query}).gsub(/\/issues\?/, '/issues_catalog?')
     return raw(html_text)
   end
 

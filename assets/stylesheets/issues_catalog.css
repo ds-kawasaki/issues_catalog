@@ -17,6 +17,21 @@
   background-image: url(/images/close_hl.png);
 }
 
+
+.autoscroll thead {
+  display: block;
+  /*visibility: hidden;*/
+}
+.autoscroll tbody {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+.autoscroll tbody td {
+  display: block;
+}
+
+
 .catalog_category_tabs {
   flex-wrap: wrap;
   display: flex;
