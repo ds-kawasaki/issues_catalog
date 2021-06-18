@@ -9,7 +9,13 @@ module IssuesCatalogHelper
     content_tag(type, tags.reduce(:+), *option)
   end
 
-  def render_catalog_issues_new
+  CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags]
+
+  def render_catalog_issues
+    catalog_columns = CATALOG_COLUMN_NAMES.collect do |col|
+       [col, @query.available_columns.find { |c| c.name == col }]
+    end.to_h
+  
     html_text = ''
     form_tag({}, :data => {:cm_url => issues_context_menu_path}) do
       html_text << hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
@@ -24,25 +30,36 @@ module IssuesCatalogHelper
               tr_class = 'hascontextmenu ' + cycle('odd', 'even') + issue.css_classes
               tr_class << "idnt idnt-#{level}" if level > 0
               div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
-                div_tr << content_tag(:td, check_box_tag("ids[]", issue.id, false, id: nil), class: 'checkbox hide-when-print')
-                div_tr << "\n"
-                @query.inline_columns.each do |column|
-                  div_tr << content_tag(:td, catalog_column_content(column, issue), class: column.css_classes)
+                # id
+                col_id = catalog_columns[:id]
+                unless col_id.nil?
+                  div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
+                    div_td << check_box_tag("ids[]", issue.id, false, id: nil)
+                    div_td << link_to(col_id.value_object(issue), issue_path(issue))
+                    div_td << link_to_context_menu
+                  end
                   div_tr << "\n"
                 end
-                div_tr << content_tag(:td, link_to_context_menu, class: 'buttons')
-              end
-              @query.block_columns.each do |column|
-                if (text = catalog_column_content(column, issue)) && text.present?
-                  div_tbody << content_tag_push(:tr, class: current_cycle) do |div_tr|
-                    td_class = column.css_classes + ' block_column'
-                    td_colspan = @query.inline_columns.size + 2
-                    div_tr << content_tag_push(:td, class: td_class, colspan: td_colspan.to_s) do |div_td|
-                      if @query.block_columns.count > 1
-                        div_td << content_tag(:span, column.caption)
-                      end
-                    end
-                  end
+                # subject
+                col_subject = catalog_columns[:subject]
+                unless col_subject.nil?
+                  div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: col_subject.css_classes)
+                  div_tr << "\n"
+                end
+                # cf1
+                col_cf1 = catalog_columns[:cf_1]
+                col_cf2 = catalog_columns[:cf_2]
+                unless col_cf1.nil?
+                  val_preview = format_object(col_cf1.value_object(issue))
+                  val_okiba = format_object(col_cf2.value_object(issue)) unless col_cf2.nil?
+                  div_tr << content_tag(:td, format_object(col_cf1.value_object(issue)), class: col_cf1.css_classes)
+                  div_tr << "\n"
+                end
+                # tags
+                col_tags = catalog_columns[:tags]
+                unless col_tags.nil?
+                  tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t) }.join(', ').html_safe
+                  div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
                 end
               end
               div_tbody << "\n"
@@ -51,58 +68,6 @@ module IssuesCatalogHelper
         end
       end
     end
-    return raw(html_text)
-  end
-
-  def catalog_column_content(column, item)
-    value = column.value_object(item)
-    if column.name == :tags
-      column.value(item).collect{ |t| render_catalog_link_tag(t) }.join(', ').html_safe
-    elsif value.is_a?(Array)
-      values = value.collect {|v| catalog_column_value(column, item, v)}.compact
-      safe_join(values, ', ')
-    else
-      catalog_column_value(column, item, value)
-    end
-  end
-
-  def catalog_column_value(column, item, value)
-    case column.name
-    when :id
-      link_to value, issue_path(item)
-    when :subject
-      link_to value, issue_path(item)
-    when :parent
-      value ? (value.visible? ? link_to_issue(value, :subject => false) : "##{value.id}") : ''
-    when :description
-      item.description? ? content_tag('div', textilizable(item, :description), :class => "wiki") : ''
-    when :last_notes
-      item.last_notes.present? ? content_tag('div', textilizable(item, :last_notes), :class => "wiki") : ''
-    when :done_ratio
-      progress_bar(value)
-    when :relations
-      content_tag(
-        'span',
-        value.to_s(item) {|other| link_to_issue(other, :subject => false, :tracker => false)}.html_safe,
-        :class => value.css_classes_for(item))
-    when :hours, :estimated_hours
-      format_hours(value)
-    when :spent_hours
-      link_to_if(value > 0, format_hours(value), project_time_entries_path(item.project, :issue_id => "#{item.id}"))
-    when :total_spent_hours
-      link_to_if(value > 0, format_hours(value), project_time_entries_path(item.project, :issue_id => "~#{item.id}"))
-    when :attachments
-      value.to_a.map {|a| format_object(a)}.join(" ").html_safe
-    else
-      format_object(value)
-    end
-  end
-
-
-  def render_catalog_issues
-    html_text = ''
-    # チケット一覧のタグリンクをissuesからissues_catalogに置き換える
-    html_text << render(partial: 'issues/list', locals: {issues: @issues, query: @query}).gsub(/\/issues\?/, '/issues_catalog?')
     return raw(html_text)
   end
 
