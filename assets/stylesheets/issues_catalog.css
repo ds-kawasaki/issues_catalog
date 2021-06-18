@@ -30,6 +30,13 @@
 .autoscroll tbody td {
   display: block;
 }
+.catalog-issue-top {
+  display: inline-flex;
+  align-items: center;
+}
+.catalog-issue-top a {
+  margin-left: 10px;
+}
 
 
 .catalog_category_tabs {

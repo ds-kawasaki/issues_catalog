@@ -11,6 +11,8 @@ module IssuesCatalogHelper
 
   CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags]
 
+  MOVIE_EXTS = ['.avi', '.mp4', '.mov']
+
   def render_catalog_issues
     catalog_columns = CATALOG_COLUMN_NAMES.collect do |col|
        [col, @query.available_columns.find { |c| c.name == col }]
@@ -22,21 +24,23 @@ module IssuesCatalogHelper
       html_text << query_columns_hidden_tags(@query)
       html_text << "\n"
       html_text << content_tag_push(:div, class: 'autoscroll') do |div_autoscroll|
-        div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' + @query.css_classes) do |div_table|
+        div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' << @query.css_classes) do |div_table|
           div_table << content_tag(:thead)
           div_table << content_tag_push(:tbody) do |div_tbody|
             grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
-              tr_id = 'issue-' + issue.id.to_s
-              tr_class = 'hascontextmenu ' + cycle('odd', 'even') + issue.css_classes
+              tr_id = 'issue-' << issue.id.to_s
+              tr_class = 'hascontextmenu ' << cycle('odd', 'even') << issue.css_classes
               tr_class << "idnt idnt-#{level}" if level > 0
               div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
                 # id
                 col_id = catalog_columns[:id]
                 unless col_id.nil?
                   div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
-                    div_td << check_box_tag("ids[]", issue.id, false, id: nil)
-                    div_td << link_to(col_id.value_object(issue), issue_path(issue))
-                    div_td << link_to_context_menu
+                    div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
+                      div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
+                      div_issue_top << link_to(col_id.value_object(issue), issue_path(issue))
+                      div_issue_top << link_to_context_menu
+                    end
                   end
                   div_tr << "\n"
                 end
@@ -52,7 +56,24 @@ module IssuesCatalogHelper
                 unless col_cf1.nil?
                   val_preview = format_object(col_cf1.value_object(issue))
                   val_okiba = format_object(col_cf2.value_object(issue)) unless col_cf2.nil?
-                  div_tr << content_tag(:td, format_object(col_cf1.value_object(issue)), class: col_cf1.css_classes)
+                  preview = ''.html_safe
+                  if MOVIE_EXTS.include?(File.extname(val_preview))
+                    preview << video_tag(get_visuals_path(val_preview), size: '300x300', controls: true, autoplay: true, loop: true, preload: 'none')
+                  else
+                    preview << image_tag(get_visuals_path(val_preview), size: '300x300')
+                  end
+                  unless val_okiba.empty?
+                    if File.extname(val_okiba) != ''
+                      preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank')
+                    else
+                      if val_okiba.start_with?('Q:', 'q:')
+                        val_okiba.slice!(0, 2)
+                        val_okiba = 'dseeds.local/data' << val_okiba
+                      end
+                      preview = link_to(preview, 'file://' << val_okiba)
+                    end
+                  end
+                  div_tr << content_tag(:td, preview, class: col_cf1.css_classes)
                   div_tr << "\n"
                 end
                 # tags
@@ -69,6 +90,10 @@ module IssuesCatalogHelper
       end
     end
     return raw(html_text)
+  end
+
+  def get_visuals_path(path_text)
+    'https://wLb8vs.d-seeds.com/visuals?path=' << Base64.urlsafe_encode64(path_text)
   end
 
   def render_selected_cagalog_tags
