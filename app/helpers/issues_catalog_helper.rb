@@ -119,15 +119,19 @@ module IssuesCatalogHelper
       # selected_tab ||= catalog_tag_categories.first.name
 
       content_tag_push(:div) do |div_wrap|
-        div_wrap << content_tag_push(:div, class: 'catalog_category_tabs') do |div_tabs|
+        div_wrap << content_tag_push(:div, class: 'catalog-category-tabs') do |div_tabs|
+          tabs_areas = ''.html_safe
+          contents_areas = ''.html_safe
           catalog_tag_categories.each_with_index do |tag_category, i|
-            tab_id = "catalog_category_tab_id_#{i}"
             is_selected = (i == 0)
-            div_tabs << radio_button_tag('catalog_category_tab_name', '', is_selected, id: tab_id, class: 'catalog_category_switch_class')
-            div_tabs << label_tag(tab_id, tag_category.name, class: 'catalog_category_tab_class')
-            div_tabs << content_tag_push(:div, class: 'catalog_category_content_class') do |div_page|
+            tab_class = 'catalog-category-tab'
+            tab_class << ' active-tab' if is_selected
+            tabs_areas << content_tag(:div, tag_category.name, class: tab_class)
+            content_class = 'catalog-category-content'
+            content_class << ' show-content' if is_selected
+            contents_areas << content_tag_push(:div, class: content_class) do |div_page|
               div_page << content_tag(:p, tag_category.description)
-              div_page << content_tag_push(:ul, class: 'catalog_tags_category') do |div_category|
+              div_page << content_tag_push(:ul, class: 'catalog-category-tags') do |div_category|
                 @catalog_all_tags.each do |tag|
                   tag.catalog_tag_categories.each do |tc|
                     if tc.id == tag_category.id
@@ -138,9 +142,11 @@ module IssuesCatalogHelper
               end
             end
           end
+          div_tabs << content_tag(:div, tabs_areas, class: 'catalog-category-tabs-area')
+          div_tabs << content_tag(:div, contents_areas, class: 'catalog-category-contents-area')
         end
-        div_wrap << content_tag(:hr, '', class: 'catalog_separator')
-        div_wrap << content_tag_push(:div, class: 'catalog_other_tags') do |div_other|
+        div_wrap << content_tag(:hr, '', class: 'catalog-separator')
+        div_wrap << content_tag_push(:div, class: 'catalog-other-tags') do |div_other|
           @catalog_all_tags.each do |tag|
             if tag.catalog_tag_categories.empty?
               div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
