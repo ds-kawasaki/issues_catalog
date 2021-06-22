@@ -126,7 +126,7 @@ module IssuesCatalogHelper
             is_selected = (i == 0)
             tab_class = 'catalog-category-tab'
             tab_class << ' active-tab' if is_selected
-            tabs_areas << content_tag(:div, tag_category.name, class: tab_class)
+            tabs_areas << content_tag(:div, tag_category.name, class: tab_class, id: 'catalog-category-tab-id' << i.to_s)
             content_class = 'catalog-category-content'
             content_class << ' show-content' if is_selected
             contents_areas << content_tag_push(:div, class: content_class) do |div_page|
