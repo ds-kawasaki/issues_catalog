@@ -43,14 +43,13 @@
   margin-top: 15px;
 }
 .catalog-category-tabs-area {
-  flex-wrap: wrap;
-  display: flex;
-  justify-content: space-around;
-  cursor: pointer;
+  overflow-x: hidden;
+  white-space: nowrap;
 }
 .catalog-category-tab {
-  display: block;
-  color: #999;
+  display: inline-block;
+  color: #666;
+  background-color: #ccc;
   padding: 4px 2px;
   font-size: medium;
   border: 1px solid rgba(0, 0, 0, 0.2);
@@ -59,6 +58,7 @@
 }
 .active-tab {
   color: black;
+  background-color: inherit;
 }
 .catalog-category-content {
   width: 100%;
