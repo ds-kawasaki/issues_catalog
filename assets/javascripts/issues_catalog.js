@@ -30,12 +30,12 @@ $(function () {
 
 
   // メインカテゴリタブ切替クリック時 
-  const tags = $('.catalog-category-tab');
-  $('.catalog-category-tab').on('click', function () {
+  const tags = $('.category-tab');
+  $('.category-tab').on('click', function () {
     $('.active-tab').removeClass('active-tab');
     $(this).addClass('active-tab');
     const index = tags.index(this);
-    $('.catalog-category-content').removeClass('show-content').eq(index).addClass('show-content');
+    $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
     localStorage.setItem(localStorageKey, $(this).attr('id'));
   });
 
@@ -44,12 +44,12 @@ $(function () {
     if (!storageAvailable('localStorage')) { return; }
 
     const bodyClass = $('body').attr('class');
-    if(bodyClass){
+    if (bodyClass) {
       try {
-        localStorageKey += '-' + bodyClass.split(/\s+/).filter(function(s){
+        localStorageKey += '-' + bodyClass.split(/\s+/).filter(function (s) {
           return s.match(/project-.*/);
         }).sort().join('-');
-      } catch(e) {
+      } catch (e) {
         // in case of error (probably IE8), continue with the unmodified key
       }
     }
@@ -62,8 +62,61 @@ $(function () {
     $('.active-tab').removeClass('active-tab');
     activeTab.addClass('active-tab');
     const index = tags.index(activeTab);
-    $('.catalog-category-content').removeClass('show-content').eq(index).addClass('show-content');
-  }; 
+    $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
+  };
+
+  //  メインカテゴリタブの左右スクロール可否調整
+  const resizedCatalogTab = () => {
+    const tabsArea = $('.tabs-area');
+    const areaWidth = tabsArea.outerWidth();
+    const tabsWidth = tabsArea.get(0).scrollWidth;
+    const scrollWidth = parseInt(tabsWidth - areaWidth);
+    if (scrollWidth > 0) {
+      $('.tabs-scrl-btn').show();
+      // const scrollPos = tabsArea.get(0).scrollLeft;
+      // if (scrollPos > 0) {
+      //   $('#tabs-scrl-r-btn').hide();
+      // }
+      // else {
+      //   $('#tabs-scrl-l-btn').hide();
+      // }
+    } else {
+      $('.tabs-scrl-btn').hide();
+    }
+  };
+
+  const resize = () => {
+    let timeoutID = 0;
+    const delay = 250;
+    window.addEventListener('resize', () => {
+      if (timeoutID != 0) {
+        clearTimeout(timeoutID);
+      }
+      timeoutID = setTimeout(resizedCatalogTab, delay);
+    });
+    setTimeout(resizedCatalogTab, 0); //  初回
+  };
+  resize();
+
+  $('#tabs-scrl-l-btn').on('click', function() {
+    $('.tabs-area').animate({
+      scrollLeft: 0
+    });
+    $(this).hide();
+    $('#tabs-scrl-r-btn').show();
+  });
+  $('#tabs-scrl-r-btn').on('click', function() {
+    const tabsArea = $('.tabs-area');
+    const areaWidth = tabsArea.outerWidth();
+    const tabsWidth = tabsArea.get(0).scrollWidth;
+    const scrollWidth = parseInt(tabsWidth - areaWidth);
+    tabsArea.animate({
+      scrollLeft: scrollWidth
+    });
+    $(this).hide();
+    $('#tabs-scrl-l-btn').show();
+  });
+
   setCatalogTabOnLoad();
 
 });
