@@ -2,7 +2,10 @@
 $(function () {
   'use strict';
 
-  let localStorageKey = 'catalog-category-tabs-state';
+  const MAX_HISTORY = 20;
+
+  let localStorageKeyCategoryTab = 'catalog-category-tabs-state';
+  let localStorageKeyHistory = 'catalog-history';
   // true if local storage is available
   const storageAvailable = (type) => {
     let storage;
@@ -36,25 +39,12 @@ $(function () {
     $(this).addClass('active-tab');
     const index = tags.index(this);
     $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
-    localStorage.setItem(localStorageKey, $(this).attr('id'));
+    localStorage.setItem(localStorageKeyCategoryTab, $(this).attr('id'));
   });
 
   // メインカテゴリタブ切替読み込み時
   const setCatalogTabOnLoad = () => {
-    if (!storageAvailable('localStorage')) { return; }
-
-    const bodyClass = $('body').attr('class');
-    if (bodyClass) {
-      try {
-        localStorageKey += '-' + bodyClass.split(/\s+/).filter(function (s) {
-          return s.match(/project-.*/);
-        }).sort().join('-');
-      } catch (e) {
-        // in case of error (probably IE8), continue with the unmodified key
-      }
-    }
-
-    const cateTab = localStorage.getItem(localStorageKey);
+    const cateTab = localStorage.getItem(localStorageKeyCategoryTab);
     if (!cateTab) { return; }
     const activeTab = $('#' + cateTab);
     if (!activeTab) { return; }
@@ -127,7 +117,49 @@ $(function () {
   };
 
 
-  setCatalogTabOnLoad();
+  //  タグのリンククリック時
+  $('.catalog-tag-label a').on('click', function() {
+    const tagLabel = $(this).text();
+    // console.log(tagLabel);
+    const rawValue = localStorage.getItem(localStorageKeyHistory);
+    const history = rawValue ? JSON.parse(rawValue) : [];
+    const idx = history.indexOf(tagLabel);
+    if (idx >= 0) {
+      history.splice(idx, 1);
+    }
+    history.unshift(tagLabel);
+    if (history.length > MAX_HISTORY) {
+      history.pop();
+    }
+    localStorage.setItem(localStorageKeyHistory, JSON.stringify(history));
+  });
+  // ヒストリータブ内容セット
+  const setHistoryOnLoad = () => {
+
+  };
+
+
+  const setupFromStorageOnLoad = () => {
+    if (!storageAvailable('localStorage')) { return; }
+
+    const bodyClass = $('body').attr('class');
+    if (bodyClass) {
+      try {
+        const postfixProject = '-' + bodyClass.split(/\s+/).filter(function (s) {
+          return s.match(/project-.*/);
+        }).sort().join('-');
+        localStorageKeyCategoryTab += postfixProject;
+        localStorageKeyHistory += postfixProject;
+      } catch (e) {
+        // in case of error (probably IE8), continue with the unmodified key
+      }
+    }
+
+    setCatalogTabOnLoad();
+    setHistoryOnLoad();
+  };
+
+  setupFromStorageOnLoad();
   setReseizeCallback();
 
 });

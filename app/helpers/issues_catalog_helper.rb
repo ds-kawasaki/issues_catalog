@@ -267,12 +267,9 @@ module IssuesCatalogHelper
 
   # カテゴリのリンク
   def render_catalog_link_category(category, options = {})
-    use_colors = RedmineTags.settings[:issues_use_colors].to_i > 0
-    if use_colors
-      tag_bg_color = tag_color(category)
-      tag_fg_color = tag_fg_color(tag_bg_color)
-      tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
-    end
+    tag_bg_color = tag_color(category)
+    tag_fg_color = tag_fg_color(tag_bg_color)
+    tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
 
     filters = make_filters(:category_id, category.id)
     filters << [:status_id, 'o'] if options[:open_only]
@@ -282,22 +279,14 @@ module IssuesCatalogHelper
       content << content_tag('span', "(#{ category.count })", class: 'category-count')
     end
 
-    style = if use_colors
-      { class: 'category-label-color', style: tag_style }
-    else
-      { class: 'category-label' }
-    end
-    content_tag 'span', content, style
+    content_tag 'span', content, { class: 'catalog-category-label', style: tag_style }
   end
 
   # タグのリンク
   def render_catalog_link_tag(tag, options = {})
-    use_colors = RedmineTags.settings[:issues_use_colors].to_i > 0
-    if use_colors
-      tag_bg_color = '#d0d0d0'  # tag_color(tag)
-      tag_fg_color = tag_fg_color(tag_bg_color)
-      tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
-    end
+    tag_bg_color = '#d0d0d0'  # tag_color(tag)
+    tag_fg_color = tag_fg_color(tag_bg_color)
+    tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
 
     filters = options[:del_btn_selected] ? make_minus_filters(:tags, tag.name) : make_filters(:tags, tag.name)
     filters << [:status_id, 'o'] if options[:open_only]
@@ -324,13 +313,7 @@ module IssuesCatalogHelper
       content << content_tag('span', "(#{count})", class: 'tag-count')
     end
 
-    style = if use_colors
-        { class: 'tag-label-color',
-          style: tag_style }
-      else
-        { class: 'tag-label' }
-      end
-    content_tag 'span', content, style
+    content_tag 'span', content, { class: 'catalog-tag-label', style: tag_style }
   end
 
   # link_to_filterのコントローラー違い 
