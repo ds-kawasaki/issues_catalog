@@ -115,43 +115,41 @@ module IssuesCatalogHelper
   def render_catalog_tag_tabs
     catalog_tag_categories = @project.catalog_tag_categories
     if catalog_tag_categories.any?
-      content_tag_push(:div) do |div_wrap|
-        div_wrap << content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
-          tabs_areas = ''.html_safe
-          contents_areas = ''.html_safe
-          catalog_tag_categories.each_with_index do |tag_category, i|
-            is_selected = (i == 0)
-            tab_class = 'category-tab'
-            tab_class << ' active-tab' if is_selected
-            tabs_areas << content_tag(:li, tag_category.name, class: tab_class, id: 'category-tab-id' << i.to_s)
-            content_class = 'category-content'
-            content_class << ' show-content' if is_selected
-            contents_areas << content_tag_push(:div, class: content_class) do |div_page|
-              div_page << content_tag(:p, tag_category.description)
-              div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
-                @catalog_all_tags.each do |tag|
-                  tag.catalog_tag_categories.each do |tc|
-                    if tc.id == tag_category.id
-                      div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-                    end
+      ret_content = content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
+        tabs_areas = ''.html_safe
+        contents_areas = ''.html_safe
+        catalog_tag_categories.each_with_index do |tag_category, i|
+          is_selected = (i == 0)
+          tab_class = 'category-tab'
+          tab_class << ' active-tab' if is_selected
+          tabs_areas << content_tag(:li, tag_category.name, class: tab_class, id: 'category-tab-id' << i.to_s)
+          content_class = 'category-content'
+          content_class << ' show-content' if is_selected
+          contents_areas << content_tag_push(:div, class: content_class) do |div_page|
+            div_page << content_tag(:p, tag_category.description)
+            div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
+              @catalog_all_tags.each do |tag|
+                tag.catalog_tag_categories.each do |tc|
+                  if tc.id == tag_category.id
+                    div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
                   end
                 end
               end
             end
           end
-          div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
-            div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
-            div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')
-            div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-r-btn')
-          end
-          div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
         end
-        div_wrap << content_tag(:hr, '', class: 'catalog-separator')
-        div_wrap << content_tag_push(:div, class: 'other-tags') do |div_other|
-          @catalog_all_tags.each do |tag|
-            if tag.catalog_tag_categories.empty?
-              div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-            end
+        div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
+          div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
+          div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')
+          div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-r-btn')
+        end
+        div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
+      end
+      ret_content << content_tag(:hr, '', class: 'catalog-separator')
+      ret_content << content_tag_push(:div, class: 'other-tags') do |div_other|
+        @catalog_all_tags.each do |tag|
+          if tag.catalog_tag_categories.empty?
+            div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
           end
         end
       end
