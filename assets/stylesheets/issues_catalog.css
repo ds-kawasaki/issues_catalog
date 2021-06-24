@@ -1,15 +1,22 @@
-.category-label-color {
+.catalog-category-label {
   border: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   padding: 4px 10px;
   margin: 2px 1px;
   display: inline-block;
 }
-
-.category-label-color a {
+.catalog-category-label a {
   color: inherit;
 }
-.tag-label-color a {
+
+.catalog-tag-label {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 2px 4px;
+  display: inline-block;
+  margin: 1px;
+}
+.catalog-tag-label a {
   color: inherit;
 }
 
