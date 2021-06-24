@@ -89,7 +89,7 @@
 }
 #tabs-scrl-l-btn {
   top: 15%;
-  left: 5%;
+  left: -14px;
 }
 #tabs-scrl-l-btn::before {
   content: '';
@@ -106,7 +106,7 @@
 }
 #tabs-scrl-r-btn {
   top: 15%;
-  left: 88%;
+  left: 98%;
 }
 #tabs-scrl-r-btn::before {
   content: '';
