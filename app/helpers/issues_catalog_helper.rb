@@ -155,8 +155,11 @@ module IssuesCatalogHelper
           end
         end
       end
+      ret_content
     else
-      render_catalog_tags
+      ret_content = render_catalog_categories
+      ret_content << render_catalog_tags
+      ret_content
     end
   end
 
@@ -269,41 +272,30 @@ module IssuesCatalogHelper
 
   # カテゴリのリンク
   def render_catalog_link_category(category, options = {})
-    tag_bg_color = tag_color(category)
-    tag_fg_color = tag_fg_color(tag_bg_color)
-    tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
-
     filters = make_filters(:category_id, category.id)
     filters << [:status_id, 'o'] if options[:open_only]
 
-    content = link_to_catalog_filter category.name, filters, project_id: @project
+    content = link_to_catalog_filter(category.name, filters, project_id: @project)
     if options[:show_count] && category.respond_to?(:count)
       content << content_tag('span', "(#{ category.count })", class: 'category-count')
     end
 
-    content_tag 'span', content, { class: 'catalog-category-label', style: tag_style }
+    tag_bg_color = tag_color(category)
+    tag_fg_color = tag_fg_color(tag_bg_color)
+    content_tag 'span', content, { class: 'catalog-category-label', style: "background-color: #{tag_bg_color}; color: #{tag_fg_color}" }
   end
 
   # タグのリンク
   def render_catalog_link_tag(tag, options = {})
-    tag_bg_color = '#d0d0d0'  # tag_color(tag)
-    tag_fg_color = tag_fg_color(tag_bg_color)
-    tag_style = "background-color: #{tag_bg_color}; color: #{tag_fg_color}"
-
     filters = options[:del_btn_selected] ? make_minus_filters(:tags, tag.name) : make_filters(:tags, tag.name)
     filters << [:status_id, 'o'] if options[:open_only]
 
-    if options[:use_search]
-      content =  link_to tag, { controller: 'search', action: 'index',
-        id: @project, q: tag.name, wiki_pages: true, issues: true,
-        style: tag_style }
-    else
-      tag_name = tag.name
-      if options[:del_btn_selected]
-        tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
-        tag_name << tag.name
-      end
+    if options[:del_btn_selected]
+      tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
+      tag_name << tag.name
       content = link_to_catalog_filter(tag_name, filters, project_id: @project)
+    else
+      content = link_to_catalog_filter(tag.name, filters, project_id: @project, catalog_history: tag.name)
     end
     if options[:show_count]
       if @catalog_selected_tags.empty?
@@ -315,7 +307,7 @@ module IssuesCatalogHelper
       content << content_tag('span', "(#{count})", class: 'tag-count')
     end
 
-    content_tag 'span', content, { class: 'catalog-tag-label', style: tag_style }
+    content_tag 'span', content, class: 'catalog-tag-label'
   end
 
   # link_to_filterのコントローラー違い 
@@ -326,8 +318,7 @@ module IssuesCatalogHelper
 
   # link_to_filter_optionsのコントローラー違い 
   def link_to_catalog_filter_options(filters)
-    options = { controller: 'issues_catalog', action: 'index', set_filter: 1,
-      fields: [], values: {}, operators: {}, f:[], v: {}, op: {} }
+    options = { controller: 'issues_catalog', action: 'index', set_filter: 1, f:[], v: {}, op: {} }
 
     filters.each do |f|
       name, operator, value = f

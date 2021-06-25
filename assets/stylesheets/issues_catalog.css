@@ -1,4 +1,6 @@
 .catalog-category-label {
+  background-color: #ddd;
+  color: black;
   border: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   padding: 4px 10px;
