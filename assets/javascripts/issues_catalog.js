@@ -135,7 +135,13 @@ $(function () {
   });
   // ヒストリータブ内容セット
   const setHistoryOnLoad = () => {
-
+    const divHistory = $('#catalog-category-history');
+    if (!divHistory) { return; }
+    const rawValue = localStorage.getItem(localStorageKeyHistory);
+    const history = rawValue ? JSON.parse(rawValue) : [];
+    let text = '';
+    history.forEach(i => text += i + '<br>');
+    divHistory.html(text);
   };
 
 
