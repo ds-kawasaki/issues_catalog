@@ -12,6 +12,8 @@ class IssuesCatalogController < ApplicationController
   helper :custom_fields
   include QueriesHelper
 
+  MAX_HISTORIES = 20
+
   def index
     retrieve_query IssueQuery, false
     @issue_count = @query.issue_count
@@ -21,6 +23,7 @@ class IssuesCatalogController < ApplicationController
     make_select_filters
     make_catalog_all_tags
     make_catalog_selected_tags
+    update_tag_history
   end
 
   private
@@ -70,6 +73,36 @@ class IssuesCatalogController < ApplicationController
         .group('tags.id, tags.name, tags.taggings_count')
         .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
         .order('tags.name')
+    end
+  end
+
+  def update_tag_history
+    user = User.current
+    if user.nil? || !user.logged?
+      @tag_history = []
+    else
+      old_value = user.pref[:catalog_histories]
+      histories = (old_value || '').split(',').map(&:to_i)
+  
+      current_tag_name = params['catalog_history']
+      unless current_tag_name.nil?
+        current_tag = @catalog_all_tags.find { |at| at.name == current_tag_name }
+        unless current_tag.nil?
+          histories.delete(current_tag.id)
+          histories.unshift(current_tag.id)
+          histories.pop if histories.length >= MAX_HISTORIES
+        end
+      end
+  
+      @tag_history = histories.map do |i|
+        @catalog_all_tags.find { |at| at.id == i }
+      end
+  
+      new_value = histories.join(',')
+      if old_value != new_value
+        user.pref[:catalog_histories] = new_value
+        user.pref.save
+      end
     end
   end
 

@@ -139,7 +139,13 @@ module IssuesCatalogHelper
           end
         end
         tabs_areas << content_tag(:li, l(:label_history_tab), class: 'category-tab', id: 'category-tab-history')
-        contents_areas << content_tag(:div, content_tag(:div, '', class: 'history-tags', id: 'catalog-category-history'), class: 'category-content')
+        history = content_tag(:p, l(:history_description))
+        history << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
+          @tag_history.each do |h|
+            div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
+          end
+        end
+        contents_areas << content_tag(:div, history, class: 'category-content')
         div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
           div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
           div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')

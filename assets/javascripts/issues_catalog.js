@@ -5,7 +5,6 @@ $(function () {
   const MAX_HISTORY = 20;
 
   let localStorageKeyCategoryTab = 'catalog-category-tabs-state';
-  let localStorageKeyHistory = 'catalog-history';
   // true if local storage is available
   const storageAvailable = (type) => {
     let storage;
@@ -117,34 +116,6 @@ $(function () {
   };
 
 
-  //  タグのリンククリック時
-  $('.catalog-tag-label a').on('click', function() {
-    const tagLabel = $(this).text();
-    // console.log(tagLabel);
-    const rawValue = localStorage.getItem(localStorageKeyHistory);
-    const history = rawValue ? JSON.parse(rawValue) : [];
-    const idx = history.indexOf(tagLabel);
-    if (idx >= 0) {
-      history.splice(idx, 1);
-    }
-    history.unshift(tagLabel);
-    if (history.length > MAX_HISTORY) {
-      history.pop();
-    }
-    localStorage.setItem(localStorageKeyHistory, JSON.stringify(history));
-  });
-  // ヒストリータブ内容セット
-  const setHistoryOnLoad = () => {
-    const divHistory = $('#catalog-category-history');
-    if (!divHistory) { return; }
-    const rawValue = localStorage.getItem(localStorageKeyHistory);
-    const history = rawValue ? JSON.parse(rawValue) : [];
-    let text = '';
-    history.forEach(i => text += i + '<br>');
-    divHistory.html(text);
-  };
-
-
   const setupFromStorageOnLoad = () => {
     if (!storageAvailable('localStorage')) { return; }
 
@@ -155,14 +126,12 @@ $(function () {
           return s.match(/project-.*/);
         }).sort().join('-');
         localStorageKeyCategoryTab += postfixProject;
-        localStorageKeyHistory += postfixProject;
       } catch (e) {
         // in case of error (probably IE8), continue with the unmodified key
       }
     }
 
     setCatalogTabOnLoad();
-    setHistoryOnLoad();
   };
 
   setupFromStorageOnLoad();
