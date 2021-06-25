@@ -318,7 +318,7 @@ module IssuesCatalogHelper
 
   # link_to_filter_optionsのコントローラー違い 
   def link_to_catalog_filter_options(filters)
-    options = { controller: 'issues_catalog', action: 'index', set_filter: 1, f:[], v: {}, op: {} }
+    options = { controller: 'issues_catalog', action: 'index', set_filter: 1, f: [], v: {}, op: {} }
 
     filters.each do |f|
       name, operator, value = f
