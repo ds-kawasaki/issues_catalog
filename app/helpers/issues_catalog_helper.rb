@@ -18,73 +18,70 @@ module IssuesCatalogHelper
        [col, @query.available_columns.find { |c| c.name == col }]
     end.to_h
   
-    html_text = ''
-    form_tag({}, :data => {:cm_url => issues_context_menu_path}) do
-      html_text << hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
-      html_text << query_columns_hidden_tags(@query)
-      html_text << "\n"
-      html_text << content_tag_push(:div, class: 'autoscroll') do |div_autoscroll|
-        div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' << @query.css_classes) do |div_table|
-          div_table << content_tag(:thead)
-          div_table << content_tag_push(:tbody) do |div_tbody|
-            grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
-              tr_id = 'issue-' << issue.id.to_s
-              tr_class = 'hascontextmenu ' << cycle('odd', 'even') << issue.css_classes
-              tr_class << "idnt idnt-#{level}" if level > 0
-              div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
-                # id
-                col_id = catalog_columns[:id]
-                unless col_id.nil?
-                  div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
-                    div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
-                      div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
-                      div_issue_top << link_to(col_id.value_object(issue), issue_path(issue))
-                      div_issue_top << link_to_context_menu
-                    end
+    html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
+    html_text << query_columns_hidden_tags(@query)
+    html_text << "\n"
+    html_text << content_tag_push(:div, class: 'autoscroll') do |div_autoscroll|
+      div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' << @query.css_classes) do |div_table|
+        div_table << content_tag(:thead)
+        div_table << content_tag_push(:tbody) do |div_tbody|
+          grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
+            tr_id = 'issue-' << issue.id.to_s
+            tr_class = 'hascontextmenu ' << cycle('odd', 'even') << issue.css_classes
+            tr_class << "idnt idnt-#{level}" if level > 0
+            div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
+              # id
+              col_id = catalog_columns[:id]
+              unless col_id.nil?
+                div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
+                  div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
+                    div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
+                    div_issue_top << link_to(col_id.value_object(issue), issue_path(issue))
+                    div_issue_top << link_to_context_menu
                   end
-                  div_tr << "\n"
                 end
-                # subject
-                col_subject = catalog_columns[:subject]
-                unless col_subject.nil?
-                  div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: col_subject.css_classes)
-                  div_tr << "\n"
-                end
-                # cf1
-                col_cf1 = catalog_columns[:cf_1]
-                col_cf2 = catalog_columns[:cf_2]
-                unless col_cf1.nil?
-                  val_preview = format_object(col_cf1.value_object(issue))
-                  val_okiba = format_object(col_cf2.value_object(issue)) unless col_cf2.nil?
-                  preview = ''.html_safe
-                  if MOVIE_EXTS.include?(File.extname(val_preview))
-                    preview << video_tag(get_visuals_path(val_preview), size: '300x300', controls: true, autoplay: true, loop: true, preload: 'none')
-                  else
-                    preview << image_tag(get_visuals_path(val_preview), size: '300x300')
-                  end
-                  unless val_okiba.empty?
-                    if File.extname(val_okiba) != ''
-                      preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank')
-                    else
-                      if val_okiba.start_with?('Q:', 'q:')
-                        val_okiba.slice!(0, 2)
-                        val_okiba = 'dseeds.local/data' << val_okiba
-                      end
-                      preview = link_to(preview, 'file://' << val_okiba)
-                    end
-                  end
-                  div_tr << content_tag(:td, preview, class: col_cf1.css_classes)
-                  div_tr << "\n"
-                end
-                # tags
-                col_tags = catalog_columns[:tags]
-                unless col_tags.nil?
-                  tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t) }.join(', ').html_safe
-                  div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
-                end
+                div_tr << "\n"
               end
-              div_tbody << "\n"
+              # subject
+              col_subject = catalog_columns[:subject]
+              unless col_subject.nil?
+                div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: col_subject.css_classes)
+                div_tr << "\n"
+              end
+              # cf1
+              col_cf1 = catalog_columns[:cf_1]
+              col_cf2 = catalog_columns[:cf_2]
+              unless col_cf1.nil?
+                val_preview = format_object(col_cf1.value_object(issue))
+                val_okiba = format_object(col_cf2.value_object(issue)) unless col_cf2.nil?
+                preview = ''.html_safe
+                if MOVIE_EXTS.include?(File.extname(val_preview))
+                  preview << video_tag(get_visuals_path(val_preview), size: '300x300', controls: true, autoplay: true, loop: true, preload: 'none')
+                else
+                  preview << image_tag(get_visuals_path(val_preview), size: '300x300')
+                end
+                unless val_okiba.empty?
+                  if File.extname(val_okiba) != ''
+                    preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank')
+                  else
+                    if val_okiba.start_with?('Q:', 'q:')
+                      val_okiba.slice!(0, 2)
+                      val_okiba = 'dseeds.local/data' << val_okiba
+                    end
+                    preview = link_to(preview, 'file://' << val_okiba)
+                  end
+                end
+                div_tr << content_tag(:td, preview, class: col_cf1.css_classes)
+                div_tr << "\n"
+              end
+              # tags
+              col_tags = catalog_columns[:tags]
+              unless col_tags.nil?
+                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t) }.join(', ').html_safe
+                div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
+              end
             end
+            div_tbody << "\n"
           end
         end
       end

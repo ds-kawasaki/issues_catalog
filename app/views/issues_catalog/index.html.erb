@@ -11,9 +11,9 @@
 </fieldset>
 
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
+<%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
 <%= render_catalog_issues %>
+<% end -%>
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
-<% if false %>
-  <%= context_menu %>
-<% end %>
+<%= context_menu %>
