@@ -6,6 +6,7 @@
              :id => 'delete-tag-form') do %>
 
   <%= hidden_field_tag 'project_id', @project.id if @project %>
+  <%= hidden_field_tag 'issue_ids', @delete_tag_issues if @delete_tag_issues %>
 
   <p class="buttons">
     <%= submit_tag l(:button_delete), :name => nil, :onclick => "hideModal(this);" %>

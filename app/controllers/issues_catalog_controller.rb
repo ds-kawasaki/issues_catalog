@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class IssuesCatalogController < ApplicationController
-  before_action :find_optional_project
+  before_action :find_optional_project, only: [:index]
+  before_action :find_project_by_project_id, only: [:add_tag, :delete_tag]
 
   rescue_from Query::StatementInvalid, :with => :query_statement_invalid
 
@@ -27,12 +28,16 @@ class IssuesCatalogController < ApplicationController
   end
 
   def add_tag
+    @add_tag_issues = params[:object_id]
   end
 
   def delete_tag
+    @delete_tag_issues = params[:object_id]
   end
 
   def update_tag
+    @add_tag_issues = params[:issue_ids]
+    @add_tags = params[:tag_list]
   end
 
   private

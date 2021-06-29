@@ -6,9 +6,34 @@
              :id => 'add-tag-form') do %>
 
   <%= hidden_field_tag 'project_id', @project.id if @project %>
+  <%= hidden_field_tag 'issue_ids', @add_tag_issues if @add_tag_issues %>
+
+  <p>
+    <%= text_field_tag :tag_list, '', :size => 30, :id => 'issue_tag_list' %>
+  </p>
 
   <p class="buttons">
     <%= submit_tag l(:button_add), :name => nil, :onclick => "hideModal(this);" %>
     <%= link_to_function l(:button_cancel), "hideModal(this);" %>
   </p>
+<% end %>
+
+<% if true %>
+<%= javascript_tag "$('#issue_tag_list').tagit({
+  tagSource: function(search, showChoices) {
+    var that = this;
+    $.ajax({
+      url: '#{escape_javascript auto_complete_issue_tags_path(@project)}',
+      data: {q: search.term},
+      success: function(choices) {
+        showChoices(that._subtractArray(jQuery.parseJSON(choices), that.assignedTags()));
+      }
+    });
+  },
+  allowSpaces: true,
+  placeholderText: '#{ l :issue_tags_label_add_tag }',
+  caseSensitive: false,
+  removeConfirmation: true,
+  showAutocompleteOnFocus: true,
+});" %>
 <% end %>

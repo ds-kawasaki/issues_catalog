@@ -2,10 +2,10 @@
   <a href="#" class="submenu"><%= l(:label_tags) %></a>
   <ul>
     <li><%= context_menu_link l(:button_add),
-              catalog_add_tag_path(:object_id => @issue_ids),
+              catalog_add_tag_path(:object_id => @issue_ids, :project_id => @project),
               :remote => true %></li>
     <li><%= context_menu_link l(:button_delete),
-              catalog_delete_tag_path(:object_id => @issue_ids),
+              catalog_delete_tag_path(:object_id => @issue_ids, :project_id => @project),
               :remote => true %></li>
   </ul>
 </li>
