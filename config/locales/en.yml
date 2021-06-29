@@ -11,3 +11,5 @@ en:
   label_selected_tags: "Selected Tags"
   label_history_tab: "History"
   history_description: "History of Selection Tags"
+  label_add_tag: "Add Tag"
+  label_delete_tag: "Delete Tag"

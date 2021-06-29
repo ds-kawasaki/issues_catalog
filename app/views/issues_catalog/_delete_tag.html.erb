@@ -1,0 +1,14 @@
+<h3 class="title"><%= l(:label_delete_tag) %></h3>
+
+<%= form_tag({action: :update_tag},
+             :remote => true,
+             :method => :post,
+             :id => 'delete-tag-form') do %>
+
+  <%= hidden_field_tag 'project_id', @project.id if @project %>
+
+  <p class="buttons">
+    <%= submit_tag l(:button_delete), :name => nil, :onclick => "hideModal(this);" %>
+    <%= link_to_function l(:button_cancel), "hideModal(this);" %>
+  </p>
+<% end %>

@@ -26,6 +26,15 @@ class IssuesCatalogController < ApplicationController
     update_tag_history
   end
 
+  def add_tag
+  end
+
+  def delete_tag
+  end
+
+  def update_tag
+  end
+
   private
 
   def make_select_filters

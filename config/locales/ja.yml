@@ -11,3 +11,5 @@ ja:
   label_selected_tags: "選択タグ"
   label_history_tab: "最近選択したタグ"
   history_description: "選択したタグの履歴です"
+  label_add_tag: "タグを追加"
+  label_delete_tag: "タグを削除"
