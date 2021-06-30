@@ -6,7 +6,9 @@
              :id => 'add-tag-form') do %>
 
   <%= hidden_field_tag 'project_id', @project.id if @project %>
-  <%= hidden_field_tag 'issue_ids', @add_tag_issues if @add_tag_issues %>
+  <% @issue_ids.each do |i| %>
+    <%= hidden_field_tag 'issue_ids[]', i %>
+  <% end %>
 
   <p>
     <%= text_field_tag :tag_list, '', :size => 30, :id => 'issue_tag_list' %>

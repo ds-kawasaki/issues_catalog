@@ -28,15 +28,15 @@ class IssuesCatalogController < ApplicationController
   end
 
   def add_tag
-    @add_tag_issues = params[:object_id]
+    @issue_ids = params[:issue_ids]
   end
 
   def delete_tag
-    @delete_tag_issues = params[:object_id]
+    @issue_ids = params[:issue_ids]
   end
 
   def update_tag
-    @add_tag_issues = params[:issue_ids]
+    @issue_ids = params[:issue_ids]
     @add_tags = params[:tag_list]
   end
 
