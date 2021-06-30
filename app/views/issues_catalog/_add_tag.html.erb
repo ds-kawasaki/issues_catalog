@@ -2,7 +2,7 @@
 
 <%= form_tag({action: :update_tag},
              :remote => true,
-             :method => :post,
+             :method => :patch,
              :id => 'add-tag-form') do %>
 
   <%= hidden_field_tag 'project_id', @project.id if @project %>
