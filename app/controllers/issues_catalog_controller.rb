@@ -130,6 +130,7 @@ class IssuesCatalogController < ApplicationController
       @tag_history = histories.map do |i|
         @catalog_all_tags.find { |at| at.id == i }
       end
+      @tag_history.compact!
   
       new_value = histories.join(',')
       if old_value != new_value

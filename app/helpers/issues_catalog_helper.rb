@@ -111,10 +111,10 @@ module IssuesCatalogHelper
 
   def render_catalog_tag_tabs
     catalog_tag_categories = @project.catalog_tag_categories
-    if catalog_tag_categories.any?
-      ret_content = content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
-        tabs_areas = ''.html_safe
-        contents_areas = ''.html_safe
+    ret_content = content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
+      tabs_areas = ''.html_safe
+      contents_areas = ''.html_safe
+      if catalog_tag_categories.any?
         catalog_tag_categories.each_with_index do |tag_category, i|
           is_selected = (i == 0)
           tab_class = 'category-tab'
@@ -135,21 +135,29 @@ module IssuesCatalogHelper
             end
           end
         end
-        tabs_areas << content_tag(:li, l(:label_history_tab), class: 'category-tab', id: 'category-tab-history')
-        history = content_tag(:p, l(:history_description))
-        history << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
-          @tag_history.each do |h|
-            div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
-          end
+      else
+        tabs_areas << content_tag(:li, l(:label_catalog_tag_category_none), class: 'category-tab active-tab', id: 'category-tab-none')
+        contents_areas << content_tag_push(:div, class: 'category-content show-content') do |div_none_category|
+          div_none_category << render_catalog_categories
+          div_none_category << render_catalog_tags
         end
-        contents_areas << content_tag(:div, history, class: 'category-content')
-        div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
-          div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
-          div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')
-          div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-r-btn')
-        end
-        div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
       end
+      tabs_areas << content_tag(:li, l(:label_history_tab), class: 'category-tab', id: 'category-tab-history')
+      history = content_tag(:p, l(:history_description))
+      history << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
+        @tag_history.each do |h|
+          div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
+        end
+      end
+      contents_areas << content_tag(:div, history, class: 'category-content')
+      div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
+        div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
+        div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')
+        div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-r-btn')
+      end
+      div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
+    end
+    if catalog_tag_categories.any?
       ret_content << content_tag(:hr, '', class: 'catalog-separator')
       ret_content << content_tag_push(:div, class: 'other-tags') do |div_other|
         @catalog_all_tags.each do |tag|
@@ -158,12 +166,8 @@ module IssuesCatalogHelper
           end
         end
       end
-      ret_content
-    else
-      ret_content = render_catalog_categories
-      ret_content << render_catalog_tags
-      ret_content
     end
+    ret_content
   end
 
   def render_catalog_tags
