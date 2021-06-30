@@ -9,13 +9,14 @@
   <% @issue_ids.each do |i| %>
     <%= hidden_field_tag 'issue_ids[]', i %>
   <% end %>
+  <%= hidden_field_tag 'back_url', @back_url if @back_url %>
 
   <p>
     <%= text_field_tag :tag_list, '', :size => 30, :id => 'issue_tag_list' %>
   </p>
 
   <p class="buttons">
-    <%= submit_tag l(:button_add), :name => nil, :onclick => "hideModal(this);" %>
+    <%= submit_tag l(:button_add), :name => nil, :onclick => "hideModal(this); setTimeout(function(){location.reload(false);},300);" %>
     <%= link_to_function l(:button_cancel), "hideModal(this);" %>
   </p>
 <% end %>
