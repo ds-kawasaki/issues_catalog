@@ -1,10 +1,3 @@
-<%# タグ追加のモーダルウィンドウでオートコンプリート候補表示を手前に %>
-<style>
-.ui-autocomplete {
-  z-index: 2147483647;
-}
-</style>
-
 <h3 class="title"><%= l(:label_add_tag) %></h3>
 
 <%= form_tag({action: :update_tag},
@@ -19,9 +12,7 @@
   <%= hidden_field_tag 'back_url', @back_url if @back_url %>
 
   <p>
-    <label for="issue_tags"><%= l(:tags) %></label>
-  </p>
-  <p>
+    <label for="add-issue-tag-list"><%= l(:tags) %></label>
     <%= text_field_tag :tag_list, '', :size => 30, :id => 'add-issue-tag-list' %>
   </p>
 
@@ -48,5 +39,6 @@
   caseSensitive: false,
   removeConfirmation: true,
   showAutocompleteOnFocus: true,
+  autocomplete: {delay: 1, minLength: 1},
 });" %>
 <% end %>
