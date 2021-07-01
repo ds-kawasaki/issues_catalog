@@ -1,6 +1,6 @@
 <h3 class="title"><%= l(:label_delete_tag) %></h3>
 
-<%= form_tag({action: :update_delete_tag},
+<%= form_tag({action: :update_tag},
              :remote => true,
              :method => :patch,
              :id => 'delete-tag-form') do %>
@@ -9,11 +9,13 @@
   <% @issue_ids.each do |i| %>
     <%= hidden_field_tag 'issue_ids[]', i %>
   <% end %>
+  <%= hidden_field_tag 'back_url', @back_url if @back_url %>
+  <%= hidden_field_tag 'operate', 'delete' %>
 
   <div id="delete-tags" style="overflow: auto;">
     <% @candidate_tags.each do |t| %>
       <label style="display: block;">
-        <%= check_box_tag 'delete_tags[]', t.name, false, :id => nil %>
+        <%= check_box_tag 'tag_list[]', t.name, false, :id => nil %>
         <%= t.name %>
       </label>
     <% end %>

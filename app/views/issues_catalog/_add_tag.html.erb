@@ -1,6 +1,6 @@
 <h3 class="title"><%= l(:label_add_tag) %></h3>
 
-<%= form_tag({action: :update_add_tag},
+<%= form_tag({action: :update_tag},
              :remote => true,
              :method => :patch,
              :id => 'add-tag-form') do %>
@@ -10,6 +10,7 @@
     <%= hidden_field_tag 'issue_ids[]', i %>
   <% end %>
   <%= hidden_field_tag 'back_url', @back_url if @back_url %>
+  <%= hidden_field_tag 'operate', 'add' %>
 
   <p>
     <label for="add-issue-tag-list"><%= l(:tags) %></label>

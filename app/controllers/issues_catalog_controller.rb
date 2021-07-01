@@ -44,38 +44,24 @@ class IssuesCatalogController < ApplicationController
       .order('tags.name')
   end
 
-  def update_add_tag
-    add_tags = params[:tag_list].split(ActsAsTaggableOn.delimiter) unless params[:tag_list].nil?
-    return if add_tags.blank?
+  def update_tag
+    operate = params[:operate]
+    return if operate.blank?
+    sabun = params[:tag_list]
+    return if sabun.blank?
+    sabun = sabun.split(ActsAsTaggableOn.delimiter) unless sabun.is_a?(Array)
 
-    issues = Issue.where(:id => params[:issue_ids])
-    issues.each do |issue|
+    Issue.where(:id => params[:issue_ids]).each do |issue|
       old_tags = issue.tag_list.to_s
-      issue.tag_list |= add_tags
-      new_tags = issue.tag_list.to_s
 
-      unless old_tags == new_tags
-        issue.save_tags
-        unless issue.current_journal.blank?
-          issue.current_journal.details << JournalDetail.new(
-            property: 'attr', prop_key: 'tag_list', old_value: old_tags, value: new_tags)
-        end
+      case operate
+      when 'add'
+        issue.tag_list |= sabun
+      when 'delete'
+        issue.tag_list -= sabun
       end
-    end
-    Issue.remove_unused_tags!
-    # redirect_to params[:back_url] if params[:back_url]
-  end
 
-  def update_delete_tag
-    delete_tags = params[:delete_tags]
-    return if delete_tags.blank?
-
-    issues = Issue.where(:id => params[:issue_ids])
-    issues.each do |issue|
-      old_tags = issue.tag_list.to_s
-      issue.tag_list -= delete_tags
       new_tags = issue.tag_list.to_s
-
       unless old_tags == new_tags
         issue.save_tags
         unless issue.current_journal.blank?
