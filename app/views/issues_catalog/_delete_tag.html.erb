@@ -1,6 +1,6 @@
 <h3 class="title"><%= l(:label_delete_tag) %></h3>
 
-<%= form_tag({action: :update_tag},
+<%= form_tag({action: :update_delete_tag},
              :remote => true,
              :method => :patch,
              :id => 'delete-tag-form') do %>
@@ -10,8 +10,17 @@
     <%= hidden_field_tag 'issue_ids[]', i %>
   <% end %>
 
+  <div id="delete-tags" style="overflow: auto;">
+    <% @candidate_tags.each do |t| %>
+      <label style="display: block;">
+        <%= check_box_tag 'delete_tags[]', t.name, false, :id => nil %>
+        <%= t.name %>
+      </label>
+    <% end %>
+  </div>
+
   <p class="buttons">
-    <%= submit_tag l(:button_delete), :name => nil, :onclick => "hideModal(this);" %>
+    <%= submit_tag l(:button_delete), :name => nil, :onclick => "hideModal(this); setTimeout(function(){location.reload(false);},300);" %>
     <%= link_to_function l(:button_cancel), "hideModal(this);" %>
   </p>
 <% end %>

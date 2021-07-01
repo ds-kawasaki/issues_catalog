@@ -35,16 +35,45 @@ class IssuesCatalogController < ApplicationController
   def delete_tag
     @issue_ids = params[:issue_ids]
     @back_url = params[:back_url]
+
+    issues = Issue.where(:id => @issue_ids)
+    @candidate_tags = ActsAsTaggableOn::Tag
+      .joins(:taggings)
+      .where(taggings: { taggable_type: 'Issue', taggable_id: issues})
+      .distinct
+      .order('tags.name')
   end
 
-  def update_tag
-    add_tags = params[:tag_list].split(ActsAsTaggableOn.delimiter)
-    return if add_tags.empty?
+  def update_add_tag
+    add_tags = params[:tag_list].split(ActsAsTaggableOn.delimiter) unless params[:tag_list].nil?
+    return if add_tags.blank?
 
     issues = Issue.where(:id => params[:issue_ids])
     issues.each do |issue|
       old_tags = issue.tag_list.to_s
       issue.tag_list |= add_tags
+      new_tags = issue.tag_list.to_s
+
+      unless old_tags == new_tags
+        issue.save_tags
+        unless issue.current_journal.blank?
+          issue.current_journal.details << JournalDetail.new(
+            property: 'attr', prop_key: 'tag_list', old_value: old_tags, value: new_tags)
+        end
+      end
+    end
+    Issue.remove_unused_tags!
+    # redirect_to params[:back_url] if params[:back_url]
+  end
+
+  def update_delete_tag
+    delete_tags = params[:delete_tags]
+    return if delete_tags.blank?
+
+    issues = Issue.where(:id => params[:issue_ids])
+    issues.each do |issue|
+      old_tags = issue.tag_list.to_s
+      issue.tag_list -= delete_tags
       new_tags = issue.tag_list.to_s
 
       unless old_tags == new_tags
