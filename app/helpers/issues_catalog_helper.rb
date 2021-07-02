@@ -125,10 +125,13 @@ module IssuesCatalogHelper
           contents_areas << content_tag_push(:div, class: content_class) do |div_page|
             div_page << content_tag(:p, tag_category.description)
             div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
-              @catalog_all_tags.each do |tag|
-                if tag.catalog_relation_tag_categories.find_by(catalog_tag_category_id: tag_category.id)
-                  div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-                end
+              tags = ActsAsTaggableOn::Tag
+                .joins(:catalog_relation_tag_categories)
+                .where(catalog_relation_tag_categories: {catalog_tag_category_id: tag_category.id})
+                .distinct
+                .order('tags.name')
+              tags.each do |tag|
+                div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
               end
             end
           end
@@ -158,6 +161,18 @@ module IssuesCatalogHelper
     if catalog_tag_categories.any?
       ret_content << content_tag(:hr, '', class: 'catalog-separator')
       ret_content << content_tag_push(:div, class: 'other-tags') do |div_other|
+        # issues = Issue.visible.select('issues.id').joins(:project)
+        # issues = issues.on_project(@project) unless @project.nil?
+        # issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+        # tags = ActsAsTaggableOn::Tag
+        #   .joins(:taggings, :catalog_relation_tag_categories)
+        #   .where(taggings: { taggable_type: 'Issue', taggable_id: issues})
+        #   .distinct
+        #   .where.not(catalog_relation_tag_categories: {tag_id: 'tags.id'})
+        #   .order('tags.name')
+        # tags.each do |tag|
+        #   div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+        # end
         @catalog_all_tags.each do |tag|
           if tag.catalog_tag_categories.empty?
             div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
