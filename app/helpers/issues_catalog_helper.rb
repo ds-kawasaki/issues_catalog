@@ -126,10 +126,8 @@ module IssuesCatalogHelper
             div_page << content_tag(:p, tag_category.description)
             div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
               @catalog_all_tags.each do |tag|
-                tag.catalog_tag_categories.each do |tc|
-                  if tc.id == tag_category.id
-                    div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-                  end
+                if tag.catalog_relation_tag_categories.find_by(catalog_tag_category_id: tag_category.id)
+                  div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
                 end
               end
             end
@@ -183,7 +181,7 @@ module IssuesCatalogHelper
         content_h3 << " and " if i > 0
         tag = tags.find { |tt| tt.name == t }
         content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
-                      class: "tag-nube-8", style: 'font-size: 1em;')
+                                  class: "tag-nube-8", style: 'font-size: 1em;')
       end
     end
     content << content_tag(:h3, content_h3)
@@ -197,7 +195,7 @@ module IssuesCatalogHelper
   end
 
   def render_catalog_tags_list(tags, options = {})
-    unless tags.nil? or tags.empty?
+    unless tags.blank?
       content, style = '', options.delete(:style)
       # prevent ActsAsTaggableOn::TagsHelper from calling `all`
       # otherwise we will need sort tags after `tag_cloud`
@@ -218,9 +216,9 @@ module IssuesCatalogHelper
         unless !@select_tags.nil? && @select_tags.include?(tag.name)
           content << ' '.html_safe <<
           content_tag(item_el, render_catalog_link_tag(tag, options),
-            { class: "tag-nube-#{ weight }",
-            style: (:simple_cloud == style ? 'font-size: 1em;' : '') } ) <<
-          ' '.html_safe
+                      { class: "tag-nube-#{ weight }",
+                        style: (:simple_cloud == style ? 'font-size: 1em;' : '') } ) <<
+                      ' '.html_safe
         end
       end
       content_tag list_el, content, class: 'tags',
@@ -268,7 +266,7 @@ module IssuesCatalogHelper
   end
 
   def render_catalog_categories_list(categories, options = {})
-    unless categories.nil? or categories.empty?
+    unless categories.blank?
       content = ''.html_safe
       categories.each do |category|
         content << ' '.html_safe << render_catalog_link_category(category, options)
@@ -305,10 +303,10 @@ module IssuesCatalogHelper
       content = link_to_catalog_filter(tag.name, filters, project_id: @project, catalog_history: tag.name)
     end
     if options[:show_count]
-      if @catalog_selected_tags.empty?
+      if @catalog_selected_tags.blank?
         count = tag.count
       else
-        t = @catalog_selected_tags.find { |tt| tt.name == tag.name }
+        t = @catalog_selected_tags.find_by(name: tag.name)
         count = t ? t.count : 0
       end
       content << content_tag('span', "(#{count})", class: 'tag-count')
