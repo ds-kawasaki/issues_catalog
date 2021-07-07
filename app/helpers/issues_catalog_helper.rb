@@ -15,7 +15,7 @@ module IssuesCatalogHelper
 
   def render_catalog_issues
     catalog_columns = CATALOG_COLUMN_NAMES.collect do |col|
-       [col, @query.available_columns.find { |c| c.name == col }]
+       [col, @query.available_columns.detect { |c| c.name == col }]
     end.to_h
   
     html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
@@ -97,7 +97,7 @@ module IssuesCatalogHelper
     content = ''.html_safe
     unless @select_tags.nil?
       @select_tags.each_with_index do |t, i|
-        tag = @catalog_all_tags.find { |tt| tt.name == t }
+        tag = @catalog_all_tags.detect { |tt| tt.name == t }
         unless tag.nil?
           content << content_tag(:span, " and ") if i > 0
           content << render_catalog_link_tag(tag, show_count: true, del_btn_selected: true)
@@ -125,12 +125,12 @@ module IssuesCatalogHelper
           contents_areas << content_tag_push(:div, class: content_class) do |div_page|
             div_page << content_tag(:p, tag_category.description)
             div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
-              tags = ActsAsTaggableOn::Tag
-                .joins(:catalog_relation_tag_categories)
+              tmp_tags = ActsAsTaggableOn::Tag
+                .includes(:catalog_relation_tag_categories)
                 .where(catalog_relation_tag_categories: {catalog_tag_category_id: tag_category.id})
                 .distinct
                 .order('tags.name')
-              tags.each do |tag|
+              tmp_tags.each do |tag|
                 div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
               end
             end
@@ -161,22 +161,19 @@ module IssuesCatalogHelper
     if catalog_tag_categories.any?
       ret_content << content_tag(:hr, '', class: 'catalog-separator')
       ret_content << content_tag_push(:div, class: 'other-tags') do |div_other|
-        # issues = Issue.visible.select('issues.id').joins(:project)
-        # issues = issues.on_project(@project) unless @project.nil?
-        # issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
-        # tags = ActsAsTaggableOn::Tag
-        #   .joins(:taggings, :catalog_relation_tag_categories)
-        #   .where(taggings: { taggable_type: 'Issue', taggable_id: issues})
-        #   .distinct
-        #   .where.not(catalog_relation_tag_categories: {tag_id: 'tags.id'})
-        #   .order('tags.name')
-        # tags.each do |tag|
-        #   div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-        # end
-        @catalog_all_tags.each do |tag|
-          if tag.catalog_tag_categories.empty?
-            div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-          end
+        issues = Issue.visible.select('issues.id').joins(:project)
+        issues = issues.on_project(@project) unless @project.nil?
+        issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+        relation_table = CatalogRelationTagCategory.arel_table
+        no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
+        tmp_tags = ActsAsTaggableOn::Tag
+          .joins(:taggings)
+          .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
+          .distinct
+          .where(no_category_condition)
+          .order('tags.name')
+        tmp_tags.each do |tag|
+          div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
         end
       end
     end
@@ -194,7 +191,7 @@ module IssuesCatalogHelper
       content_h3 << " : "
       @select_tags.each_with_index do |t, i|
         content_h3 << " and " if i > 0
-        tag = tags.find { |tt| tt.name == t }
+        tag = tags.detect { |tt| tt['name'] == t }
         content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
                                   class: "tag-nube-8", style: 'font-size: 1em;')
       end
@@ -307,22 +304,24 @@ module IssuesCatalogHelper
 
   # タグのリンク
   def render_catalog_link_tag(tag, options = {})
-    filters = options[:del_btn_selected] ? make_minus_filters(:tags, tag.name) : make_filters(:tags, tag.name)
+    name = tag.name
+    filters = options[:del_btn_selected] ? make_minus_filters(:tags, name) : make_filters(:tags, name)
     filters << [:status_id, 'o'] if options[:open_only]
 
     if options[:del_btn_selected]
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
-      tag_name << tag.name
+      tag_name << name
       content = link_to_catalog_filter(tag_name, filters, project_id: @project)
     else
-      content = link_to_catalog_filter(tag.name, filters, project_id: @project, catalog_history: tag.name)
+      content = link_to_catalog_filter(name, filters, project_id: @project, catalog_history: name)
     end
     if options[:show_count]
-      if @catalog_selected_tags.blank?
-        count = tag.count
+      if @catalog_selected_tags.any?
+        st = @catalog_selected_tags.detect { |t| t.name == name }
+        count = st ? st.count : 0
       else
-        t = @catalog_selected_tags.find_by(name: tag.name)
-        count = t ? t.count : 0
+        at = @catalog_all_tags.detect { |t| t.name == name }
+        count = at ? at.count : 0
       end
       content << content_tag('span', "(#{count})", class: 'tag-count')
     end

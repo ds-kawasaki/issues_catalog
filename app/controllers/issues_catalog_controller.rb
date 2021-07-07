@@ -104,6 +104,7 @@ class IssuesCatalogController < ApplicationController
       .group('tags.id, tags.name, tags.taggings_count')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
       .order('tags.name')
+      .to_a
   end
 
   def make_catalog_selected_tags
@@ -121,6 +122,7 @@ class IssuesCatalogController < ApplicationController
         .group('tags.id, tags.name, tags.taggings_count')
         .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
         .order('tags.name')
+        .to_a
     end
   end
 
@@ -134,7 +136,7 @@ class IssuesCatalogController < ApplicationController
   
       current_tag_name = params['catalog_history']
       unless current_tag_name.nil?
-        current_tag = @catalog_all_tags.find { |at| at.name == current_tag_name }
+        current_tag = @catalog_all_tags.detect { |at| at.name == current_tag_name }
         unless current_tag.nil?
           histories.delete(current_tag.id)
           histories.unshift(current_tag.id)
@@ -143,7 +145,7 @@ class IssuesCatalogController < ApplicationController
       end
   
       @tag_history = histories.map do |i|
-        @catalog_all_tags.find { |at| at.id == i }
+        @catalog_all_tags.detect { |at| at.id == i }
       end
       @tag_history.compact!
   
