@@ -1,13 +1,138 @@
-.category-label-color {
+.catalog-category-label {
+  background-color: #ddd;
+  color: black;
   border: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   padding: 4px 10px;
   margin: 2px 1px;
   display: inline-block;
 }
-
-.category-label-color a {
+.catalog-category-label a {
   color: inherit;
+}
+
+.catalog-tag-label {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 2px 4px;
+  display: inline-block;
+  margin: 1px;
+}
+.catalog-tag-label a {
+  color: inherit;
+}
+
+.catalog-icon-clear-selected {
+  background-image: url(/images/close_hl.png);
+}
+
+
+.autoscroll thead {
+  display: block;
+  /*visibility: hidden;*/
+}
+.autoscroll tbody {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+.autoscroll tbody td {
+  display: block;
+}
+.catalog-issue-top {
+  display: inline-flex;
+  align-items: center;
+}
+.catalog-issue-top a {
+  margin-left: 10px;
+}
+
+
+.category-tab-contents {
+  margin-top: 15px;
+}
+.tabs-area {
+  display: block;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+.category-tab {
+  display: inline-block;
+  color: #666;
+  background-color: #ccc;
+  padding: 4px 2px;
+  font-size: medium;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  cursor: pointer;
+}
+.active-tab {
+  color: black;
+  background-color: inherit;
+  cursor: default;
+}
+.category-content {
+  width: 100%;
+  display: none;
+  border-top: 2px solid rgba(0, 0, 0, 0.2);
+  margin-top: -1px;
+}
+.show-content {
+  display: block;
+}
+.tabs-wrap {
+  position: relative;
+}
+.tabs-scrl-btn {
+  position: absolute;
+  background-color: steelblue;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  opacity: 0.2;
+  transition: all 0.1s;
+}
+.tabs-scrl-btn:hover {
+  opacity: 0.8;
+}
+#tabs-scrl-l-btn {
+  top: 15%;
+  left: -14px;
+}
+#tabs-scrl-l-btn::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 0px;
+  border-top: solid 2px gainsboro;
+  border-left: solid 2px gainsboro;
+  transform: rotate(315deg);
+  position: absolute;
+  top: 50%;
+  left: 40%;
+  margin-top: -4px;
+}
+#tabs-scrl-r-btn {
+  top: 15%;
+  left: 98%;
+}
+#tabs-scrl-r-btn::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border: 0px;
+  border-top: solid 2px gainsboro;
+  border-right: solid 2px gainsboro;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  margin-top: -4px;
+}
+
+#sidebar hr.catalog-separator {
+  margin: 20px 10px;
 }
 
 

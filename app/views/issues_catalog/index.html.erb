@@ -1,11 +1,25 @@
+<%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('issues_catalog', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('lozad.min', plugin: 'issues_catalog') %>
+
 <% content_for :sidebar do %>
   <%= render :partial => 'catalog_sidebar' %>
 <% end %>
 
+<fieldset class="box tabular" id="catalog_tags_selected">
+  <legend><%= l(:label_selected_tags)%></legend>
+  <%= render_selected_cagalog_tags %>
+</fieldset>
+
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
-<%= render_catalog_issues %>
+<%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
+  <%= render_catalog_issues %>
+<% end -%>
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
-<% if false %>
-  <%= context_menu %>
-<% end %>
+<%= context_menu %>
+
+<script>
+const observer = lozad();
+observer.observe();
+</script>
