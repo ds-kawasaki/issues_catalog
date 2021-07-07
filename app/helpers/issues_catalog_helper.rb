@@ -54,11 +54,15 @@ module IssuesCatalogHelper
               unless col_cf1.nil?
                 val_preview = format_object(col_cf1.value_object(issue))
                 val_okiba = format_object(col_cf2.value_object(issue)) unless col_cf2.nil?
+                val_preview[0] = '' if val_preview[0] == '"'
+                val_preview[-1] = '' if val_preview[-1] == '"'
+                val_okiba[0] = '' if val_okiba[0] == '"'
+                val_okiba[-1] = '' if val_okiba[-1] == '"'
                 preview = ''.html_safe
                 if MOVIE_EXTS.include?(File.extname(val_preview))
-                  preview << video_tag(get_visuals_path(val_preview), size: '300x300', controls: true, autoplay: true, loop: true, preload: 'none')
+                  preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'data-src': get_visuals_path(val_preview), size: '300x300', controls: true, autoplay: true, loop: true, preload: 'none', class: 'lozad')
                 else
-                  preview << image_tag(get_visuals_path(val_preview), size: '300x300')
+                  preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'data-src': get_visuals_path(val_preview), size: '300x300', class: 'lozad')
                 end
                 unless val_okiba.empty?
                   if File.extname(val_okiba) != ''

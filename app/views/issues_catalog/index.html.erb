@@ -1,5 +1,6 @@
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('issues_catalog', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('lozad.min', plugin: 'issues_catalog') %>
 
 <% content_for :sidebar do %>
   <%= render :partial => 'catalog_sidebar' %>
@@ -12,8 +13,13 @@
 
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 <%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
-<%= render_catalog_issues %>
+  <%= render_catalog_issues %>
 <% end -%>
 <span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
 <%= context_menu %>
+
+<script>
+const observer = lozad();
+observer.observe();
+</script>
