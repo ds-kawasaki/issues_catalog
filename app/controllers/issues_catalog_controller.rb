@@ -27,6 +27,10 @@ class IssuesCatalogController < ApplicationController
     update_tag_history
   end
 
+  def show
+    @issue = Issue.find(params[:id])
+  end
+
   def add_tag
     @issue_ids = params[:issue_ids]
     @back_url = params[:back_url]

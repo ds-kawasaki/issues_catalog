@@ -66,7 +66,8 @@ module IssuesCatalogHelper
                 end
                 unless val_okiba.empty?
                   if File.extname(val_okiba) != ''
-                    preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank')
+                    # preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank')
+                    preview = link_to(preview, issues_catalog_path(id: issue.id), target: '_blank')
                   else
                     if val_okiba.start_with?('Q:', 'q:')
                       val_okiba.slice!(0, 2)
