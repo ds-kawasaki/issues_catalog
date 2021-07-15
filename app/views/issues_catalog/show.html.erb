@@ -1,6 +1,5 @@
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('issues_catalog', plugin: 'issues_catalog') %>
 
-<h1>issues_catalog show</h1>
-<%= @issue.id %>
-<%= @issue.subject %>
+<h3><%= @issue.id.to_s << ' : ' << @issue.subject %></h3>
+<%= render_catalog_okiba(@issue) %>

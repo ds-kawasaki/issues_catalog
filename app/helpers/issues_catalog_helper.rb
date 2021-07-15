@@ -98,6 +98,22 @@ module IssuesCatalogHelper
     'https://wLb8vs.d-seeds.com/visuals?path=' << Base64.urlsafe_encode64(path_text)
   end
 
+  def render_catalog_okiba(issue)
+    cv = issue.custom_field_values.detect {|c| c.custom_field.name == '置き場所'}
+    if cv
+      val_okiba = cv.value
+      val_okiba[0] = '' if val_okiba[0] == '"'
+      val_okiba[-1] = '' if val_okiba[-1] == '"'
+      unless val_okiba.empty?
+        if MOVIE_EXTS.include?(File.extname(val_okiba))
+          video_tag(get_visuals_path(val_okiba), controls: true, autoplay: true, loop: true, preload: 'auto', type: 'video/mp4')
+        else
+          image_tag(get_visuals_path(val_okiba))
+        end
+      end
+    end
+  end
+
   def render_selected_cagalog_tags
     content = ''.html_safe
     unless @select_tags.nil?
