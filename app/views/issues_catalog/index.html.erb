@@ -6,16 +6,23 @@
   <%= render :partial => 'catalog_sidebar' %>
 <% end %>
 
-<fieldset class="box tabular" id="catalog_tags_selected">
-  <legend><%= l(:label_selected_tags)%></legend>
-  <%= render_selected_cagalog_tags %>
-</fieldset>
+<div class="catalog-head">
+  <div class="catalog-tag-selected">
+    <fieldset class="box tabular" id="catalog_tags_selected">
+      <legend><%= l(:label_selected_tags)%></legend>
+      <%= render_selected_cagalog_tags %>
+    </fieldset>
+  </div>
+  <span class="catalog-btn-thumbnails">
+    thumbnails
+  </span>
+</div>
 
-<span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
+<span class="pagination top"><%= pagination_links_full @issue_pages, @issue_count %></span>
 <%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
   <%= render_catalog_issues %>
 <% end -%>
-<span class="pagination"><%= pagination_links_full @issue_pages, @issue_count %></span>
+<span class="pagination bottom"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
 <%= context_menu %>
 
