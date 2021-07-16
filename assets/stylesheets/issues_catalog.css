@@ -26,6 +26,10 @@
   background-image: url(/images/close_hl.png);
 }
 
+.catalog-select-operation {
+  padding-left: 15px;
+  margin-top: 10px;
+}
 
 .autoscroll thead {
   display: block;

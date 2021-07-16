@@ -78,6 +78,7 @@ class IssuesCatalogController < ApplicationController
 
   def make_select_filters
     @select_filters = []
+    @tags_operator = 'and'
     if @query.filters['category_id']
       category_ids = @query.filters['category_id'][:values]
       unless category_ids.nil?
@@ -86,10 +87,12 @@ class IssuesCatalogController < ApplicationController
         @select_filters <<= [:category_id, '=', [category_ids[0]]]
       end
     end
-    if @query.filters['tags']
+    tags_query = @query.filters['tags']
+    if tags_query
       # タグは複数選択できるので配列として取得
-      @select_tags = @query.filters['tags'][:values]
-      @select_filters <<= [:tags, '=', @select_tags]
+      @select_tags = tags_query[:values]
+      @tags_operator = tags_query[:operator] if tags_query[:operator]
+      @select_filters <<= [:tags, @tags_operator, @select_tags]
     end
   end
 

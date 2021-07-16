@@ -100,15 +100,29 @@ module IssuesCatalogHelper
   def render_selected_cagalog_tags
     content = ''.html_safe
     unless @select_tags.nil?
-      @select_tags.each_with_index do |t, i|
-        tag = @catalog_all_tags.detect { |tt| tt.name == t }
-        unless tag.nil?
-          content << content_tag(:span, " and ") if i > 0
-          content << render_catalog_link_tag(tag, show_count: true, del_btn_selected: true)
+      content << content_tag_push(:div, class: 'selected-tags') do |div_tags|
+        op = (@tags_operator == 'and') ? ' and ' : ' or '
+        @select_tags.each_with_index do |t, i|
+          tag = @catalog_all_tags.detect { |tt| tt.name == t }
+          unless tag.nil?
+            div_tags << content_tag(:span, op) if i > 0
+            div_tags << render_catalog_link_tag(tag, show_count: true, del_btn_selected: true)
+          end
+        end
+        div_tags << content_tag(:span, " : ")
+        div_tags << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
+      end
+      content << content_tag_push(:div, class: 'catalog-select-operation') do |div_op|
+        if @tags_operator == 'and'
+          div_op << content_tag(:span, l(:label_operator_and), class: 'selected')
+          div_op << content_tag(:span, " : ")
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('=')))
+        else
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and')))
+          div_op << content_tag(:span, " : ")
+          div_op << content_tag(:span, l(:label_operator_or), class: 'selected')
         end
       end
-      content << content_tag(:span, " : ")
-      content << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
     end
     content
   end
@@ -320,7 +334,7 @@ module IssuesCatalogHelper
       content = link_to_catalog_filter(name, filters, project_id: @project, catalog_history: name)
     end
     if options[:show_count]
-      if @catalog_selected_tags.any?
+      if @catalog_selected_tags.any? && @tags_operator == 'and'
         st = @catalog_selected_tags.detect { |t| t.name == name }
         count = st ? st.count : 0
       else
@@ -363,16 +377,13 @@ module IssuesCatalogHelper
       if f[0] == add_type
         unless f[2].include?(add_value)
           f[2] <<= add_value
-          # タグの複数選択時はアンド検索 
-          if add_type == :tags
-            f[1] = 'and'
-          end
         end
         is_add = true
       end
     end
     unless is_add
-      filters <<= [add_type, '=', add_value]
+      op = (add_type == :tags) ? @tags_operator : '='
+      filters <<= [add_type, op, add_value]
     end
     filters
   end
@@ -389,9 +400,23 @@ module IssuesCatalogHelper
             f[2].delete(f2)
           end
         end
-        if f[2].length < 1
+        if f[2].empty?
           filters.delete(f)
         end
+      end
+    end
+    filters
+  end
+
+  def make_filters_change_tag_operator(op)
+    if @select_filters.nil?
+      @select_filters = []
+    end
+    filters = Marshal.load(Marshal.dump(@select_filters))
+    is_add = false
+    filters.each do |f|
+      if f[0] == :tags
+        f[1] = op
       end
     end
     filters
