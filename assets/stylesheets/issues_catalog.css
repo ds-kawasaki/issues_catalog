@@ -69,6 +69,33 @@
 .catalog-issue-top a {
   margin-left: 10px;
 }
+td.preview {
+  position: relative;
+}
+.preview-description {
+  display: none;
+  position: absolute;
+  padding: 5px;
+  border-radius: 10px;
+  color: black;
+  background-color: #fff9c4;
+  transition: all 0.1s;
+}
+.preview-description::before {
+  content: '';
+  position: absolute;
+  top: 3%;
+  right: 97%;
+  border: 15px solid transparent;
+  border-top: 15px solid #fff9c4;
+  margin-left: -15px;
+  transform: rotate(90deg);
+}
+td.preview:hover .preview-description {
+  display: block;
+  top: 0px;
+  left: 30px;
+}
 
 
 .category-tab-contents {

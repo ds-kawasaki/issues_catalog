@@ -75,7 +75,11 @@ module IssuesCatalogHelper
                     preview = link_to(preview, 'file://' << val_okiba)
                   end
                 end
-                div_tr << content_tag(:td, preview, class: col_cf1.css_classes)
+                if issue.description?
+                  tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
+                  preview << content_tag(:div, tooltip, class: 'preview-description')
+                end
+                div_tr << content_tag(:td, preview, class: 'preview')
                 div_tr << "\n"
               end
               # tags
