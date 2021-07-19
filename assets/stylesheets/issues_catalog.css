@@ -34,10 +34,15 @@
   right: 0;
   top: 0;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  padding: 2px 4px;
+  border-radius: 20px;
+  padding: 2px 8px;
   margin: 20px 10px;
   cursor: pointer;
+  transition: all 0.1s;
+}
+.only-thumbnails {
+  color: floralwhite;
+  background-color: darkslategrey;
 }
 
 .catalog-select-operation {

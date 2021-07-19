@@ -136,6 +136,16 @@ $(function () {
     setCatalogTabOnLoad();
   };
 
+  // サムネイルオンリーボタン 
+  $('#catalog-btn-thumbnails').on('click', function () {
+    $(this).toggleClass('only-thumbnails');
+    // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
+    $('table.issues td.id').toggle();
+    $('table.issues td.subject').toggle();
+    $('table.issues td.tags').toggle();
+    $('.pagination.top').toggle();
+  });
+
   setupFromStorageOnLoad();
   setReseizeCallback();
 
