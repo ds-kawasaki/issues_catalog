@@ -46,7 +46,7 @@ $(function () {
     const cateTab = localStorage.getItem(localStorageKeyCategoryTab);
     if (!cateTab) { return; }
     const activeTab = $('#' + cateTab);
-    if (!activeTab) { return; }
+    if (!activeTab.length) { return; }
 
     $('.active-tab').removeClass('active-tab');
     activeTab.addClass('active-tab');
@@ -57,6 +57,7 @@ $(function () {
 
   const scrollHorizontal = (area, direction) => {
     const element = $(area);
+    if (!element.length) { return false; }
     const areaWidth = element.outerWidth();
     const scrollWidth = element.get(0).scrollWidth;
     const movableWidth = scrollWidth - areaWidth;
@@ -92,6 +93,7 @@ $(function () {
   //  メインカテゴリタブの左右スクロール可否調整
   const resizedCatalogTab = () => {
     const tabsArea = $('.tabs-area');
+    if (!tabsArea.length) { return; }
     const areaWidth = tabsArea.outerWidth();
     const scrollWidth = tabsArea.get(0).scrollWidth;
     const movableWidth = scrollWidth - areaWidth;
@@ -133,6 +135,16 @@ $(function () {
 
     setCatalogTabOnLoad();
   };
+
+  // サムネイルオンリーボタン 
+  $('#catalog-btn-thumbnails').on('click', function () {
+    $(this).toggleClass('only-thumbnails');
+    // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
+    $('table.issues td.id').toggle();
+    $('table.issues td.subject').toggle();
+    $('table.issues td.tags').toggle();
+    $('.pagination.top').toggle();
+  });
 
   setupFromStorageOnLoad();
   setReseizeCallback();

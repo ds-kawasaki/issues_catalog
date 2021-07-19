@@ -14,3 +14,6 @@ en:
   history_description: "History of Selection Tags"
   label_add_tag: "Add Tag"
   label_delete_tag: "Delete Tag"
+  label_operator_and: "Operator And"
+  label_operator_or: "Operator Or"
+  label_only_thumbnails: "Only Thumbnails"
