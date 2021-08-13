@@ -13,7 +13,7 @@ module IssuesCatalogHelper
     @select_tags.present? || @select_category.present?
   end
 
-  CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags]
+  CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags, :priority]
 
   MOVIE_EXTS = ['.avi', '.mp4', '.mov']
 
@@ -36,11 +36,13 @@ module IssuesCatalogHelper
             div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
               # id
               col_id = catalog_columns[:id]
+              col_priority = catalog_columns[:priority]
               unless col_id.nil?
                 div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
                   div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
                     div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
                     div_issue_top << link_to(col_id.value_object(issue), issue_path(issue))
+                    div_issue_top << content_tag(:span, col_priority.value_object(issue), class: 'catalog-issue-priority') unless col_priority.nil?
                     div_issue_top << link_to_context_menu
                   end
                 end
