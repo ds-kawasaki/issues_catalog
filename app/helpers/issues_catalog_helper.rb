@@ -124,9 +124,9 @@ module IssuesCatalogHelper
         if @tags_operator == 'and'
           div_op << content_tag(:span, l(:label_operator_and), class: 'selected')
           div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('=')))
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc'))
         else
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and')))
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc'))
           div_op << content_tag(:span, " : ")
           div_op << content_tag(:span, l(:label_operator_or), class: 'selected')
         end
@@ -318,7 +318,7 @@ module IssuesCatalogHelper
     filters = make_filters(:category_id, category.id)
     filters << [:status_id, 'o'] if options[:open_only]
 
-    content = link_to_catalog_filter(category.name, filters, project_id: @project)
+    content = link_to_catalog_filter(category.name, filters, project_id: @project, sort: 'priority:desc')
     if options[:show_count] && category.respond_to?(:count)
       content << content_tag('span', "(#{ category.count })", class: 'category-count')
     end
@@ -337,9 +337,9 @@ module IssuesCatalogHelper
     if options[:del_btn_selected]
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
       tag_name << name
-      content = link_to_catalog_filter(tag_name, filters, project_id: @project)
+      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc')
     else
-      content = link_to_catalog_filter(name, filters, project_id: @project, catalog_history: name)
+      content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name)
     end
     if options[:show_count]
       if @catalog_selected_tags.any? && @tags_operator == 'and'
