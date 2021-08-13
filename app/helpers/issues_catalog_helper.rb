@@ -9,6 +9,10 @@ module IssuesCatalogHelper
     content_tag(type, tags.reduce(:+), *option)
   end
 
+  def catalog_select_any?
+    @select_tags.present? || @select_category.present?
+  end
+
   CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags]
 
   MOVIE_EXTS = ['.avi', '.mp4', '.mov']

@@ -18,13 +18,15 @@
   </span>
 </div>
 
-<span class="pagination top"><%= pagination_links_full @issue_pages, @issue_count %></span>
-<%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
-  <%= render_catalog_issues %>
-<% end -%>
-<span class="pagination bottom"><%= pagination_links_full @issue_pages, @issue_count %></span>
+<% if catalog_select_any? %>
+  <span class="pagination top"><%= pagination_links_full @issue_pages, @issue_count %></span>
+  <%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
+    <%= render_catalog_issues %>
+  <% end -%>
+  <span class="pagination bottom"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
-<%= context_menu %>
+  <%= context_menu %>
+<% end -%>
 
 <script>
 const observer = lozad();
