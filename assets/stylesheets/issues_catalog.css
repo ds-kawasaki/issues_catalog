@@ -75,6 +75,9 @@ table.list td.id {
 table.list td.preview {
   position: relative;
 }
+table.list td.tags {
+  width: 300px;
+}
 .preview-description {
   display: none;
   position: absolute;
