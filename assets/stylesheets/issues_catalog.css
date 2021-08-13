@@ -50,27 +50,33 @@
   margin-top: 10px;
 }
 
-.autoscroll thead {
-  display: block;
-  /*visibility: hidden;*/
-}
-.autoscroll tbody {
+table.list tbody {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
 }
-.autoscroll tbody td {
+table.list td {
   display: block;
+}
+table.list td.id {
+  width: auto;
+  text-align: left;
 }
 .catalog-issue-top {
   display: inline-flex;
   align-items: center;
 }
 .catalog-issue-top a {
-  margin-left: 10px;
+  margin: 0em 0.6em;
 }
-td.preview {
+.catalog-issue-priority {
+  margin-right: 1em;
+}
+table.list td.preview {
   position: relative;
+}
+table.list td.tags {
+  width: 300px;
 }
 .preview-description {
   display: none;
