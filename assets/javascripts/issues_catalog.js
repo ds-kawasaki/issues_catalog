@@ -140,9 +140,9 @@ $(function () {
   $('#catalog-btn-thumbnails').on('click', function () {
     $(this).toggleClass('only-thumbnails');
     // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
-    $('table.issues td.id').toggle();
-    $('table.issues td.subject').toggle();
-    $('table.issues td.tags').toggle();
+    $('table.catalog-issues td.id').toggle();
+    $('table.catalog-issues td.subject').toggle();
+    $('table.catalog-issues td.tags').toggle();
     $('.pagination.top').toggle();
   });
 

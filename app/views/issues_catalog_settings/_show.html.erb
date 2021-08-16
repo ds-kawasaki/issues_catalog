@@ -1,11 +1,12 @@
 <% html_title l(:label_settings), l(:issues_catalog) %>
+<%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
 
 <fieldset class="box tabular" id="issues_catalog_manage_categories">
   <legend><%= l(:label_catalog_tag_categories)%></legend>
   <div><%= link_to l(:label_catalog_tag_category_new), new_project_catalog_tag_category_path(@project), :class => 'icon icon-add' %></div>
   <% catalog_tag_categories = @project.catalog_tag_categories %>
   <% unless catalog_tag_categories.empty? %>
-    <table class="list">
+    <table class="list catalog-tag-categories">
       <thead><tr>
         <th><%= l(:label_catalog_tag_categories) %></th>
         <th><%= l(:label_optional_description) %></th>
@@ -33,7 +34,7 @@
   <legend><%= l(:label_tags)%></legend>
   <% tags = @project.catalog_tags %>
   <% unless tags.empty? %>
-    <table class="list">
+    <table class="list catalog-tags">
       <thead><tr>
         <th><%= l(:field_name) %></th>
         <th><%= l(:label_catalog_tag_categories) %></th>

@@ -26,7 +26,7 @@ module IssuesCatalogHelper
     html_text << query_columns_hidden_tags(@query)
     html_text << "\n"
     html_text << content_tag_push(:div, class: 'autoscroll') do |div_autoscroll|
-      div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' << @query.css_classes) do |div_table|
+      div_autoscroll << content_tag_push(:table, class: 'list catalog-issues odd-even' << @query.css_classes) do |div_table|
         div_table << content_tag(:thead)
         div_table << content_tag_push(:tbody) do |div_tbody|
           grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|

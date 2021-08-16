@@ -57,15 +57,16 @@
   margin-left: 1em; 
 }
 
-table.list tbody {
+
+table.catalog-issues tbody {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
 }
-table.list td {
+table.catalog-issues td {
   display: block;
 }
-table.list td.id {
+table.catalog-issues td.id {
   width: auto;
   text-align: left;
 }
@@ -79,10 +80,10 @@ table.list td.id {
 .catalog-issue-priority {
   margin-right: 1em;
 }
-table.list td.preview {
+table.catalog-issues td.preview {
   position: relative;
 }
-table.list td.tags {
+table.catalog-issues td.tags {
   width: 300px;
 }
 .preview-description {
@@ -108,6 +109,13 @@ td.preview:hover .preview-description {
   display: block;
   top: 0px;
   left: 30px;
+}
+
+table.catalog-tag-categories {
+  width: max-content;
+}
+table.catalog-tags {
+  width: max-content;
 }
 
 
