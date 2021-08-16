@@ -7,7 +7,7 @@
   <div class="box tabular">
     <p><%= f.text_field :name, :size => 60, :required => true %></p>
     <p><%= f.select :catalog_tag_category_ids,
-                @project.catalog_tag_categories.collect { |c| [ c.name, c.id ] },
+                select_items_catalog_tag_categories,
                 { :include_blank => true, :label => :label_catalog_tag_category }, { :multiple => true } %></p>
   </div>
   <%= submit_tag l(:button_save) %>

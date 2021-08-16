@@ -17,6 +17,9 @@
     <%= l(:label_only_thumbnails) %>
   </span>
 </div>
+<div class="catalog-always-selector">
+  <%= render_catalog_tag_always %>
+</div>
 
 <% if catalog_select_any? %>
   <span class="pagination top"><%= pagination_links_full @issue_pages, @issue_count %></span>

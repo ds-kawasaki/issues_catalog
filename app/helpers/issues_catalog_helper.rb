@@ -208,6 +208,20 @@ module IssuesCatalogHelper
     ret_content
   end
 
+  def render_catalog_tag_always
+    ret_content = ''.html_safe
+    tmp_tags = ActsAsTaggableOn::Tag
+        .includes(:catalog_relation_tag_categories)
+        .where(catalog_relation_tag_categories: {catalog_tag_category_id: CatalogTagCategory.always.id})
+        .distinct
+        .order('tags.name')
+    tmp_tags.each do |tag|
+      ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+    end
+
+    ret_content
+  end
+
   def render_catalog_tags
     tags = @catalog_all_tags
 

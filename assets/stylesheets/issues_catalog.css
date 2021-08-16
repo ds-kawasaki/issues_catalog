@@ -28,6 +28,7 @@
 
 .catalog-head {
   position: relative;
+  margin-left: 1.5em;
 }
 .catalog-btn-thumbnails {
   position: absolute;
@@ -48,6 +49,12 @@
 .catalog-select-operation {
   padding-left: 15px;
   margin-top: 10px;
+}
+
+.catalog-always-selector {
+  margin-top: -20px;
+  margin-bottom: 10px; 
+  margin-left: 1em; 
 }
 
 table.list tbody {
