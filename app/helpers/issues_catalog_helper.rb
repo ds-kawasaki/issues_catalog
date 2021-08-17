@@ -181,8 +181,6 @@ module IssuesCatalogHelper
       contents_areas << content_tag(:div, history, class: 'category-content')
       div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
         div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
-        div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')
-        div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-r-btn')
       end
       div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
     end
