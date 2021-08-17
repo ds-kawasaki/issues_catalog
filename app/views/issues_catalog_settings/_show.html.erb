@@ -48,8 +48,6 @@
             <td class="buttons">
               <%= link_to l(:button_edit), edit_project_catalog_tag_path(tag),
                     class: 'icon icon-edit' %>
-              <%= link_to l(:button_delete), tags_path(ids: tag), method: :delete,
-                    confirm: l(:text_are_you_sure), class: 'icon icon-del' %>
             </td>
           </tr>
         <% end %>
