@@ -6,6 +6,12 @@
   <%= render :partial => 'catalog_sidebar' %>
 <% end %>
 
+<div class="catalog-search-tag">
+  <%= form_with(url: project_issues_catalog_path(@project), method: :get, local: true) do |f| %>
+    <%= f.label :tags, l(:label_search_tag) %>
+    <%= f.text_field :tags, id: "catalog-input-search-tag" %>
+  <% end %>
+</div>
 <div class="catalog-head">
   <div class="catalog-tag-selected">
     <fieldset class="box tabular" id="catalog_tags_selected">

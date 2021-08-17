@@ -83,6 +83,9 @@ $(function () {
     $('.pagination.top').toggle();
   });
 
+  // 検索テキストボックスから初期フォーカスを外す
+  $('#catalog-input-search-tag').blur();
+
   setupFromStorageOnLoad();
 
 });
