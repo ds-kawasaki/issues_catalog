@@ -83,10 +83,36 @@ $(function () {
     $('.pagination.top').toggle();
   });
 
-  // 検索テキストボックスから初期フォーカスを外す
-  $('#catalog-input-search-tag').blur();
+  // タグ検索関連
+  const setupSearchTag = () => {
+    var projectName = '';
+    const tmpProjectName = $('body').attr('class').match(/project-([\w-]+)/);
+    if (tmpProjectName) {
+      projectName = tmpProjectName[1];
+    }
+    const searthTag = $('#catalog-input-search-tag');
+    searthTag.blur(); // 検索テキストボックスから初期フォーカスを外す
+    searthTag.autocomplete({
+      source: function(request, response) {
+        $.ajax({
+          url: '/issue_tags/auto_complete/' + projectName,
+          type: 'GET',
+          dataType: 'json',
+          data: {q: request.term},
+          success: function(choices) {
+            response(choices);
+          },
+          error: function(xhr, ts, err){
+            response(['']);
+          }
+        });
+      },
+      minLength: 1,
+    });
+  };
 
   setupFromStorageOnLoad();
+  setupSearchTag();
 
 });
 
