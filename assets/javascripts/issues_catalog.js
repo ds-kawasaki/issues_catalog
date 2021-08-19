@@ -107,6 +107,20 @@ $(function () {
           }
         });
       },
+      select: function(event, ui) {
+        if (ui.item && ui.item.value) {
+          console.log(ui.item.value);
+          const form = $('#form-search-tag');
+          const hiddenValue = $(':hidden[name="v[tags][]"]');
+          if (hiddenValue.length === 0) {
+            $('<input>').attr({'type':'hidden', 'name':'f[]'}).val('tags').appendTo(form);
+            $('<input>').attr({'type':'hidden', 'name':'op[tags]'}).val('and').appendTo(form);
+          }
+          $('<input>').attr({'type':'hidden', 'name':'v[tags][]'}).val(ui.item.value).appendTo(form);
+          $('<input>').attr({'type':'hidden', 'name':'catalog_history'}).val(ui.item.value).appendTo(form);
+          form.submit();
+        }
+      },
       minLength: 1,
     });
   };
