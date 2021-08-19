@@ -31,6 +31,20 @@ class CatalogTagCategory < ActiveRecord::Base
     self.status < 100
   end
 
+  def self.always
+    always_category = CatalogTagCategory.find(0)
+    if always_category.nil?
+      always_category = CatalogTagCategory.create(id: 0,
+          name: '常時表示',
+          description: '常に表示するカテゴリ',
+          project_id: 0,
+          created_at: '2021-8-16',
+          updated_at: '2021-8-16')
+      raise 'Unable to create the always catalog tag category.' if always_category.new_record?
+    end
+    always_category
+  end
+
   def <=>(tag_category)
     name <=> tag_category.name
   end

@@ -17,3 +17,4 @@ ja:
   label_operator_and: "and検索"
   label_operator_or: "or検索"
   label_only_thumbnails: "サムネイルのみ"
+  label_search_tag: "タグ検索"

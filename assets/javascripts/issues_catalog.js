@@ -55,69 +55,6 @@ $(function () {
   };
 
 
-  const scrollHorizontal = (area, direction) => {
-    const element = $(area);
-    if (!element.length) { return false; }
-    const areaWidth = element.outerWidth();
-    const scrollWidth = element.get(0).scrollWidth;
-    const movableWidth = scrollWidth - areaWidth;
-    const oneScrollValue = Math.min(movableWidth, areaWidth / 2);
-    const current = element.get(0).scrollLeft;
-    let newValue, isLimit;
-    if (direction < 0) {
-      newValue = Math.max(current - oneScrollValue, 0);
-      isLimit = newValue === 0;
-    } else {
-      newValue = Math.min(current + oneScrollValue, movableWidth);
-      isLimit = newValue === movableWidth;
-    }
-    element.animate({
-      scrollLeft: newValue
-    });
-    return isLimit;
-  };
-  //  メインカテゴリタブの左右スクロールボタンクリック時
-  $('#tabs-scrl-l-btn').on('click', function () {
-    if (scrollHorizontal('.tabs-area', -1)) {
-      $(this).hide();
-    }
-    $('#tabs-scrl-r-btn').show();
-  });
-  $('#tabs-scrl-r-btn').on('click', function () {
-    if (scrollHorizontal('.tabs-area', 1)) {
-      $(this).hide();
-    }
-    $('#tabs-scrl-l-btn').show();
-  });
-
-  //  メインカテゴリタブの左右スクロール可否調整
-  const resizedCatalogTab = () => {
-    const tabsArea = $('.tabs-area');
-    if (!tabsArea.length) { return; }
-    const areaWidth = tabsArea.outerWidth();
-    const scrollWidth = tabsArea.get(0).scrollWidth;
-    const movableWidth = scrollWidth - areaWidth;
-    if (movableWidth > 0) {
-      $('.tabs-scrl-btn').show();
-    } else {
-      $('.tabs-scrl-btn').hide();
-    }
-  };
-
-  //  読み込み時とウィンドウリサイズ時のコールバック登録
-  const setReseizeCallback = () => {
-    let timeoutID = 0;
-    const delay = 250;
-    window.addEventListener('resize', () => {
-      if (timeoutID != 0) {
-        clearTimeout(timeoutID);
-      }
-      timeoutID = setTimeout(resizedCatalogTab, delay);
-    });
-    setTimeout(resizedCatalogTab, 0); //  初回
-  };
-
-
   const setupFromStorageOnLoad = () => {
     if (!storageAvailable('localStorage')) { return; }
 
@@ -140,14 +77,56 @@ $(function () {
   $('#catalog-btn-thumbnails').on('click', function () {
     $(this).toggleClass('only-thumbnails');
     // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
-    $('table.issues td.id').toggle();
-    $('table.issues td.subject').toggle();
-    $('table.issues td.tags').toggle();
+    $('table.catalog-issues td.id').toggle();
+    $('table.catalog-issues td.subject').toggle();
+    $('table.catalog-issues td.tags').toggle();
     $('.pagination.top').toggle();
   });
 
+  // タグ検索関連
+  const setupSearchTag = () => {
+    var projectName = '';
+    const tmpProjectName = $('body').attr('class').match(/project-([\w-]+)/);
+    if (tmpProjectName) {
+      projectName = tmpProjectName[1];
+    }
+    const searthTag = $('#catalog-input-search-tag');
+    searthTag.blur(); // 検索テキストボックスから初期フォーカスを外す
+    searthTag.autocomplete({
+      source: function(request, response) {
+        $.ajax({
+          url: '/issue_tags/auto_complete/' + projectName,
+          type: 'GET',
+          dataType: 'json',
+          data: {q: request.term},
+          success: function(choices) {
+            response(choices);
+          },
+          error: function(xhr, ts, err){
+            response(['']);
+          }
+        });
+      },
+      select: function(event, ui) {
+        if (ui.item && ui.item.value) {
+          console.log(ui.item.value);
+          const form = $('#form-search-tag');
+          const hiddenValue = $(':hidden[name="v[tags][]"]');
+          if (hiddenValue.length === 0) {
+            $('<input>').attr({'type':'hidden', 'name':'f[]'}).val('tags').appendTo(form);
+            $('<input>').attr({'type':'hidden', 'name':'op[tags]'}).val('and').appendTo(form);
+          }
+          $('<input>').attr({'type':'hidden', 'name':'v[tags][]'}).val(ui.item.value).appendTo(form);
+          $('<input>').attr({'type':'hidden', 'name':'catalog_history'}).val(ui.item.value).appendTo(form);
+          form.submit();
+        }
+      },
+      minLength: 1,
+    });
+  };
+
   setupFromStorageOnLoad();
-  setReseizeCallback();
+  setupSearchTag();
 
 });
 

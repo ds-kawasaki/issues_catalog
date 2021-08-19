@@ -13,7 +13,10 @@ module IssuesCatalog
       module InstanceMethods
         def catalog_tag_category_names(project_id)
           if self.catalog_tag_categories.any?
-            self.catalog_tag_categories.map { |i| i.name if i.is_active? && i.project_id == project_id }.join(', ')
+            always = CatalogTagCategory.always
+            self.catalog_tag_categories.map do |i|
+              i.name if i.is_active? && (i.project_id == project_id || i.id == always.id)
+            end.join(', ')
           else
             ""
           end

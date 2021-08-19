@@ -26,7 +26,7 @@ module IssuesCatalogHelper
     html_text << query_columns_hidden_tags(@query)
     html_text << "\n"
     html_text << content_tag_push(:div, class: 'autoscroll') do |div_autoscroll|
-      div_autoscroll << content_tag_push(:table, class: 'list issues odd-even' << @query.css_classes) do |div_table|
+      div_autoscroll << content_tag_push(:table, class: 'list catalog-issues odd-even' << @query.css_classes) do |div_table|
         div_table << content_tag(:thead)
         div_table << content_tag_push(:tbody) do |div_tbody|
           grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
@@ -181,8 +181,6 @@ module IssuesCatalogHelper
       contents_areas << content_tag(:div, history, class: 'category-content')
       div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
         div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
-        div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-l-btn')
-        div_tab_wrap << link_to('', '#', class: 'tabs-scrl-btn', id: 'tabs-scrl-r-btn')
       end
       div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
     end
@@ -205,6 +203,20 @@ module IssuesCatalogHelper
         end
       end
     end
+    ret_content
+  end
+
+  def render_catalog_tag_always
+    ret_content = ''.html_safe
+    tmp_tags = ActsAsTaggableOn::Tag
+        .includes(:catalog_relation_tag_categories)
+        .where(catalog_relation_tag_categories: {catalog_tag_category_id: CatalogTagCategory.always.id})
+        .distinct
+        .order('tags.name')
+    tmp_tags.each do |tag|
+      ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+    end
+
     ret_content
   end
 

@@ -1,4 +1,4 @@
-get '/projects/:project_id/issues_catalog', to: 'issues_catalog#index'
+get '/projects/:project_id/issues_catalog', to: 'issues_catalog#index', as: 'project_issues_catalog'
 
 get 'issues_catalog/add_tag', :to => 'issues_catalog#add_tag', :as => 'catalog_add_tag'
 get 'issues_catalog/delete_tag', :to => 'issues_catalog#delete_tag', :as => 'catalog_delete_tag'
