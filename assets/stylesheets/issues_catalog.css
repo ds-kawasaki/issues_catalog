@@ -80,6 +80,9 @@ table.catalog-issues td.id {
 .catalog-issue-priority {
   margin-right: 1em;
 }
+table.catalog-issues td.subject {
+  width: 300px;
+}
 table.catalog-issues td.preview {
   position: relative;
 }
