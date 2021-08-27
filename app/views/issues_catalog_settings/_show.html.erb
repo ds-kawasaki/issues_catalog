@@ -36,6 +36,9 @@
   <% unless tags.empty? %>
     <table class="list catalog-tags">
       <thead><tr>
+        <th class="checkbox hide-when-print">
+          <%= check_box_tag('check_all', '', false, :class => 'toggle-selection', :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}") %>
+        </th>
         <th><%= l(:field_name) %></th>
         <th><%= l(:label_catalog_tag_categories) %></th>
         <th></th>
@@ -43,11 +46,11 @@
       <tbody>
         <% tags.each do |tag| %>
           <tr class="issue">
+            <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, id: nil) %></td>
             <td class="name"><%= render_catalog_link_tag(tag) %></td>
             <td class="category"><%= tag.catalog_tag_category_names(@project.id) %></td>
             <td class="buttons">
-              <%= link_to l(:button_edit), edit_project_catalog_tag_path(tag),
-                    class: 'icon icon-edit' %>
+              <%= link_to(l(:button_edit), edit_project_catalog_tag_path(tag), class: 'icon icon-edit') %>
             </td>
           </tr>
         <% end %>
