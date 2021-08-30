@@ -109,7 +109,7 @@ $(function () {
       },
       select: function(event, ui) {
         if (ui.item && ui.item.value) {
-          console.log(ui.item.value);
+          // console.log(ui.item.value);
           const form = $('#form-search-tag');
           const hiddenValue = $(':hidden[name="v[tags][]"]');
           if (hiddenValue.length === 0) {

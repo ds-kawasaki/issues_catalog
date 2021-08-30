@@ -18,3 +18,6 @@ en:
   label_operator_or: "Operator Or"
   label_only_thumbnails: "Only Thumbnails"
   label_search_tag: "search tag"
+  label_bulk_edit_tag_categories: "Bulk Edit Tag Categories"
+  label_btn_bulk_add: "Bulk Add"
+  label_btn_bulk_delete: "Bulk Delete"

@@ -1,5 +1,6 @@
 <% html_title l(:label_settings), l(:issues_catalog) %>
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('issues_catalog_settings', plugin: 'issues_catalog') %>
 
 <fieldset class="box tabular" id="issues_catalog_manage_categories">
   <legend><%= l(:label_catalog_tag_categories)%></legend>
@@ -31,7 +32,7 @@
 </fieldset>
 
 <fieldset class="box tabular" id="issues_catalog_manage_tags">
-  <legend><%= l(:label_tags)%></legend>
+  <legend><%= l(:label_tags) %></legend>
   <% tags = @project.catalog_tags %>
   <% unless tags.empty? %>
     <table class="list catalog-tags">
@@ -56,6 +57,18 @@
         <% end %>
       </tbody>
     </table>
+    <fieldset class="box tabular">
+      <legend><%= l(:label_bulk_edit_tag_categories) %></legend>
+      <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-categories') do |form| %>
+        <%= hidden_field_tag 'project_id', @project.id %>
+        <%= error_messages_for 'catalog_tag' %>
+        <%= form.select :catalog_tag_category_ids,
+                select_items_catalog_tag_categories,
+                { label: :label_catalog_tag_category }, { multiple: true, id: 'select-catalog-tag-categories' } %>
+        <%= form.button l(:label_btn_bulk_add), type: 'button', name: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
+        <%= form.button l(:label_btn_bulk_delete), type: 'button', name: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
+      <% end %>
+    </fieldset>
   <% else %>
     <p class="nodata"><%= l :label_no_data %></p>
   <% end %>
