@@ -50,6 +50,9 @@
   padding-left: 15px;
   margin-top: 10px;
 }
+.catalog-select-operation .selected {
+  font-weight: bolder;
+}
 
 .catalog-always-selector {
   margin-top: -20px;
