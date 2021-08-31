@@ -61,12 +61,13 @@
       <legend><%= l(:label_bulk_edit_tag_categories) %></legend>
       <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-categories') do |form| %>
         <%= hidden_field_tag 'project_id', @project.id %>
+        <%= hidden_field_tag 'operate', 'none' %>
         <%= error_messages_for 'catalog_tag' %>
         <%= form.select :catalog_tag_category_ids,
                 select_items_catalog_tag_categories,
                 { label: :label_catalog_tag_category }, { multiple: true, id: 'select-catalog-tag-categories' } %>
-        <%= form.button l(:label_btn_bulk_add), type: 'button', name: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
-        <%= form.button l(:label_btn_bulk_delete), type: 'button', name: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
+        <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
+        <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
       <% end %>
     </fieldset>
   <% else %>

@@ -26,9 +26,26 @@ class CatalogTagsController < ApplicationController
   end
 
   def bulk_update
-    # if params[:op_add]
-    # elsif params[:op_del]
-    # end
+    operate = params[:operate]
+    return if operate.blank? || operate == 'none'
+
+    sabun = params[:catalog_tag_category_ids].reject(&:blank?).map(&:to_i)
+
+    ActsAsTaggableOn::Tag.where(id: params[:ids]).each do |tag|
+      old_list = tag.catalog_tag_category_ids.to_s
+
+      case operate
+      when 'op_add'
+        tag.catalog_tag_category_ids |= sabun
+      when 'op_del'
+        tag.catalog_tag_category_ids -= sabun
+      end
+
+      new_list = tag.catalog_tag_category_ids.to_s
+      unless old_list == new_list
+        tag.save
+      end
+    end
 
     redirect_to_settings_in_projects
   end
