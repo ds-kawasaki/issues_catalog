@@ -21,6 +21,10 @@
 .catalog-tag-label a {
   color: inherit;
 }
+.catalog-count-zero {
+  color: #666;
+  background-color: #ddd;
+}
 
 .catalog-icon-clear-selected {
   background-image: url(/images/close_hl.png);

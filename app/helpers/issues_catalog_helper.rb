@@ -355,6 +355,7 @@ module IssuesCatalogHelper
   # タグのリンク
   def render_catalog_link_tag(tag, options = {})
     name = tag.name
+    tag_class = 'catalog-tag-label'
     filters = options[:del_btn_selected] ? make_minus_filters(:tags, name) : make_filters(:tags, name)
     filters << [:status_id, 'o'] if options[:open_only]
 
@@ -374,9 +375,12 @@ module IssuesCatalogHelper
         count = at ? at.count : 0
       end
       content << content_tag('span', "(#{count})", class: 'tag-count')
+      if count == 0
+        tag_class << ' catalog-count-zero'
+      end
     end
 
-    content_tag 'span', content, class: 'catalog-tag-label'
+    content_tag 'span', content, class: tag_class
   end
 
   # link_to_filterのコントローラー違い 
