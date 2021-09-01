@@ -1,5 +1,6 @@
 <% html_title l(:label_settings), l(:issues_catalog) %>
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('issues_catalog_settings', plugin: 'issues_catalog') %>
 
 <fieldset class="box tabular" id="issues_catalog_manage_categories">
   <legend><%= l(:label_catalog_tag_categories)%></legend>
@@ -23,6 +24,12 @@
           </td>
         </tr>
       <% end %>
+      <tr>
+        <td class="name"><%= CatalogTagCategory.always[:name] %></td>
+        <td class="description"><%= CatalogTagCategory.always[:description] %></td>
+        <td class="buttons">
+        </td>
+      </tr>
       </tbody>
     </table>
   <% else %>
@@ -31,11 +38,14 @@
 </fieldset>
 
 <fieldset class="box tabular" id="issues_catalog_manage_tags">
-  <legend><%= l(:label_tags)%></legend>
+  <legend><%= l(:label_tags) %></legend>
   <% tags = @project.catalog_tags %>
   <% unless tags.empty? %>
     <table class="list catalog-tags">
       <thead><tr>
+        <th class="checkbox hide-when-print">
+          <%= check_box_tag('check_all', '', false, :class => 'toggle-selection', :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}") %>
+        </th>
         <th><%= l(:field_name) %></th>
         <th><%= l(:label_catalog_tag_categories) %></th>
         <th></th>
@@ -43,16 +53,29 @@
       <tbody>
         <% tags.each do |tag| %>
           <tr class="issue">
+            <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, id: nil) %></td>
             <td class="name"><%= render_catalog_link_tag(tag) %></td>
             <td class="category"><%= tag.catalog_tag_category_names(@project.id) %></td>
             <td class="buttons">
-              <%= link_to l(:button_edit), edit_project_catalog_tag_path(tag),
-                    class: 'icon icon-edit' %>
+              <%= link_to(l(:button_edit), edit_project_catalog_tag_path(tag), class: 'icon icon-edit') %>
             </td>
           </tr>
         <% end %>
       </tbody>
     </table>
+    <fieldset class="box tabular">
+      <legend><%= l(:label_bulk_edit_tag_categories) %></legend>
+      <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-categories') do |form| %>
+        <%= hidden_field_tag 'project_id', @project.id %>
+        <%= hidden_field_tag 'operate', 'none' %>
+        <%= error_messages_for 'catalog_tag' %>
+        <%= form.select :catalog_tag_category_ids,
+                select_items_catalog_tag_categories,
+                { label: :label_catalog_tag_category }, { multiple: true, id: 'select-catalog-tag-categories' } %>
+        <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
+        <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
+      <% end %>
+    </fieldset>
   <% else %>
     <p class="nodata"><%= l :label_no_data %></p>
   <% end %>

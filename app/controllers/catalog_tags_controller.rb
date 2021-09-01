@@ -1,7 +1,7 @@
 class CatalogTagsController < ApplicationController
-  before_action :find_project_by_project_id, only: [:edit, :update]
+  before_action :find_project_by_project_id, only: [:edit, :update, :bulk_update]
   before_action :find_tag, only: [:edit, :update]
-  accept_api_auth :update
+  accept_api_auth :update, :bulk_update
 
 
   def edit
@@ -23,6 +23,31 @@ class CatalogTagsController < ApplicationController
         format.api { render_validation_errors(@catalog_tag) }
       end
     end
+  end
+
+  def bulk_update
+    operate = params[:operate]
+    return if operate.blank? || operate == 'none'
+
+    sabun = params[:catalog_tag_category_ids].reject(&:blank?).map(&:to_i)
+
+    ActsAsTaggableOn::Tag.where(id: params[:ids]).each do |tag|
+      old_list = tag.catalog_tag_category_ids.to_s
+
+      case operate
+      when 'op_add'
+        tag.catalog_tag_category_ids |= sabun
+      when 'op_del'
+        tag.catalog_tag_category_ids -= sabun
+      end
+
+      new_list = tag.catalog_tag_category_ids.to_s
+      unless old_list == new_list
+        tag.save
+      end
+    end
+
+    redirect_to_settings_in_projects
   end
 
   private

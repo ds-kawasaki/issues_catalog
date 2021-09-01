@@ -21,6 +21,8 @@ class IssuesCatalogController < ApplicationController
     @issue_pages = Paginator.new @issue_count, per_page_option, params['page']
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
+    @select_mode = params['sm'] || 'one'
+
     make_select_filters
     make_catalog_all_tags
     make_catalog_selected_tags
@@ -78,7 +80,7 @@ class IssuesCatalogController < ApplicationController
 
   def make_select_filters
     @select_filters = []
-    @tags_operator = 'and'
+    @tags_operator = '='
     if @query.filters['category_id']
       category_ids = @query.filters['category_id'][:values]
       unless category_ids.nil?

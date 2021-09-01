@@ -123,12 +123,22 @@ module IssuesCatalogHelper
         div_tags << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
       end
       content << content_tag_push(:div, class: 'catalog-select-operation') do |div_op|
-        if @tags_operator == 'and'
+        if @select_mode == 'one'
+          div_op << content_tag(:span, l(:label_operator_one), class: 'selected')
+          div_op << content_tag(:span, " : ")
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc', sm: 'and'))
+          div_op << content_tag(:span, " : ")
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'or'))
+        elsif @tags_operator == 'and'
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_one), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'one'))
+          div_op << content_tag(:span, " : ")
           div_op << content_tag(:span, l(:label_operator_and), class: 'selected')
           div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc'))
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'or'))
         else
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc'))
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_one), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'one'))
+          div_op << content_tag(:span, " : ")
+          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc', sm: 'and'))
           div_op << content_tag(:span, " : ")
           div_op << content_tag(:span, l(:label_operator_or), class: 'selected')
         end
@@ -345,15 +355,16 @@ module IssuesCatalogHelper
   # タグのリンク
   def render_catalog_link_tag(tag, options = {})
     name = tag.name
+    tag_class = 'catalog-tag-label'
     filters = options[:del_btn_selected] ? make_minus_filters(:tags, name) : make_filters(:tags, name)
     filters << [:status_id, 'o'] if options[:open_only]
 
     if options[:del_btn_selected]
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
       tag_name << name
-      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc')
+      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc', sm: @select_mode)
     else
-      content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name)
+      content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name, sm: @select_mode)
     end
     if options[:show_count]
       if @catalog_selected_tags.any? && @tags_operator == 'and'
@@ -364,9 +375,12 @@ module IssuesCatalogHelper
         count = at ? at.count : 0
       end
       content << content_tag('span', "(#{count})", class: 'tag-count')
+      if count == 0
+        tag_class << ' catalog-count-zero'
+      end
     end
 
-    content_tag 'span', content, class: 'catalog-tag-label'
+    content_tag 'span', content, class: tag_class
   end
 
   # link_to_filterのコントローラー違い 
@@ -397,8 +411,12 @@ module IssuesCatalogHelper
     is_add = false
     filters.each do |f|
       if f[0] == add_type
-        unless f[2].include?(add_value)
-          f[2] <<= add_value
+        if @select_mode == 'one'
+          f[2] = add_value
+        else
+          unless f[2].include?(add_value)
+            f[2] <<= add_value
+          end
         end
         is_add = true
       end
@@ -435,7 +453,6 @@ module IssuesCatalogHelper
       @select_filters = []
     end
     filters = Marshal.load(Marshal.dump(@select_filters))
-    is_add = false
     filters.each do |f|
       if f[0] == :tags
         f[1] = op
