@@ -17,6 +17,7 @@
     <% end %>
     <%= form.hidden_field 'set_filter', value: '1' %>
     <%= form.hidden_field 'sort', value: 'priority:desc' %>
+    <%= form.hidden_field 'sm', value: @select_mode %>
     <%= form.label :search_input, l(:label_search_tag) << ':' %>
     <%= form.text_field :search_input, id: "catalog-input-search-tag" %>
     <%= form.submit '', disabled: true, style: 'display: none' %>
@@ -46,6 +47,8 @@
 
   <%= context_menu %>
 <% end -%>
+
+<button id="btn-scroll-to-top">≫</button>
 
 <script>
 const observer = lozad();
