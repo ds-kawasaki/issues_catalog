@@ -111,10 +111,14 @@ $(function () {
         if (ui.item && ui.item.value) {
           // console.log(ui.item.value);
           const form = $('#form-search-tag');
-          const hiddenValue = $(':hidden[name="v[tags][]"]');
+          const hiddenValue = form.find('input:hidden[name=v\\[tags\\]\\[\\]]');
+          const selectMode = form.find('input:hidden[name=sm]').val();
           if (hiddenValue.length === 0) {
             $('<input>').attr({'type':'hidden', 'name':'f[]'}).val('tags').appendTo(form);
-            $('<input>').attr({'type':'hidden', 'name':'op[tags]'}).val('and').appendTo(form);
+            $('<input>').attr({'type':'hidden', 'name':'op[tags]'}).val('=').appendTo(form);
+          }
+          if (selectMode === 'one' && hiddenValue) {
+            hiddenValue.remove();
           }
           $('<input>').attr({'type':'hidden', 'name':'v[tags][]'}).val(ui.item.value).appendTo(form);
           $('<input>').attr({'type':'hidden', 'name':'catalog_history'}).val(ui.item.value).appendTo(form);
