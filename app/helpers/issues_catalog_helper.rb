@@ -361,14 +361,18 @@ module IssuesCatalogHelper
   def render_catalog_link_tag(tag, options = {})
     name = tag.name
     tag_class = 'catalog-tag-label'
-    filters = options[:del_btn_selected] ? make_minus_filters(:tags, name) : make_filters(:tags, name)
-    filters << [:status_id, 'o'] if options[:open_only]
 
     if options[:del_btn_selected]
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
       tag_name << name
-      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc', sm: @select_mode)
+      tmp_sm = @select_mode
+      filters = make_minus_filters(:tags, name)
+      tmp_sm = 'one' if filters.blank?
+      filters << [:status_id, 'o'] if options[:open_only]
+      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc', sm: tmp_sm)
     else
+      filters = make_filters(:tags, name)
+      filters << [:status_id, 'o'] if options[:open_only]
       content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name, sm: @select_mode)
     end
     if options[:show_count]
