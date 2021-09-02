@@ -44,10 +44,11 @@
     <%= render_catalog_issues %>
   <% end -%>
   <span class="pagination bottom"><%= pagination_links_full @issue_pages, @issue_count %></span>
-  <button id="btn-scroll-to-top">≫</button>
 
   <%= context_menu %>
 <% end -%>
+
+<button id="btn-scroll-to-top">≫</button>
 
 <script>
 const observer = lozad();
