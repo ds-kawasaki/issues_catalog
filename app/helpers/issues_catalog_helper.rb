@@ -19,9 +19,9 @@ module IssuesCatalogHelper
 
   def render_catalog_issues
     catalog_columns = CATALOG_COLUMN_NAMES.collect do |col|
-       [col, @query.available_columns.detect { |c| c.name == col }]
+      [col, @query.available_columns.detect { |c| c.name == col }]
     end.to_h
-  
+
     html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
     html_text << query_columns_hidden_tags(@query)
     html_text << "\n"
@@ -66,13 +66,17 @@ module IssuesCatalogHelper
                 val_okiba[-1] = '' if val_okiba[-1] == '"'
                 preview = ''.html_safe
                 if MOVIE_EXTS.include?(File.extname(val_preview))
-                  preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'data-src': get_visuals_path(val_preview), size: '300x300', controls: true, autoplay: true, loop: true, preload: 'none', class: 'lozad')
+                  preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                       'data-src': get_visuals_path(val_preview), size: '300x300',
+                                       controls: true, autoplay: true, muted: true, loop: true, preload: 'none', class: 'lozad')
                 else
-                  preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'data-src': get_visuals_path(val_preview), size: '300x300', class: 'lozad')
+                  preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                       'data-src': get_visuals_path(val_preview), size: '300x300',
+                                        class: 'lozad')
                 end
                 unless val_okiba.empty?
                   if File.extname(val_okiba) != ''
-                    preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank')
+                    preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank', rel: 'noopener')
                   else
                     if val_okiba.start_with?('Q:', 'q:')
                       val_okiba.slice!(0, 2)
@@ -249,9 +253,10 @@ module IssuesCatalogHelper
     content << content_tag(:h3, content_h3)
 
     content << render_catalog_tags_list(tags, {
-      show_count: true,
+                                          show_count: true,
       open_only: (RedmineTags.settings[:issues_open_only].to_i == 1),
-      style: RedmineTags.settings[:issues_sidebar].to_sym })
+      style: RedmineTags.settings[:issues_sidebar].to_sym
+                                        })
 
     content_tag :div, content, class: "catalog-selector-tags"
   end
@@ -278,8 +283,8 @@ module IssuesCatalogHelper
         unless !@select_tags.nil? && @select_tags.include?(tag.name)
           content << ' '.html_safe <<
           content_tag(item_el, render_catalog_link_tag(tag, options),
-                      { class: "tag-nube-#{ weight }",
-                        style: (:simple_cloud == style ? 'font-size: 1em;' : '') } ) <<
+                      { class: "tag-nube-#{weight}",
+                        style: (:simple_cloud == style ? 'font-size: 1em;' : '') }) <<
                       ' '.html_safe
         end
       end
@@ -287,7 +292,6 @@ module IssuesCatalogHelper
         style: (:simple_cloud == style ? 'text-align: left;' : '')
     end
   end
-
 
   def catalog_categories
     unless @catalog_categories
@@ -320,8 +324,9 @@ module IssuesCatalogHelper
 
     if @select_category.nil?
       content << render_catalog_categories_list(categories, {
-        show_count: true,
-        style: RedmineTags.settings[:issues_sidebar].to_sym })
+                                                  show_count: true,
+        style: RedmineTags.settings[:issues_sidebar].to_sym
+                                                })
     end
 
     content_tag :div, content, class: "catalog-selector-categories"
@@ -344,7 +349,7 @@ module IssuesCatalogHelper
 
     content = link_to_catalog_filter(category.name, filters, project_id: @project, sort: 'priority:desc')
     if options[:show_count] && category.respond_to?(:count)
-      content << content_tag('span', "(#{ category.count })", class: 'category-count')
+      content << content_tag('span', "(#{category.count})", class: 'category-count')
     end
 
     tag_bg_color = tag_color(category)
@@ -383,13 +388,13 @@ module IssuesCatalogHelper
     content_tag 'span', content, class: tag_class
   end
 
-  # link_to_filterのコントローラー違い 
+  # link_to_filterのコントローラー違い
   def link_to_catalog_filter(title, filters, options = {})
     options.merge! link_to_catalog_filter_options(filters)
     link_to title, options
   end
 
-  # link_to_filter_optionsのコントローラー違い 
+  # link_to_filter_optionsのコントローラー違い
   def link_to_catalog_filter_options(filters)
     options = { controller: 'issues_catalog', action: 'index', set_filter: 1, f: [], v: {}, op: {} }
 
@@ -460,5 +465,4 @@ module IssuesCatalogHelper
     end
     filters
   end
-
 end
