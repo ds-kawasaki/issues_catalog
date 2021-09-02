@@ -30,9 +30,17 @@
   background-image: url(/images/close_hl.png);
 }
 
+#form-search-tag {
+  background-color: azure;
+  border: 1px solid aquamarine;
+  border-radius: 12px;
+  padding: 8px 6px;
+}
+
 .catalog-head {
   position: relative;
   margin-left: 1.5em;
+  margin-top: 0.5em;
 }
 .catalog-btn-thumbnails {
   position: absolute;
