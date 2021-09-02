@@ -68,7 +68,7 @@ module IssuesCatalogHelper
                 if MOVIE_EXTS.include?(File.extname(val_preview))
                   preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
                                        'data-src': get_visuals_path(val_preview), size: '300x300',
-                                       controls: true, autoplay: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+                                       controls: true, autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
                 else
                   preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
                                        'data-src': get_visuals_path(val_preview), size: '300x300',
