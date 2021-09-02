@@ -93,35 +93,35 @@ $(function () {
     const searthTag = $('#catalog-input-search-tag');
     searthTag.blur(); // 検索テキストボックスから初期フォーカスを外す
     searthTag.autocomplete({
-      source: function(request, response) {
+      source: function (request, response) {
         $.ajax({
           url: '/issue_tags/auto_complete/' + projectName,
           type: 'GET',
           dataType: 'json',
-          data: {q: request.term},
-          success: function(choices) {
+          data: { q: request.term },
+          success: function (choices) {
             response(choices);
           },
-          error: function(xhr, ts, err){
+          error: function (xhr, ts, err) {
             response(['']);
           }
         });
       },
-      select: function(event, ui) {
+      select: function (event, ui) {
         if (ui.item && ui.item.value) {
           // console.log(ui.item.value);
           const form = $('#form-search-tag');
           const hiddenValue = form.find('input:hidden[name=v\\[tags\\]\\[\\]]');
           const selectMode = form.find('input:hidden[name=sm]').val();
           if (hiddenValue.length === 0) {
-            $('<input>').attr({'type':'hidden', 'name':'f[]'}).val('tags').appendTo(form);
-            $('<input>').attr({'type':'hidden', 'name':'op[tags]'}).val('=').appendTo(form);
+            $('<input>').attr({ 'type': 'hidden', 'name': 'f[]' }).val('tags').appendTo(form);
+            $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('=').appendTo(form);
           }
           if (selectMode === 'one' && hiddenValue) {
             hiddenValue.remove();
           }
-          $('<input>').attr({'type':'hidden', 'name':'v[tags][]'}).val(ui.item.value).appendTo(form);
-          $('<input>').attr({'type':'hidden', 'name':'catalog_history'}).val(ui.item.value).appendTo(form);
+          $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(ui.item.value).appendTo(form);
+          $('<input>').attr({ 'type': 'hidden', 'name': 'catalog_history' }).val(ui.item.value).appendTo(form);
           form.submit();
         }
       },
@@ -129,8 +129,27 @@ $(function () {
     });
   };
 
+  //  ページの最上部にスクロールするボタン 
+  const setupBtnScrollToTop = () => {
+    const btn = document.querySelector('#btn-scroll-to-top');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        window.scroll({ top: 0, behavior: 'smooth' });
+      });
+      window.addEventListener('scroll', function () {
+        if (window.pageYOffset > 300) {
+          btn.style.opacity = '1';
+        } else if (window.pageYOffset < 300) {
+          btn.style.opacity = '0';
+        }
+      });
+    }
+  };
+
+
   setupFromStorageOnLoad();
   setupSearchTag();
+  setupBtnScrollToTop();
 
 });
 

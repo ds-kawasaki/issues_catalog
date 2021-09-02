@@ -136,6 +136,23 @@ table.catalog-tags {
   width: max-content;
 }
 
+#btn-scroll-to-top {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  height: 50px;
+  width: 50px;
+  color: #fff;
+  font-size: 32px;
+  background-color: #999;
+  border: none;
+  border-radius: 50%;
+  outline: none;
+  transform: rotate(-90deg);
+  opacity: 0;
+  transition-duration: 0.5s;
+}
+
 
 .category-tab-contents {
   margin-top: 15px;
