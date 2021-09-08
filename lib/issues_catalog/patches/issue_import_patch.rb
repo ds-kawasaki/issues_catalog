@@ -7,6 +7,7 @@ module IssuesCatalog
           alias_method :extend_object_without_tags, :extend_object
           alias_method :extend_object, :extend_object_with_tags
         end
+        IssueImport::AUTO_MAPPABLE_FIELDS.store('tags', 'label_tags')
       end
 
       module InstanceMethods
