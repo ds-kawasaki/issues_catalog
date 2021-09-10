@@ -5,6 +5,7 @@ module IssuesCatalog
         base.class_eval do
           helper IssuesCatalogHelper
           helper IssuesCatalogSettingsHelper
+          helper FavoritesHelper
         end
       end
     end
@@ -13,6 +14,8 @@ end
 
 bases = [
   ProjectsController,
+  IssuesController,
+  ContextMenusController
 ]
 patch = IssuesCatalog::Patches::AddHelpersForCatalogPatch
 bases.each do |base|

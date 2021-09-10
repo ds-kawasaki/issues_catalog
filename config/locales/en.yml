@@ -22,3 +22,5 @@ en:
   label_bulk_edit_tag_categories: "Bulk Edit Tag Categories"
   label_btn_bulk_add: "Bulk Add"
   label_btn_bulk_delete: "Bulk Delete"
+  button_favorite: "Favorite"
+  button_unfavorite: "Unfavorite"

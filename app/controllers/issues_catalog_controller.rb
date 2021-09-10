@@ -11,6 +11,7 @@ class IssuesCatalogController < ApplicationController
   helper :queries
   helper :watchers
   helper :custom_fields
+  helper :favorites
   include QueriesHelper
 
   MAX_HISTORIES = 20

@@ -1,0 +1,17 @@
+<% if User.current.logged? %>
+  <div id="toggle_favorite">
+    <%= favorite_link(issue, User.current) %>
+  </div>
+  <%= javascript_tag("$(function() {
+    function moveFavorite() {
+      const favorite = $('#toggle_favorite');
+      favorite.parent().before(favorite);
+    }
+    moveFavorite();
+    const _replaceIssueFormWith = replaceIssueFormWith;
+    replaceIssueFormWith = function(html) {
+      _replaceIssueFormWith(html);
+      moveFavorite();
+    };
+  });") %>
+<% end %>
