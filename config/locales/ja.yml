@@ -24,3 +24,8 @@ ja:
   label_btn_bulk_delete: "一括削除"
   button_favorite: "お気に入り"
   button_unfavorite: "お気に入りをやめる"
+  label_favorite: "お気に入り"
+  label_favorite_tab: "お気に入り"
+  favorite_description: "みんなのお気に入りチケット"
+  label_my_favorites: "私のお気に入り"
+  label_user_favorites: "さんのお気に入り"

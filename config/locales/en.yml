@@ -24,3 +24,8 @@ en:
   label_btn_bulk_delete: "Bulk Delete"
   button_favorite: "Favorite"
   button_unfavorite: "Unfavorite"
+  label_favorite: "Favorite"
+  label_favorite_tab: "Favorite"
+  favorite_description: "Evryone's Favorite Issues"
+  label_my_favorites: "My Favorites"
+  label_user_favorites: "'s Favorites"

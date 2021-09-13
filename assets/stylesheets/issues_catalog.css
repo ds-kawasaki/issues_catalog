@@ -26,6 +26,24 @@
   background-color: #ddd;
 }
 
+.catalog-my-favorite {
+  padding: 4px 4px;
+  display: inline-block;
+  margin: 1px;
+  font-size: 120%;
+}
+.catalog-my-favorite a {
+  color: inherit;
+}
+.catalog-user-favorite {
+  padding: 2px 4px;
+  display: inline-block;
+  margin: 1px;
+}
+.catalog-user-favorite a {
+  color: inherit;
+}
+
 .catalog-icon-clear-selected {
   background-image: url(/images/close_hl.png);
 }

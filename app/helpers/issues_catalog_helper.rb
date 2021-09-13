@@ -185,39 +185,66 @@ module IssuesCatalogHelper
           div_none_category << render_catalog_tags
         end
       end
+
+      tabs_areas << content_tag(:li, l(:label_favorite_tab), class: 'category-tab', id: 'category-tab-favorite')
+      contents_areas << content_tag(:div, render_favorite_tab, class: 'category-content')
+
       tabs_areas << content_tag(:li, l(:label_history_tab), class: 'category-tab', id: 'category-tab-history')
-      history = content_tag(:p, l(:history_description))
-      history << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
-        @tag_history.each do |h|
-          div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
-        end
-      end
-      contents_areas << content_tag(:div, history, class: 'category-content')
+      contents_areas << content_tag(:div, render_history_tab, class: 'category-content')
+
       div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
         div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
       end
       div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
     end
+
     if catalog_tag_categories.any?
       ret_content << content_tag(:hr, '', class: 'catalog-separator')
-      ret_content << content_tag_push(:div, class: 'other-tags') do |div_other|
-        issues = Issue.visible.select('issues.id').joins(:project)
-        issues = issues.on_project(@project) unless @project.nil?
-        issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
-        relation_table = CatalogRelationTagCategory.arel_table
-        no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
-        tmp_tags = ActsAsTaggableOn::Tag
-          .joins(:taggings)
-          .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
-          .distinct
-          .where(no_category_condition)
-          .order('tags.name')
-        tmp_tags.each do |tag|
-          div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-        end
+      ret_content << redner_none_category_tags
+    end
+    ret_content
+  end
+
+  def render_favorite_tab
+    ret_content = content_tag(:p, l(:favorite_description))
+    ret_content << content_tag_push(:ul, class: 'favorite-tags', id: 'catalog-category-favorite') do |div_favorite|
+      div_favorite << content_tag(:li, content_tag(:span, link_to(l(:label_my_favorites), '#'), class: 'catalog-my-favorite'))
+
+      users = User.where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE).to_a
+      users.each do |user|
+        div_favorite << content_tag(:li, content_tag(:span, link_to(user.name << l(:label_user_favorites), '#'), class: 'catalog-user-favorite'))
       end
     end
     ret_content
+  end
+
+  def render_history_tab
+    ret_content = content_tag(:p, l(:history_description))
+    ret_content << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
+      @tag_history.each do |h|
+        div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
+      end
+    end
+    ret_content
+  end
+
+  def redner_none_category_tags
+    content_tag_push(:div, class: 'other-tags') do |div_other|
+      issues = Issue.visible.select('issues.id').joins(:project)
+      issues = issues.on_project(@project) unless @project.nil?
+      issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      relation_table = CatalogRelationTagCategory.arel_table
+      no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
+      tmp_tags = ActsAsTaggableOn::Tag
+        .joins(:taggings)
+        .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
+        .distinct
+        .where(no_category_condition)
+        .order('tags.name')
+      tmp_tags.each do |tag|
+        div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+      end
+    end
   end
 
   def render_catalog_tag_always
