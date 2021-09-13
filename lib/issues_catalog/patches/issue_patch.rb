@@ -33,6 +33,10 @@ module IssuesCatalog
           is_favorite ? add_favorite(user) : remove_favorite(user)
         end
 
+        def favorited?
+          Favorite.favorited?(id, User.current.id)
+        end
+
       end
     end
   end

@@ -11,4 +11,8 @@ class Favorite < ActiveRecord::Base
     Favorite.where(:issue_id => issue_ids, :user_id => user.id).exists?
   end
 
+  def self.favorited?(issue_id, user_id)
+    Favorite.where(:issue_id => issue_id, :user_id => user_id).exists?
+  end
+
 end
