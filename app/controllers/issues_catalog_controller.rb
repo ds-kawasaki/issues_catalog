@@ -82,20 +82,28 @@ class IssuesCatalogController < ApplicationController
   def make_select_filters
     @select_filters = []
     @tags_operator = '='
-    if @query.filters['category_id']
-      category_ids = @query.filters['category_id'][:values]
+
+    catalog_query = @query.filters['category_id']
+    if catalog_query.present?
+      category_ids = catalog_query[:values]
       unless category_ids.nil?
         # カテゴリは複数選択しない想定
         @select_category = @project.issue_categories.find(category_ids[0])
         @select_filters <<= [:category_id, '=', [category_ids[0]]]
       end
     end
+
     tags_query = @query.filters['tags']
-    if tags_query
+    if tags_query.present?
       # タグは複数選択できるので配列として取得
       @select_tags = tags_query[:values]
       @tags_operator = tags_query[:operator] if tags_query[:operator]
       @select_filters <<= [:tags, @tags_operator, @select_tags]
+    end
+
+    favorites_query = @query.filters['favorites']
+    if favorites_query.present?
+      @favorites = favorites_query[:values]
     end
   end
 

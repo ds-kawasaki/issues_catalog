@@ -10,7 +10,7 @@ module IssuesCatalogHelper
   end
 
   def catalog_select_any?
-    @select_tags.present? || @select_category.present?
+    @select_tags.present? || @select_category.present? || @favorites.present?
   end
 
   CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags, :priority]
@@ -208,11 +208,19 @@ module IssuesCatalogHelper
   def render_favorite_tab
     ret_content = content_tag(:p, l(:favorite_description))
     ret_content << content_tag_push(:ul, class: 'favorite-tags', id: 'catalog-category-favorite') do |div_favorite|
-      div_favorite << content_tag(:li, content_tag(:span, link_to(l(:label_my_favorites), '#'), class: 'catalog-my-favorite'))
+      div_favorite << content_tag(:li, content_tag(:span,
+                                                   link_to_catalog_filter(l(:label_my_favorites),
+                                                                          make_favorite_filter(User.current.id),
+                                                                          {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                   class: 'catalog-my-favorite'))
 
       users = User.where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE).to_a
       users.each do |user|
-        div_favorite << content_tag(:li, content_tag(:span, link_to(user.name << l(:label_user_favorites), '#'), class: 'catalog-user-favorite'))
+        div_favorite << content_tag(:li, content_tag(:span,
+                                                     link_to_catalog_filter(user.name << l(:label_user_favorites),
+                                                                            make_favorite_filter(user.id),
+                                                                            {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                     class: 'catalog-user-favorite'))
       end
     end
     ret_content
@@ -495,5 +503,9 @@ module IssuesCatalogHelper
       end
     end
     filters
+  end
+
+  def make_favorite_filter(user_id)
+    [[:favorites, '=', Array.wrap(user_id)]]
   end
 end
