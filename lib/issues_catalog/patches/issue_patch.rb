@@ -11,6 +11,27 @@ module IssuesCatalog
       end
 
       module InstanceMethods
+        def add_favorite(user)
+          return nil unless user && user.is_a?(User)
+
+          # Rails does not reset the has_many :through association
+          favorite_users.reset
+          self.favorites << Favorite.new(:user => user)
+          # self.favorites << Favorite.new(:user_id => user.id, :issue_id => self.id)
+        end
+
+        def remove_favorite(user)
+          return nil unless user && user.is_a?(User)
+
+          # Rails does not reset the has_many :through association
+          favorite_users.reset
+          favorites.where(:user_id => user.id).delete_all
+        end
+
+        # Adds/removes favorite
+        def set_favorite(user, is_favorite=true)
+          is_favorite ? add_favorite(user) : remove_favorite(user)
+        end
 
       end
     end

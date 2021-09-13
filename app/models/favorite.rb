@@ -7,8 +7,8 @@ class Favorite < ActiveRecord::Base
 
   # Returns true if at least one issue among issues is favorited by user
   def self.any_favorited?(issues, user)
-    issues = issues.reject(&:new_record?)
-    Favorite.where(:issue_id => issues.map(&:id), :user_id => user.id).exists?
+    issue_ids = issues.reject(&:new_record?).map(&:id)
+    Favorite.where(:issue_id => issue_ids, :user_id => user.id).exists?
   end
 
 end
