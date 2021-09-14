@@ -212,7 +212,8 @@ module IssuesCatalogHelper
                                                                           {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
                                                    class: 'catalog-my-favorite'))
 
-      users = User.where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE).to_a
+      favorited_users = Favorite.select(:user_id).group(:user_id)
+      users = User.where(id: favorited_users).where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE)
       users.each do |user|
         div_favorite << content_tag(:li, content_tag(:span,
                                                      link_to_catalog_filter(user.name << l(:label_user_favorites),
