@@ -75,15 +75,11 @@ module IssuesCatalogHelper
                                         class: 'lozad')
                 end
                 unless val_okiba.empty?
-                  if File.extname(val_okiba) != ''
-                    preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank', rel: 'noopener')
-                  else
-                    if val_okiba.start_with?('Q:', 'q:')
-                      val_okiba.slice!(0, 2)
-                      val_okiba = 'dseeds.local/data' << val_okiba
-                    end
-                    preview = link_to(preview, 'file://' << val_okiba)
+                  if val_okiba.start_with?('Q:', 'q:')
+                    val_okiba.slice!(0, 2)
+                    val_okiba = 'dseeds.local/data' << val_okiba
                   end
+                  preview = link_to(preview, 'file://' << val_okiba)
                 end
                 if issue.description?
                   tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
