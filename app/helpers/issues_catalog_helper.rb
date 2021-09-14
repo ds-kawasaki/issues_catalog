@@ -40,8 +40,10 @@ module IssuesCatalogHelper
               unless col_id.nil?
                 div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
                   div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
+                    id_class = "favorite-#{issue.id}"
+                    id_class << ' icon icon-fav' if issue.favorited?
                     div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
-                    div_issue_top << content_tag(:span, link_to(col_id.value_object(issue), issue_path(issue)), (issue.favorited? ? {class: "favorite-#{issue.id} icon icon-fav"} : {}))
+                    div_issue_top << content_tag(:span, link_to(col_id.value_object(issue), issue_path(issue)), class: id_class)
                     div_issue_top << content_tag(:span, col_priority.value_object(issue), class: 'catalog-issue-priority') unless col_priority.nil?
                     div_issue_top << link_to_context_menu
                   end

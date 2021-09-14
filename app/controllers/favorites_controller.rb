@@ -20,6 +20,18 @@ class FavoritesController < ApplicationController
     favoriteables.each do |favoriteable|
       favoriteable.set_favorite(user, is_favorite)
     end
+    respond_to do |format|
+      format.html do
+        text = is_favorite ? 'Add Favorite.' : 'Remove Favorite.'
+        redirect_to_referer_or do
+          render(:html => text, :status => 200, :layout => true)
+        end
+      end
+      format.js do
+        render(:partial => 'issues_catalog/set_favorite',
+               :locals => {:issues => favoriteables, :is_favorite => is_favorite})
+      end
+    end
   end
 
 end
