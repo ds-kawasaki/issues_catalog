@@ -10,7 +10,7 @@ module IssuesCatalogHelper
   end
 
   def catalog_select_any?
-    @select_tags.present? || @select_category.present?
+    @select_tags.present? || @select_category.present? || @favorites.present?
   end
 
   CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags, :priority]
@@ -40,8 +40,10 @@ module IssuesCatalogHelper
               unless col_id.nil?
                 div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
                   div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
+                    id_class = "favorite-#{issue.id}"
+                    id_class << ' icon icon-fav' if issue.favorited?
                     div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
-                    div_issue_top << link_to(col_id.value_object(issue), issue_path(issue))
+                    div_issue_top << content_tag(:span, link_to(col_id.value_object(issue), issue_path(issue)), class: id_class)
                     div_issue_top << content_tag(:span, col_priority.value_object(issue), class: 'catalog-issue-priority') unless col_priority.nil?
                     div_issue_top << link_to_context_menu
                   end
@@ -68,22 +70,18 @@ module IssuesCatalogHelper
                 if MOVIE_EXTS.include?(File.extname(val_preview))
                   preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
                                        'data-src': get_visuals_path(val_preview), size: '300x300',
-                                       controls: true, autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+                                       autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
                 else
                   preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
                                        'data-src': get_visuals_path(val_preview), size: '300x300',
                                         class: 'lozad')
                 end
                 unless val_okiba.empty?
-                  if File.extname(val_okiba) != ''
-                    preview = link_to(preview, get_visuals_path(val_okiba), target: '_blank', rel: 'noopener')
-                  else
-                    if val_okiba.start_with?('Q:', 'q:')
-                      val_okiba.slice!(0, 2)
-                      val_okiba = 'dseeds.local/data' << val_okiba
-                    end
-                    preview = link_to(preview, 'file://' << val_okiba)
+                  if val_okiba.start_with?('Q:', 'q:')
+                    val_okiba.slice!(0, 2)
+                    val_okiba = 'dseeds.local/data' << val_okiba
                   end
+                  preview = link_to(preview, 'file://' << val_okiba)
                 end
                 if issue.description?
                   tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
@@ -185,39 +183,75 @@ module IssuesCatalogHelper
           div_none_category << render_catalog_tags
         end
       end
+
+      tabs_areas << content_tag(:li, l(:label_favorite_tab), class: 'category-tab', id: 'category-tab-favorite')
+      contents_areas << content_tag(:div, render_favorite_tab, class: 'category-content')
+
       tabs_areas << content_tag(:li, l(:label_history_tab), class: 'category-tab', id: 'category-tab-history')
-      history = content_tag(:p, l(:history_description))
-      history << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
-        @tag_history.each do |h|
-          div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
-        end
-      end
-      contents_areas << content_tag(:div, history, class: 'category-content')
+      contents_areas << content_tag(:div, render_history_tab, class: 'category-content')
+
       div_tabs << content_tag_push(:div, class: 'tabs-wrap') do |div_tab_wrap|
         div_tab_wrap << content_tag(:ul, tabs_areas, class: 'tabs-area')
       end
       div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
     end
+
     if catalog_tag_categories.any?
       ret_content << content_tag(:hr, '', class: 'catalog-separator')
-      ret_content << content_tag_push(:div, class: 'other-tags') do |div_other|
-        issues = Issue.visible.select('issues.id').joins(:project)
-        issues = issues.on_project(@project) unless @project.nil?
-        issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
-        relation_table = CatalogRelationTagCategory.arel_table
-        no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
-        tmp_tags = ActsAsTaggableOn::Tag
-          .joins(:taggings)
-          .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
-          .distinct
-          .where(no_category_condition)
-          .order('tags.name')
-        tmp_tags.each do |tag|
-          div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-        end
+      ret_content << redner_none_category_tags
+    end
+    ret_content
+  end
+
+  def render_favorite_tab
+    ret_content = content_tag(:p, l(:favorite_description))
+    ret_content << content_tag_push(:ul, class: 'favorite-tags', id: 'catalog-category-favorite') do |div_favorite|
+      div_favorite << content_tag(:li, content_tag(:span,
+                                                   link_to_catalog_filter(l(:label_my_favorites),
+                                                                          make_favorite_filter(User.current.id),
+                                                                          {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                   class: 'catalog-my-favorite'))
+
+      favorited_users = Favorite.select(:user_id).group(:user_id)
+      users = User.where(id: favorited_users).where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE)
+      users.each do |user|
+        div_favorite << content_tag(:li, content_tag(:span,
+                                                     link_to_catalog_filter(user.name << l(:label_user_favorites),
+                                                                            make_favorite_filter(user.id),
+                                                                            {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                     class: 'catalog-user-favorite'))
       end
     end
     ret_content
+  end
+
+  def render_history_tab
+    ret_content = content_tag(:p, l(:history_description))
+    ret_content << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
+      @tag_history.each do |h|
+        div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
+      end
+    end
+    ret_content
+  end
+
+  def redner_none_category_tags
+    content_tag_push(:div, class: 'other-tags') do |div_other|
+      issues = Issue.visible.select('issues.id').joins(:project)
+      issues = issues.on_project(@project) unless @project.nil?
+      issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      relation_table = CatalogRelationTagCategory.arel_table
+      no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
+      tmp_tags = ActsAsTaggableOn::Tag
+        .joins(:taggings)
+        .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
+        .distinct
+        .where(no_category_condition)
+        .order('tags.name')
+      tmp_tags.each do |tag|
+        div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+      end
+    end
   end
 
   def render_catalog_tag_always
@@ -468,5 +502,9 @@ module IssuesCatalogHelper
       end
     end
     filters
+  end
+
+  def make_favorite_filter(user_id)
+    [[:favorites, '=', Array.wrap(user_id)]]
   end
 end

@@ -23,7 +23,6 @@
   </p>
 <% end %>
 
-<% if true %>
 <%= javascript_tag "$('#add-issue-tag-list').tagit({
   tagSource: function(search, showChoices) {
     var that = this;
@@ -42,4 +41,3 @@
   showAutocompleteOnFocus: true,
   autocomplete: {delay: 1, minLength: 1},
 });" %>
-<% end %>

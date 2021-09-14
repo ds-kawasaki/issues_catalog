@@ -11,3 +11,6 @@
     </ul>
   </li>
 <% end %>
+<% if User.current.logged? %>
+  <li><%= favorite_link(issues, User.current) %></li>
+<% end %>

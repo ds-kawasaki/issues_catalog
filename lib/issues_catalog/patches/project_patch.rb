@@ -25,6 +25,7 @@ module IssuesCatalog
             .group('tags.id, tags.name, tags.taggings_count')
             .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
             .order('tags.name')
+            .includes(:catalog_tag_categories)
 
           if options[:name_like]
             pattern = "%#{options[:name_like].to_s.strip}%"

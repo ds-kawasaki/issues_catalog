@@ -1,0 +1,11 @@
+<% for issue in issues %>
+  <% selector = ".favorite-#{issue.id}" %>
+  $("<%= selector %>").each(function(){
+    <% if is_favorite then %>
+      $(this).addClass('icon').addClass('icon-fav');
+    <% else %>
+      $(this).removeClass('icon').removeClass('icon-fav');
+    <% end %>
+  })
+<% end %>
+$("#context-menu").hide();
