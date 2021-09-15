@@ -5,7 +5,7 @@ module IssuesCatalog
     module RoutesHelperPatch
       def _project_issues_path(project, *args)
         # カタログ画面のコンテキストメニューの「フィルタ」のURLを差し替える
-        if @back.present? && @back.include?('issues_catalog')
+        if request.path.present? && request.path.include?('context_menu') && @back.present? && @back.include?('issues_catalog')
           if project
             project_issues_catalog_path(project, *args)
           else
