@@ -20,4 +20,6 @@ module IssuesCatalog
 end
 
 
-RoutesHelper.prepend(IssuesCatalog::Patches::RoutesHelperPatch)
+# prependだと本番環境で動かない 暫定対応
+# RoutesHelper.prepend(IssuesCatalog::Patches::RoutesHelperPatch)
+ContextMenusController.send :helper, IssuesCatalog::Patches::RoutesHelperPatch
