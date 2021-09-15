@@ -1,4 +1,4 @@
-<% if can[:edit] %>
+<% if @can[:edit] %>
   <li class="folder">
     <a href="#" class="submenu"><%= l(:label_tags) %></a>
     <ul>
@@ -14,3 +14,5 @@
 <% if User.current.logged? %>
   <li><%= favorite_link(issues, User.current) %></li>
 <% end %>
+<%# 「フィルタ」表示変更 %>
+<%= javascript_tag("$('.icon-list').text('#{ l(:lavel_filter) }');") %>

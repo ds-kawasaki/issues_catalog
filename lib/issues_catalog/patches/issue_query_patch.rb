@@ -50,7 +50,7 @@ module IssuesCatalog
 
         def favorite_values
           favorite_values = [["<< #{l(:lavel_me)} >>", "me"]]
-          favorite_values += User.where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE)
+          favorite_values += User.where.not(id: User.current.id).status(User::STATUS_ACTIVE).order(:login)
                                  .collect {|s| [s.name, s.id.to_s]}
           favorite_values
         end

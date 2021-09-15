@@ -10,7 +10,7 @@ module IssuesCatalogHelper
   end
 
   def catalog_select_any?
-    @select_tags.present? || @select_category.present? || @favorites.present?
+    @select_tags.present? || @select_category.present? || @favorites.present? || @issues_filters.present?
   end
 
   CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags, :priority]
@@ -213,7 +213,7 @@ module IssuesCatalogHelper
                                                    class: 'catalog-my-favorite'))
 
       favorited_users = Favorite.select(:user_id).group(:user_id)
-      users = User.where(id: favorited_users).where.not(id: User.current.id).logged.status(User::STATUS_ACTIVE)
+      users = User.where(id: favorited_users).where.not(id: User.current.id).status(User::STATUS_ACTIVE).order(:login)
       users.each do |user|
         div_favorite << content_tag(:li, content_tag(:span,
                                                      link_to_catalog_filter(user.name << l(:label_user_favorites),
