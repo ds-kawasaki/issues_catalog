@@ -105,6 +105,11 @@ class IssuesCatalogController < ApplicationController
     if favorites_query.present?
       @favorites = favorites_query[:values]
     end
+
+    issues_filter_query = @query.filters['issue_id']
+    if issues_filter_query.present?
+      @issues_filters = issues_filter_query[:values]
+    end
   end
 
   def make_catalog_all_tags
