@@ -15,9 +15,9 @@
       </tr></thead>
       <tbody>
       <% for catalog_tag_category in catalog_tag_categories %>
-        <tr>
-          <td class="name"><%= catalog_tag_category[:name] %></td>
-          <td class="description"><%= catalog_tag_category[:description] %></td>
+        <tr id=<%= "catalog_tag_category-#{catalog_tag_category.id}" %> >
+          <td class="name edit-category"><%= catalog_tag_category.name %></td>
+          <td class="description edit-category"><%= catalog_tag_category.description %></td>
           <td class="buttons">
             <%= link_to l(:button_edit), edit_catalog_tag_category_path(catalog_tag_category), :class => 'icon icon-edit' %>
             <%= delete_link catalog_tag_category_path(catalog_tag_category) %>
@@ -25,8 +25,8 @@
         </tr>
       <% end %>
       <tr>
-        <td class="name"><%= CatalogTagCategory.always[:name] %></td>
-        <td class="description"><%= CatalogTagCategory.always[:description] %></td>
+        <td class="name"><%= CatalogTagCategory.always.name %></td>
+        <td class="description"><%= CatalogTagCategory.always.description %></td>
         <td class="buttons">
         </td>
       </tr>
@@ -52,9 +52,9 @@
       </tr></thead>
       <tbody>
         <% tags.each do |tag| %>
-          <tr class="issue">
+          <tr id=<%= "tag-#{tag.id}" %> >
             <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, id: nil) %></td>
-            <td class="name"><%= render_catalog_link_tag(tag) %></td>
+            <td class="name edit-tag"><%= tag.name %></td>
             <td class="category"><%= tag.catalog_tag_category_names(@project.id) %></td>
             <td class="buttons">
               <%= link_to(l(:button_edit), edit_project_catalog_tag_path(tag), class: 'icon icon-edit') %>
