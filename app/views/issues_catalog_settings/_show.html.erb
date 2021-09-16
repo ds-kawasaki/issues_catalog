@@ -55,7 +55,7 @@
           <tr id=<%= "tag-#{tag.id}" %> >
             <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, id: nil) %></td>
             <td class="name edit-tag"><%= tag.name %></td>
-            <td class="category"><%= tag.catalog_tag_category_names(@project.id) %></td>
+            <td class="category edit2-tag"><%= tag.catalog_tag_category_names(@project.id) %></td>
             <td class="buttons">
               <%= link_to(l(:button_edit), edit_project_catalog_tag_path(tag), class: 'icon icon-edit') %>
             </td>
@@ -63,6 +63,12 @@
         <% end %>
       </tbody>
     </table>
+    <% items = select_items_catalog_tag_categories %>
+    <select name="tmp" id="tmp-edit-catalog-tag-categories" multiple style="display:none;">
+      <% items.each do |item| %>
+        <option value=<%= item[1] %> ><%= item[0] %></option>
+      <% end %>
+    </select>
     <fieldset class="box tabular">
       <legend><%= l(:label_bulk_edit_tag_categories) %></legend>
       <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-categories') do |form| %>
@@ -70,7 +76,7 @@
         <%= hidden_field_tag 'operate', 'none' %>
         <%= error_messages_for 'catalog_tag' %>
         <%= form.select :catalog_tag_category_ids,
-                select_items_catalog_tag_categories,
+                items,
                 { label: :label_catalog_tag_category }, { multiple: true, id: 'select-catalog-tag-categories' } %>
         <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
         <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>

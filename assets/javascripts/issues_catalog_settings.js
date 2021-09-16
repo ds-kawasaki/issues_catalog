@@ -88,4 +88,21 @@ $(function () {
       this.setAttribute("data-value", this.innerText);
     });
   });
+
+  //  タグのカテゴリ選択編集
+  const tmpSelect = document.querySelector('#tmp-edit-catalog-tag-categories');
+  document.querySelectorAll('.edit2-tag').forEach(edit2Tag => {
+    //edit2Tag.setAttribute("editing", "false");
+    edit2Tag.addEventListener('click', function(event) {
+      const target = this;
+      //if (target.getAttribute("editing") == "true") { return; }
+      const tmp = target.querySelector('#tmp-edit-catalog-tag-categories');
+      if (tmp) { return; }
+      target.setAttribute("data-vaule", target.innerText);
+      target.innerText = '';
+      tmpSelect.style.display = 'block';
+      target.appendChild(tmpSelect);
+      //target.setAttribute("editing", "true");
+    });
+  });
 });
