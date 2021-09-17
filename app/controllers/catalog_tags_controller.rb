@@ -1,7 +1,7 @@
 class CatalogTagsController < ApplicationController
   before_action :find_project_by_project_id, only: [:edit, :update, :bulk_update]
-  before_action :find_tag, only: [:edit, :update]
-  accept_api_auth :update, :bulk_update
+  before_action :find_tag, only: [:edit, :update, :field_update]
+  accept_api_auth :update, :bulk_update, :field_update
 
 
   def edit
@@ -48,6 +48,18 @@ class CatalogTagsController < ApplicationController
     end
 
     redirect_to_settings_in_projects
+  end
+
+  def field_update
+    attributes = parse_params_for_bulk_update(params[:tag])
+
+    respond_to do |format|
+      format.html do
+        redirect_to_referer_or do
+          render(:html => 'update field', :status => 200, :layout => true)
+        end
+      end
+    end
   end
 
   private

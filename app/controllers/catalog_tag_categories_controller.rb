@@ -90,6 +90,18 @@ class CatalogTagCategoriesController < ApplicationController
     end
   end
 
+  def field_update
+    attributes = parse_params_for_bulk_update(params[:tag])
+
+    respond_to do |format|
+      format.html do
+        redirect_to_referer_or do
+          render(:html => 'update field', :status => 200, :layout => true)
+        end
+      end
+    end
+  end
+
   private
 
   def redirect_to_settings_in_projects

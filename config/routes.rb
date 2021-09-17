@@ -4,6 +4,8 @@ get 'issues_catalog/add_tag', :to => 'issues_catalog#add_tag', :as => 'catalog_a
 get 'issues_catalog/delete_tag', :to => 'issues_catalog#delete_tag', :as => 'catalog_delete_tag'
 patch 'issues_catalog/update_tag', :to => 'issues_catalog#update_tag'
 patch 'catalog_tags/bulk_update', to: 'catalog_tags#bulk_update', as: 'catalog_tags_bulk_update'
+patch 'catalog_tags/field_update', to: 'catalog_tags#field_update'
+patch 'catalog_tag_categories/field_update', to: 'catalog_tag_categories#field_update'
 
 resources :projects do
   shallow do
