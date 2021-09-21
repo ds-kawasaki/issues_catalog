@@ -51,14 +51,12 @@ class CatalogTagsController < ApplicationController
   end
 
   def field_update
-    attributes = parse_params_for_bulk_update(params[:tag])
-
-    respond_to do |format|
-      format.html do
-        redirect_to_referer_or do
-          render(:html => 'update field', :status => 200, :layout => true)
-        end
-      end
+    # @catalog_tag.safe_attributes = catalog_tag_params
+    @catalog_tag.update_attributes(catalog_tag_params)
+    if @catalog_tag.save
+      render json: @catalog_tag
+    else
+      head :bad_request
     end
   end
 

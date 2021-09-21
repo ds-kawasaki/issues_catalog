@@ -64,7 +64,16 @@ $(function () {
   const editedTagItem = (target, value, oldValue) => {
     const tag_id = target.parentNode?.id?.slice(4); // 4='tag-'.length
     const column = target.classList.item(0);
-    console.log(`tag ${tag_id} : ${column} : ${value}`);
+    $.ajax({
+      type: 'PATCH',
+      url: '/catalog_tags/field_update/',
+      data: `id=${tag_id}&catalog_tag[${column}]=${value}`,
+    }).done(function () {
+      console.log(`tag changed ${tag_id} : ${column} : ${value}`);
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`tag change failed: ${tag_id} : ${column} : ${value} : ${textStatus}`);
+      target.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
   };
   const setupEdit = (className, editedCallback) => {
     const editedItem = (event, editedCallback) => {
@@ -124,17 +133,30 @@ $(function () {
         width: 'resolve',
         placeholder: 'Multi-select',
         closeOnSelect: false,
-        alloClear: true
+        allowClear: false
       });
       $newSelect.select2('open');
       $newSelect.on('select2:close', function (event) {
         const values = Array.from(this.options).filter(x => x.selected).map(x => x.text).join(', ');
+        let sendValues = Array.from(this.options).filter(x => x.selected).map(x => x.value);
+        if (sendValues.length == 0) { sendValues = ['']; }
         while (target.firstChild) { target.removeChild(target.firstChild); }
         target.innerText = values;
-        if (target.getAttribute('data-value') === values) { return; }
-        const column = target.classList.item(0);
-        const value = values;
-        console.log(`tag ${tag_id} : ${column} : ${value}`);
+        const oldValue = target.getAttribute('data-value');
+        if (oldValue === values) { return; }
+        event.preventDefault();
+        const data = { 'id': tag_id, 'catalog_tag': { 'catalog_tag_category_ids': sendValues } }
+        $.ajax({
+          type: 'PATCH',
+          url: '/catalog_tags/field_update/',
+          data: data,
+          dataType: 'json'
+        }).done(function () {
+          console.log(`tag changed ${tag_id} : ${sendValues}`);
+        }).fail(function (jqXHR, textStatus) {
+          console.log(`tag change failed: ${tag_id} : ${sendValues} : ${textStatus}`);
+          target.innerText = oldValue;  //  更新失敗したので元に戻す 
+        });
       });
     };
     for (const edit of document.querySelectorAll('.edit2-tag')) {
