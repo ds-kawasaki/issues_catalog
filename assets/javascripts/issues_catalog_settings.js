@@ -33,7 +33,7 @@ $(function () {
         edit.innerText = edit.innerText.replace(oldName, newName);
       }
     }
-    const orgSelect = document.querySelector('#tmp-edit-catalog-tag-categories');
+    const orgSelect = document.querySelector('#work-tag-category');
     for (const option of orgSelect?.options) {
       if (option.text === oldName) { option.text = newName; }
     }
@@ -41,22 +41,7 @@ $(function () {
     for (const option of bulkSelect?.options) {
       if (option.text === oldName) { option.text = newName; }
     }
-    //  Select2の中身を更新（上手く更新できていないけど）
-    const childRecursive = (elem) => {
-      for (const child of elem.children) { childRecursive(child); }
-      if (elem.innerText.includes(oldName)) {
-        //elem.innerText = elem.innerText.replace(oldName, newName);
-        elem.innerHTML = elem.innerHTML.replace(oldName, newName);
-      }
-      for (const attr of elem.attributes) {
-        if (attr.value.includes(oldName)) {
-          elem.setAttribute(attr.name, attr.value.replace(oldName, newName));
-        }
-      }
-    };
-    for (const selection of document.querySelectorAll('.select2-selection')) {
-      childRecursive(selection);
-    }
+    $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
   };
 
   //  タグカテゴリの項目編集
@@ -108,7 +93,7 @@ $(function () {
   setupEdit('.edit-tag', editedTagItem);
 
   //  タグのカテゴリ選択編集
-  const orgSelect = document.querySelector('#tmp-edit-catalog-tag-categories');
+  const orgSelect = document.querySelector('#work-tag-category');
   if (orgSelect) {
     const makeSelect = (orgText, tmpSelect_id) => {
       const orgValues = orgText.split(',').map(x => x.trim());
@@ -138,7 +123,6 @@ $(function () {
         while (target.firstChild) { target.removeChild(target.firstChild); }
         target.innerText = values;
         if (target.getAttribute('data-value') === values) { return; }
-        // const tag_id = target.parentNode?.id?.slice(4); // 4='tag-'.length
         const column = target.classList.item(0);
         const value = values;
         console.log(`tag ${tag_id} : ${column} : ${value}`);

@@ -64,7 +64,7 @@
       </tbody>
     </table>
     <% items = select_items_catalog_tag_categories %>
-    <select name="tmp" id="tmp-edit-catalog-tag-categories" multiple style="display:none;">
+    <select name="work" id="work-tag-category" multiple style="display:none;">
       <% items.each do |item| %>
         <option value=<%= item[1] %> ><%= item[0] %></option>
       <% end %>
