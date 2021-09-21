@@ -2,7 +2,7 @@ class CatalogTagCategoriesController < ApplicationController
   menu_item :settings
   model_object CatalogTagCategory
   before_action :find_model_object, :except => [:index, :new, :create]
-  before_action :find_project_from_association, :except => [:index, :new, :create]
+  before_action :find_project_from_association, :except => [:index, :new, :create, :field_update]
   before_action :find_project_by_project_id, :only => [:index, :new, :create]
   accept_api_auth :index, :show, :create, :update, :destroy
 
@@ -32,7 +32,7 @@ class CatalogTagCategoriesController < ApplicationController
 
   def create
     @catalog_tag_category = @project.catalog_tag_categories.build
-    @catalog_tag_category.safe_attributes = params[:catalog_tag_category]
+    @catalog_tag_category.safe_attributes = catalog_tag_category_params
     @catalog_tag_category.project = @project
     if @catalog_tag_category.save
       respond_to do |format|
@@ -56,7 +56,7 @@ class CatalogTagCategoriesController < ApplicationController
   end
 
   def update
-    @catalog_tag_category.safe_attributes = params[:catalog_tag_category]
+    @catalog_tag_category.safe_attributes = catalog_tag_category_params
     if @catalog_tag_category.save
       respond_to do |format|
         format.html {
@@ -90,7 +90,20 @@ class CatalogTagCategoriesController < ApplicationController
     end
   end
 
+  def field_update
+    @catalog_tag_category.safe_attributes = catalog_tag_category_params
+    if @catalog_tag_category.save
+      render json: @catalog_tag_category
+    else
+      head :bad_request
+    end
+  end
+
   private
+
+  def catalog_tag_category_params
+    params.require(:catalog_tag_category).permit(:name, :description)
+  end
 
   def redirect_to_settings_in_projects
     redirect_to settings_project_path(@project, :tab => 'issues_catalog')

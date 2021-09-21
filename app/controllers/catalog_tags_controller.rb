@@ -1,7 +1,7 @@
 class CatalogTagsController < ApplicationController
   before_action :find_project_by_project_id, only: [:edit, :update, :bulk_update]
-  before_action :find_tag, only: [:edit, :update]
-  accept_api_auth :update, :bulk_update
+  before_action :find_tag, only: [:edit, :update, :field_update]
+  accept_api_auth :update, :bulk_update, :field_update
 
 
   def edit
@@ -48,6 +48,16 @@ class CatalogTagsController < ApplicationController
     end
 
     redirect_to_settings_in_projects
+  end
+
+  def field_update
+    # @catalog_tag.safe_attributes = catalog_tag_params
+    @catalog_tag.update_attributes(catalog_tag_params)
+    if @catalog_tag.save
+      render json: @catalog_tag
+    else
+      head :bad_request
+    end
   end
 
   private
