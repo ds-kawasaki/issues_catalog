@@ -48,8 +48,17 @@ $(function () {
   const editedCategoryItem = (target, value, oldValue) => {
     const category_id = target.parentNode?.id?.slice(21); // 21='catalog_tag_category-'.length
     const column = target.classList.item(0);
-    console.log(`category ${category_id} : ${column} : ${value}`);
-    if (column === 'name') { updateCategoryName(category_id, oldValue, value); }  // タグカテゴリ名称変更を各所の表示反映
+    $.ajax({
+      type: 'PATCH',
+      url: '/catalog_tag_categories/field_update/',
+      data: `id=${category_id}&catalog_tag_category[${column}]=${value}`,
+    }).done(function () {
+      // console.log(`category changed: ${category_id} : ${column} : ${value}`);
+      if (column === 'name') { updateCategoryName(category_id, oldValue, value); }  // タグカテゴリ名称変更を各所の表示反映
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`category change failed: ${category_id} : ${column} : ${value} : ${textStatus}`);
+      target.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
   };
   //  タグの項目編集
   const editedTagItem = (target, value, oldValue) => {
