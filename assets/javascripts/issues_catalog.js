@@ -30,6 +30,12 @@ $(function () {
     }
   };
 
+  // railsから受け取るもの
+  const issuesCatalogParam = $('#issues-catalog-param').data('issues-catalog');
+  console.log(`select_mode: ${issuesCatalogParam.select_mode}`);
+  // console.log(`issues_open_only: ${issuesCatalogParam.issues_open_only}`);
+  // console.log(`select_filters: ${issuesCatalogParam.select_filters}`);
+
 
   // メインカテゴリタブ切替クリック時 
   const tags = $('.category-tab');

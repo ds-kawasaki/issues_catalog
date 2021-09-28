@@ -29,6 +29,11 @@ class IssuesCatalogController < ApplicationController
     make_catalog_all_tags
     make_catalog_selected_tags
     update_tag_history
+
+    # javascriptに渡すもの
+    @to_js_param = {'select_mode' => @select_mode,
+                    'issues_open_only' => @issues_open_only,
+                    'select_filters' => @select_filters }
   end
 
   def add_tag
