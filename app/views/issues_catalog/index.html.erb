@@ -18,6 +18,10 @@
     <%= form.hidden_field 'set_filter', value: '1' %>
     <%= form.hidden_field 'sort', value: 'priority:desc' %>
     <%= form.hidden_field 'sm', value: @select_mode %>
+    <% if @issues_open_only %>
+      <%= form.hidden_field 'f[]', value: 'status_id' %>
+      <%= form.hidden_field 'op[status_id]', value: 'o' %>
+    <% end %>
     <%= form.label :search_input, l(:label_search_tag) << ':' %>
     <%= form.text_field :search_input, id: "catalog-input-search-tag" %>
     <%= form.submit '', disabled: true, style: 'display: none' %>

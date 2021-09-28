@@ -209,7 +209,7 @@ module IssuesCatalogHelper
       div_favorite << content_tag(:li, content_tag(:span,
                                                    link_to_catalog_filter(l(:label_my_favorites),
                                                                           make_favorite_filter(User.current.id),
-                                                                          {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                                          {project_id: @project, sort: 'priority:desc', sm: @select_mode}),
                                                    class: 'catalog-my-favorite'))
 
       favorited_users = Favorite.select(:user_id).group(:user_id)
@@ -218,7 +218,7 @@ module IssuesCatalogHelper
         div_favorite << content_tag(:li, content_tag(:span,
                                                      link_to_catalog_filter(user.name << l(:label_user_favorites),
                                                                             make_favorite_filter(user.id),
-                                                                            {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                                            {project_id: @project, sort: 'priority:desc', sm: @select_mode}),
                                                      class: 'catalog-user-favorite'))
       end
     end
@@ -239,7 +239,7 @@ module IssuesCatalogHelper
     content_tag_push(:div, class: 'other-tags') do |div_other|
       issues = Issue.visible.select('issues.id').joins(:project)
       issues = issues.on_project(@project) unless @project.nil?
-      issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues = issues.joins(:status).open if @issues_open_only
       relation_table = CatalogRelationTagCategory.arel_table
       no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
       tmp_tags = ActsAsTaggableOn::Tag
@@ -288,7 +288,7 @@ module IssuesCatalogHelper
 
     content << render_catalog_tags_list(tags, {
                                           show_count: true,
-      open_only: (RedmineTags.settings[:issues_open_only].to_i == 1),
+      open_only: @issues_open_only,
       style: RedmineTags.settings[:issues_sidebar].to_sym
                                         })
 
@@ -331,7 +331,7 @@ module IssuesCatalogHelper
     unless @catalog_categories
       issues_scope = Issue.visible.select('issues.category_id').joins(:project)
       issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues_scope = issues_scope.joins(:status).open if @issues_open_only
       issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
 
       logger.debug "catalog_categories: #{issues_scope.size}"
@@ -402,11 +402,11 @@ module IssuesCatalogHelper
       tmp_sm = @select_mode
       filters = make_minus_filters(:tags, name)
       tmp_sm = 'one' if filters.blank?
-      filters << [:status_id, 'o'] if options[:open_only]
+      filters << [:status_id, 'o'] if @issues_open_only
       content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc', sm: tmp_sm)
     else
       filters = make_filters(:tags, name)
-      filters << [:status_id, 'o'] if options[:open_only]
+      filters << [:status_id, 'o'] if @issues_open_only
       content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name, sm: @select_mode)
     end
     if options[:show_count]
@@ -501,10 +501,13 @@ module IssuesCatalogHelper
         f[1] = op
       end
     end
+    filters << [:status_id, 'o'] if @issues_open_only
     filters
   end
 
   def make_favorite_filter(user_id)
-    [[:favorites, '=', Array.wrap(user_id)]]
+    filters = [[:favorites, '=', Array.wrap(user_id)]]
+    filters << [:status_id, 'o'] if @issues_open_only
+    filters
   end
 end

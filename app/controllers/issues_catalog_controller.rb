@@ -23,6 +23,7 @@ class IssuesCatalogController < ApplicationController
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
     @select_mode = params['sm'] || 'one'
+    @issues_open_only = RedmineTags.settings[:issues_open_only].to_i == 1
 
     make_select_filters
     make_catalog_all_tags
@@ -115,7 +116,7 @@ class IssuesCatalogController < ApplicationController
   def make_catalog_all_tags
     issues_scope = Issue.visible.select('issues.id').joins(:project)
     issues_scope = issues_scope.on_project(@project) unless @project.nil?
-    issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+    issues_scope = issues_scope.joins(:status).open if @issues_open_only
 
     @catalog_all_tags = ActsAsTaggableOn::Tag
       .joins(:taggings)
@@ -131,7 +132,7 @@ class IssuesCatalogController < ApplicationController
     unless @select_filters.empty?
       issues_scope = Issue.visible.select('issues.id').joins(:project)
       issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues_scope = issues_scope.joins(:status).open if @issues_open_only
       issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
       issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
 
