@@ -153,9 +153,28 @@ $(function () {
   };
 
 
+  //  選択モード切替関連
+  const setupModeSelect = () => {
+    let nowMode = issuesCatalogParam.select_mode;
+    for (const edit of document.querySelectorAll('.tags a')) {
+      edit.addEventListener('click', function (event) {
+        const target = this;
+        console.log(`tag: ${target.innerText}`);
+      });
+    }
+    for (const edit of document.querySelectorAll('.selected-tags a')) {
+      edit.addEventListener('click', function (event) {
+        const target = this;
+        console.log(`selected-tag: ${target.innerText}`);
+      });
+    }
+  };
+
+
   setupFromStorageOnLoad();
   setupSearchTag();
   setupBtnScrollToTop();
+  setupModeSelect();
 
 });
 

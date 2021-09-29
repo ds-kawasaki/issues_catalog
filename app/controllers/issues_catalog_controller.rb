@@ -33,6 +33,7 @@ class IssuesCatalogController < ApplicationController
     # javascriptに渡すもの
     @to_js_param = {'select_mode' => @select_mode,
                     'issues_open_only' => @issues_open_only,
+                    'label_clear' => l(:button_clear),
                     'select_filters' => @select_filters }
   end
 

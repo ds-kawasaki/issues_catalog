@@ -83,6 +83,25 @@
 .catalog-select-operation .selected {
   font-weight: bolder;
 }
+.catalog-select-mode-operation {
+  padding-left: 15px;
+  margin-top: 10px;
+}
+.radio-select-mode {
+  clip: rect(1px, 1px, 1px, 1px);
+  position: absolute;
+}
+.label-select-mode {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px 0px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.radio-select-mode:checked + .label-select-mode {
+  color: mediumblue;
+  background-color: lightcyan;
+}
 
 .catalog-always-selector {
   margin-top: -20px;

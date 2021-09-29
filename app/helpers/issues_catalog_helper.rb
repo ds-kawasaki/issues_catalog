@@ -145,6 +145,14 @@ module IssuesCatalogHelper
           div_op << content_tag(:span, l(:label_operator_or), class: 'selected')
         end
       end
+      content << content_tag_push(:div, class: 'catalog-select-mode-operation') do |div_m_op|
+        div_m_op << radio_button_tag('select-mode', 'one', @select_mode == 'one', id: 'radio-select-mode-one', class: 'radio-select-mode')
+        div_m_op << label_tag('radio-select-mode-one', l(:label_operator_one), class: 'label-select-mode')
+        div_m_op << radio_button_tag('select-mode', 'and', @select_mode == 'and', id: 'radio-select-mode-and', class: 'radio-select-mode')
+        div_m_op << label_tag('radio-select-mode-and', l(:label_operator_and), class: 'label-select-mode')
+        div_m_op << radio_button_tag('select-mode', 'or', @select_mode == 'or', id: 'radio-select-mode-or', class: 'radio-select-mode')
+        div_m_op << label_tag('radio-select-mode-or', l(:label_operator_or), class: 'label-select-mode')
+      end
     end
     content
   end
