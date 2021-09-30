@@ -33,8 +33,19 @@ $(function () {
   // railsから受け取るもの
   const issuesCatalogParam = $('#issues-catalog-param').data('issues-catalog');
   console.log(`select_mode: ${issuesCatalogParam.select_mode}`);
-  // console.log(`issues_open_only: ${issuesCatalogParam.issues_open_only}`);
-  // console.log(`select_filters: ${issuesCatalogParam.select_filters}`);
+
+  // railsから受け取った選択しているタグ配列
+  const getFilterTags = () => {
+    const tags = issuesCatalogParam.select_filters.find(x => x[0] == 'tags');
+    return (tags && tags.length >= 2) ? tags[2] : [];
+  };
+  // タグ選択モードラジオボタンの現状 
+  const getNowSelectMode = () => {
+    for (const radio of document.querySelectorAll('.radio-select-mode')) {
+      if (radio.checked) { return radio.value; }
+    }
+    return issuesCatalogParam.select_mode;
+  };
 
 
   // メインカテゴリタブ切替クリック時 
@@ -116,18 +127,29 @@ $(function () {
       select: function (event, ui) {
         if (ui.item && ui.item.value) {
           // console.log(ui.item.value);
+          const tagText = ui.item.value;
+          const nowMode = getNowSelectMode();
+          const selectTags = getFilterTags();
+          if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
           const form = $('#form-search-tag');
-          const hiddenValue = form.find('input:hidden[name=v\\[tags\\]\\[\\]]');
-          const selectMode = form.find('input:hidden[name=sm]').val();
-          if (hiddenValue.length === 0) {
-            $('<input>').attr({ 'type': 'hidden', 'name': 'f[]' }).val('tags').appendTo(form);
-            $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('=').appendTo(form);
+          $('<input>').attr({ 'type': 'hidden', 'name': 'sm' }).val(nowMode).appendTo(form);
+          $('<input>').attr({ 'type': 'hidden', 'name': 'catalog_history' }).val(tagText).appendTo(form);
+          $('<input>').attr({ 'type': 'hidden', 'name': 'f[]' }).val('tags').appendTo(form);
+          switch (nowMode) {
+            default:
+            case 'one':
+              $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('=').appendTo(form);
+              $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(tagText).appendTo(form);
+              break;
+            case 'and':
+              $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('and').appendTo(form);
+              selectTags.forEach(t => $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(t).appendTo(form));
+              break;
+            case 'or':
+              $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('=').appendTo(form);
+              selectTags.forEach(t => $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(t).appendTo(form));
+              break;
           }
-          if (selectMode === 'one' && hiddenValue) {
-            hiddenValue.remove();
-          }
-          $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(ui.item.value).appendTo(form);
-          $('<input>').attr({ 'type': 'hidden', 'name': 'catalog_history' }).val(ui.item.value).appendTo(form);
           form.submit();
         }
       },
@@ -155,17 +177,94 @@ $(function () {
 
   //  選択モード切替関連
   const setupModeSelect = () => {
-    let nowMode = issuesCatalogParam.select_mode;
-    for (const edit of document.querySelectorAll('.tags a')) {
-      edit.addEventListener('click', function (event) {
-        const target = this;
-        console.log(`tag: ${target.innerText}`);
+    const makeBaseParams = (nowMode) => {
+      const params = [
+        ['set_filter', '1'],
+        ['sort', 'priority:desc'],
+        ['sm', nowMode],
+      ];
+      if (issuesCatalogParam.issues_open_only) {
+        params.push(['f[]', 'status_id']);
+        params.push(['op[status_id]', 'o']);
+        params.push(['v[status_id][]', '']);
+      }
+      return params;
+    };
+    for (const radio of document.querySelectorAll('.radio-select-mode')) {
+      radio.addEventListener('click', function (event) {
+        const selectMode = this.value;
+        for (const tagCount of document.querySelectorAll('.catalog-tag-label .tag-count')) {
+          const count = (selectMode === 'and') ? tagCount.dataset.selectedcount : tagCount.dataset.allcount;
+          tagCount.innerText = `(${count})`;
+          if (count === '0') {
+            tagCount.parentElement.classList.add('catalog-count-zero');
+          } else {
+            tagCount.parentElement.classList.remove('catalog-count-zero');
+          }
+        }
       });
     }
-    for (const edit of document.querySelectorAll('.selected-tags a')) {
-      edit.addEventListener('click', function (event) {
-        const target = this;
-        console.log(`selected-tag: ${target.innerText}`);
+    for (const tag of document.querySelectorAll('.tags a')) {
+      tag.addEventListener('click', function (event) {
+        const nowMode = getNowSelectMode();
+        const tagText = this.innerText;
+        const params = makeBaseParams(nowMode);
+        const selectTags = getFilterTags();
+        if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
+        params.push(['catalog_history', tagText]);
+        params.push(['f[]', 'tags']);
+        switch (nowMode) {
+          default:
+          case 'one':
+            params.push(['op[tags]', '=']);
+            params.push(['v[tags][]', tagText]);
+            break;
+          case 'and':
+            params.push(['op[tags]', 'and']);
+            selectTags.forEach(t => params.push(['v[tags][]', t]));
+            break;
+          case 'or':
+            params.push(['op[tags]', '=']);
+            selectTags.forEach(t => params.push(['v[tags][]', t]));
+            break;
+        }
+        // console.log(`tag: ${params}`);
+        this.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
+      });
+    }
+    for (const selectTag of document.querySelectorAll('.selected-tags .catalog-tag-label a')) {
+      selectTag.addEventListener('click', function (event) {
+        const nowMode = getNowSelectMode();
+        let tagText = this.innerText;
+        if (tagText.startsWith(issuesCatalogParam.label_clear)) {
+          tagText = tagText.slice(issuesCatalogParam.label_clear.length);
+        }
+        // console.log(`selected-tag: ${tagText}`);
+        const selectTags = getFilterTags().filter(x => x !== tagText);
+        if (selectTags.length === 0) {
+          this.search = '';
+          if (this.href.endsWith('#')) {
+            this.href = this.href.slice(0, -1);
+          }
+        } else {
+          const params = makeBaseParams(nowMode);
+          params.push(['f[]', 'tags']);
+          switch (nowMode) {
+            default:
+            case 'one':
+              params.push(['op[tags]', '=']);
+              break;
+            case 'and':
+              params.push(['op[tags]', 'and']);
+              break;
+            case 'or':
+              params.push(['op[tags]', '=']);
+              break;
+          }
+          selectTags.forEach(t => params.push(['v[tags][]', t]));
+          // console.log(`tag: ${params}`);
+          this.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
+        }
       });
     }
   };

@@ -10,16 +10,8 @@
 
 <div class="catalog-search-tag">
   <%= form_with(url: project_issues_catalog_path(@project), method: :get, local: true, id: 'form-search-tag') do |form| %>
-    <% if @select_tags.present? %>
-      <%= form.hidden_field 'f[]', value: 'tags' %>
-      <%= form.hidden_field 'op[tags]', value: @tags_operator %>
-      <% @select_tags.each do |tag| %>
-        <%= form.hidden_field 'v[tags][]', value: tag %>
-      <% end %>
-    <% end %>
     <%= form.hidden_field 'set_filter', value: '1' %>
     <%= form.hidden_field 'sort', value: 'priority:desc' %>
-    <%= form.hidden_field 'sm', value: @select_mode %>
     <% if @issues_open_only %>
       <%= form.hidden_field 'f[]', value: 'status_id' %>
       <%= form.hidden_field 'op[status_id]', value: 'o' %>

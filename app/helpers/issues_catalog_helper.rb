@@ -124,27 +124,6 @@ module IssuesCatalogHelper
         div_tags << content_tag(:span, " : ")
         div_tags << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
       end
-      content << content_tag_push(:div, class: 'catalog-select-operation') do |div_op|
-        if @select_mode == 'one'
-          div_op << content_tag(:span, l(:label_operator_one), class: 'selected')
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc', sm: 'and'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'or'))
-        elsif @tags_operator == 'and'
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_one), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'one'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, l(:label_operator_and), class: 'selected')
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'or'))
-        else
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_one), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'one'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc', sm: 'and'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, l(:label_operator_or), class: 'selected')
-        end
-      end
       content << content_tag_push(:div, class: 'catalog-select-mode-operation') do |div_m_op|
         div_m_op << radio_button_tag('select-mode', 'one', @select_mode == 'one', id: 'radio-select-mode-one', class: 'radio-select-mode')
         div_m_op << label_tag('radio-select-mode-one', l(:label_operator_one), class: 'label-select-mode')
@@ -407,25 +386,19 @@ module IssuesCatalogHelper
     if options[:del_btn_selected]
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
       tag_name << name
-      tmp_sm = @select_mode
-      filters = make_minus_filters(:tags, name)
-      tmp_sm = 'one' if filters.blank?
-      filters << [:status_id, 'o'] if @issues_open_only
-      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc', sm: tmp_sm)
+      content = link_to(tag_name, '#')
     else
-      filters = make_filters(:tags, name)
-      filters << [:status_id, 'o'] if @issues_open_only
-      content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name, sm: @select_mode)
+      content = link_to(name, '#')
     end
     if options[:show_count]
-      if @catalog_selected_tags.any? && @tags_operator == 'and'
-        st = @catalog_selected_tags.detect { |t| t.name == name }
-        count = st ? st.count : 0
-      else
-        at = @catalog_all_tags.detect { |t| t.name == name }
-        count = at ? at.count : 0
-      end
-      content << content_tag('span', "(#{count})", class: 'tag-count')
+      selected_count = 0
+      st = @catalog_selected_tags.detect { |t| t.name == name }
+      selected_count = st ? st.count : 0
+      all_count = 0
+      at = @catalog_all_tags.detect { |t| t.name == name }
+      all_count = at ? at.count : 0
+      count = (@tags_operator == 'and') ? selected_count : all_count
+      content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
       if count == 0
         tag_class << ' catalog-count-zero'
       end
