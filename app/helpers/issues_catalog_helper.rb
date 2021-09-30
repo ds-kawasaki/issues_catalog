@@ -93,7 +93,7 @@ module IssuesCatalogHelper
               # tags
               col_tags = catalog_columns[:tags]
               unless col_tags.nil?
-                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t) }.join(', ').html_safe
+                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t.name) }.join(', ').html_safe
                 div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
               end
             end
@@ -115,10 +115,10 @@ module IssuesCatalogHelper
       content << content_tag_push(:div, class: 'selected-tags') do |div_tags|
         op = (@tags_operator == 'and') ? ' and ' : ' or '
         @select_tags.each_with_index do |t, i|
-          tag = @catalog_all_tags.detect { |tt| tt.name == t }
+          tag = @catalog_all_tags[t]
           unless tag.nil?
             div_tags << content_tag(:span, op) if i > 0
-            div_tags << render_catalog_link_tag(tag, show_count: true, del_btn_selected: true)
+            div_tags << render_catalog_link_tag(t, show_count: true, del_btn_selected: true)
           end
         end
         div_tags << content_tag(:span, " : ")
@@ -158,7 +158,7 @@ module IssuesCatalogHelper
                 .distinct
                 .order('tags.name')
               tmp_tags.each do |tag|
-                div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+                div_category << content_tag(:li, render_catalog_link_tag(tag.name, show_count: true), class: 'tags')
               end
             end
           end
@@ -216,7 +216,7 @@ module IssuesCatalogHelper
     ret_content = content_tag(:p, l(:history_description))
     ret_content << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
       @tag_history.each do |h|
-        div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
+        div_history << content_tag(:li, render_catalog_link_tag(h.keys[0], show_count: true), class: 'tags')
       end
     end
     ret_content
@@ -236,7 +236,7 @@ module IssuesCatalogHelper
         .where(no_category_condition)
         .order('tags.name')
       tmp_tags.each do |tag|
-        div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+        div_other << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true), class: 'tags')
       end
     end
   end
@@ -249,7 +249,7 @@ module IssuesCatalogHelper
         .distinct
         .order('tags.name')
     tmp_tags.each do |tag|
-      ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+      ret_content << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true), class: 'tags')
     end
 
     ret_content
@@ -267,7 +267,7 @@ module IssuesCatalogHelper
       @select_tags.each_with_index do |t, i|
         content_h3 << " and " if i > 0
         tag = tags.detect { |tt| tt['name'] == t }
-        content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
+        content_h3 << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true),
                                   class: "tag-nube-8", style: 'font-size: 1em;')
       end
     end
@@ -303,7 +303,7 @@ module IssuesCatalogHelper
       tag_cloud tags, (1..8).to_a do |tag, weight|
         unless !@select_tags.nil? && @select_tags.include?(tag.name)
           content << ' '.html_safe <<
-          content_tag(item_el, render_catalog_link_tag(tag, options),
+          content_tag(item_el, render_catalog_link_tag(tag.name, options),
                       { class: "tag-nube-#{weight}",
                         style: (:simple_cloud == style ? 'font-size: 1em;' : '') }) <<
                       ' '.html_safe
@@ -379,8 +379,7 @@ module IssuesCatalogHelper
   end
 
   # タグのリンク
-  def render_catalog_link_tag(tag, options = {})
-    name = tag.name
+  def render_catalog_link_tag(name, options = {})
     tag_class = 'catalog-tag-label'
 
     if options[:del_btn_selected]
@@ -392,11 +391,11 @@ module IssuesCatalogHelper
     end
     if options[:show_count]
       selected_count = 0
-      st = @catalog_selected_tags.detect { |t| t.name == name }
-      selected_count = st ? st.count : 0
+      st = @catalog_selected_tags[name]
+      selected_count = st ? st[:count] : 0
       all_count = 0
-      at = @catalog_all_tags.detect { |t| t.name == name }
-      all_count = at ? at.count : 0
+      at = @catalog_all_tags[name]
+      all_count = at ? at[:count] : 0
       count = (@tags_operator == 'and') ? selected_count : all_count
       content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
       if count == 0
@@ -449,40 +448,6 @@ module IssuesCatalogHelper
       op = (add_type == :tags) ? @tags_operator : '='
       filters <<= [add_type, op, add_value]
     end
-    filters
-  end
-
-  def make_minus_filters(minus_type, minus_value)
-    if @select_filters.nil?
-      @select_filters = []
-    end
-    filters = Marshal.load(Marshal.dump(@select_filters))
-    filters.each do |f|
-      if f[0] == minus_type
-        f[2].each do |f2|
-          if f2 == minus_value
-            f[2].delete(f2)
-          end
-        end
-        if f[2].empty?
-          filters.delete(f)
-        end
-      end
-    end
-    filters
-  end
-
-  def make_filters_change_tag_operator(op)
-    if @select_filters.nil?
-      @select_filters = []
-    end
-    filters = Marshal.load(Marshal.dump(@select_filters))
-    filters.each do |f|
-      if f[0] == :tags
-        f[1] = op
-      end
-    end
-    filters << [:status_id, 'o'] if @issues_open_only
     filters
   end
 

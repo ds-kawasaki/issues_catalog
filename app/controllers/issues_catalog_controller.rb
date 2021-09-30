@@ -129,12 +129,12 @@ class IssuesCatalogController < ApplicationController
       .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
       .group('tags.id, tags.name, tags.taggings_count')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      .order('tags.name')
-      .to_a
+      .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
+      .to_h
   end
 
   def make_catalog_selected_tags
-    @catalog_selected_tags = []
+    @catalog_selected_tags = {}
     unless @select_filters.empty?
       issues_scope = Issue.visible.select('issues.id').joins(:project)
       issues_scope = issues_scope.on_project(@project) unless @project.nil?
@@ -147,8 +147,8 @@ class IssuesCatalogController < ApplicationController
         .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
         .group('tags.id, tags.name, tags.taggings_count')
         .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-        .order('tags.name')
-        .to_a
+        .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
+        .to_h
     end
   end
 
@@ -162,16 +162,16 @@ class IssuesCatalogController < ApplicationController
   
       current_tag_name = params['catalog_history']
       unless current_tag_name.nil?
-        current_tag = @catalog_all_tags.detect { |at| at.name == current_tag_name }
+        current_tag = @catalog_all_tags[current_tag_name]
         unless current_tag.nil?
-          histories.delete(current_tag.id)
-          histories.unshift(current_tag.id)
+          histories.delete(current_tag[:id])
+          histories.unshift(current_tag[:id])
           histories.pop if histories.length >= MAX_HISTORIES
         end
       end
   
       @tag_history = histories.map do |i|
-        @catalog_all_tags.detect { |at| at.id == i }
+        @catalog_all_tags.select { |k, v| v[:id] == i }
       end
       @tag_history.compact!
   
