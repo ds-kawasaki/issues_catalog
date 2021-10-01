@@ -118,7 +118,7 @@ module IssuesCatalogHelper
           tag = @catalog_all_tags[t]
           unless tag.nil?
             div_tags << content_tag(:span, op) if i > 0
-            div_tags << render_catalog_link_tag(t, show_count: true, del_btn_selected: true)
+            div_tags << render_catalog_link_tag(t, show_count: true, add_del_btn_selected: true)
           end
         end
         div_tags << content_tag(:span, " : ")
@@ -299,7 +299,7 @@ module IssuesCatalogHelper
       tag_cloud tags, (1..8).to_a do |tag, weight|
         unless !@select_tags.nil? && @select_tags.include?(tag.name)
           content << ' '.html_safe <<
-          content_tag(item_el, render_catalog_link_tag(tag.name, options),
+          content_tag(item_el, render_catalog_link_tag(tag.name, show_count: options[:show_count]),
                       { class: "tag-nube-#{weight}",
                         style: (:simple_cloud == style ? 'font-size: 1em;' : '') }) <<
                       ' '.html_safe
@@ -375,21 +375,19 @@ module IssuesCatalogHelper
   end
 
   # タグのリンク
-  def render_catalog_link_tag(name, options = {})
+  def render_catalog_link_tag(name, show_count: false, add_del_btn_selected: false)
     tag_class = 'catalog-tag-label'
 
-    if options[:del_btn_selected]
+    if add_del_btn_selected
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
       tag_name << name
       content = link_to(tag_name, '#')
     else
       content = link_to(name, '#')
     end
-    if options[:show_count]
-      selected_count = 0
+    if show_count
       st = @catalog_selected_tags[name]
       selected_count = st ? st[:count] : 0
-      all_count = 0
       at = @catalog_all_tags[name]
       all_count = at ? at[:count] : 0
       count = (@tags_operator == 'and') ? selected_count : all_count
