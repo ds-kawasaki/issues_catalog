@@ -23,11 +23,17 @@ class IssuesCatalogController < ApplicationController
     @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
     @select_mode = params['sm'] || 'one'
+    @issues_open_only = RedmineTags.settings[:issues_open_only].to_i == 1
 
     make_select_filters
     make_catalog_all_tags
     make_catalog_selected_tags
-    update_tag_history
+
+    # javascriptに渡すもの
+    @to_js_param = {'select_mode' => @select_mode,
+                    'issues_open_only' => @issues_open_only,
+                    'label_clear' => l(:button_clear),
+                    'select_filters' => @select_filters }
   end
 
   def add_tag
@@ -115,23 +121,23 @@ class IssuesCatalogController < ApplicationController
   def make_catalog_all_tags
     issues_scope = Issue.visible.select('issues.id').joins(:project)
     issues_scope = issues_scope.on_project(@project) unless @project.nil?
-    issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+    issues_scope = issues_scope.joins(:status).open if @issues_open_only
 
     @catalog_all_tags = ActsAsTaggableOn::Tag
       .joins(:taggings)
       .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
       .group('tags.id, tags.name, tags.taggings_count')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      .order('tags.name')
-      .to_a
+      .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
+      .to_h
   end
 
   def make_catalog_selected_tags
-    @catalog_selected_tags = []
+    @catalog_selected_tags = {}
     unless @select_filters.empty?
       issues_scope = Issue.visible.select('issues.id').joins(:project)
       issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues_scope = issues_scope.joins(:status).open if @issues_open_only
       issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
       issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
 
@@ -140,39 +146,8 @@ class IssuesCatalogController < ApplicationController
         .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
         .group('tags.id, tags.name, tags.taggings_count')
         .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-        .order('tags.name')
-        .to_a
-    end
-  end
-
-  def update_tag_history
-    user = User.current
-    if user.nil? || !user.logged?
-      @tag_history = []
-    else
-      old_value = user.pref[:catalog_histories]
-      histories = (old_value || '').split(',').map(&:to_i)
-  
-      current_tag_name = params['catalog_history']
-      unless current_tag_name.nil?
-        current_tag = @catalog_all_tags.detect { |at| at.name == current_tag_name }
-        unless current_tag.nil?
-          histories.delete(current_tag.id)
-          histories.unshift(current_tag.id)
-          histories.pop if histories.length >= MAX_HISTORIES
-        end
-      end
-  
-      @tag_history = histories.map do |i|
-        @catalog_all_tags.detect { |at| at.id == i }
-      end
-      @tag_history.compact!
-  
-      new_value = histories.join(',')
-      if old_value != new_value
-        user.pref[:catalog_histories] = new_value
-        user.pref.save
-      end
+        .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
+        .to_h
     end
   end
 

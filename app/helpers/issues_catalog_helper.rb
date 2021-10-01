@@ -93,7 +93,7 @@ module IssuesCatalogHelper
               # tags
               col_tags = catalog_columns[:tags]
               unless col_tags.nil?
-                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t) }.join(', ').html_safe
+                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t.name) }.join(', ').html_safe
                 div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
               end
             end
@@ -115,35 +115,22 @@ module IssuesCatalogHelper
       content << content_tag_push(:div, class: 'selected-tags') do |div_tags|
         op = (@tags_operator == 'and') ? ' and ' : ' or '
         @select_tags.each_with_index do |t, i|
-          tag = @catalog_all_tags.detect { |tt| tt.name == t }
+          tag = @catalog_all_tags[t]
           unless tag.nil?
             div_tags << content_tag(:span, op) if i > 0
-            div_tags << render_catalog_link_tag(tag, show_count: true, del_btn_selected: true)
+            div_tags << render_catalog_link_tag(t, show_count: true, add_del_btn_selected: true)
           end
         end
         div_tags << content_tag(:span, " : ")
         div_tags << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
       end
-      content << content_tag_push(:div, class: 'catalog-select-operation') do |div_op|
-        if @select_mode == 'one'
-          div_op << content_tag(:span, l(:label_operator_one), class: 'selected')
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc', sm: 'and'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'or'))
-        elsif @tags_operator == 'and'
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_one), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'one'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, l(:label_operator_and), class: 'selected')
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_or), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'or'))
-        else
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_one), make_filters_change_tag_operator('='), project_id: @project, sort: 'priority:desc', sm: 'one'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, link_to_catalog_filter(l(:label_operator_and), make_filters_change_tag_operator('and'), project_id: @project, sort: 'priority:desc', sm: 'and'))
-          div_op << content_tag(:span, " : ")
-          div_op << content_tag(:span, l(:label_operator_or), class: 'selected')
-        end
+      content << content_tag_push(:div, class: 'catalog-select-mode-operation') do |div_m_op|
+        div_m_op << radio_button_tag('select-mode', 'one', @select_mode == 'one', id: 'radio-select-mode-one', class: 'radio-select-mode')
+        div_m_op << label_tag('radio-select-mode-one', l(:label_operator_one), class: 'label-select-mode')
+        div_m_op << radio_button_tag('select-mode', 'and', @select_mode == 'and', id: 'radio-select-mode-and', class: 'radio-select-mode')
+        div_m_op << label_tag('radio-select-mode-and', l(:label_operator_and), class: 'label-select-mode')
+        div_m_op << radio_button_tag('select-mode', 'or', @select_mode == 'or', id: 'radio-select-mode-or', class: 'radio-select-mode')
+        div_m_op << label_tag('radio-select-mode-or', l(:label_operator_or), class: 'label-select-mode')
       end
     end
     content
@@ -170,6 +157,7 @@ module IssuesCatalogHelper
                 .where(catalog_relation_tag_categories: {catalog_tag_category_id: tag_category.id})
                 .distinct
                 .order('tags.name')
+                .pluck('tags.name')
               tmp_tags.each do |tag|
                 div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
               end
@@ -209,7 +197,7 @@ module IssuesCatalogHelper
       div_favorite << content_tag(:li, content_tag(:span,
                                                    link_to_catalog_filter(l(:label_my_favorites),
                                                                           make_favorite_filter(User.current.id),
-                                                                          {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                                          {project_id: @project, sort: 'priority:desc', sm: @select_mode}),
                                                    class: 'catalog-my-favorite'))
 
       favorited_users = Favorite.select(:user_id).group(:user_id)
@@ -218,7 +206,7 @@ module IssuesCatalogHelper
         div_favorite << content_tag(:li, content_tag(:span,
                                                      link_to_catalog_filter(user.name << l(:label_user_favorites),
                                                                             make_favorite_filter(user.id),
-                                                                            {open_only: (RedmineTags.settings[:issues_open_only].to_i == 1)}),
+                                                                            {project_id: @project, sort: 'priority:desc', sm: @select_mode}),
                                                      class: 'catalog-user-favorite'))
       end
     end
@@ -227,11 +215,7 @@ module IssuesCatalogHelper
 
   def render_history_tab
     ret_content = content_tag(:p, l(:history_description))
-    ret_content << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
-      @tag_history.each do |h|
-        div_history << content_tag(:li, render_catalog_link_tag(h, show_count: true), class: 'tags')
-      end
-    end
+    ret_content << content_tag(:ul, '', class: 'history-tags', id: 'catalog-category-history')
     ret_content
   end
 
@@ -239,7 +223,7 @@ module IssuesCatalogHelper
     content_tag_push(:div, class: 'other-tags') do |div_other|
       issues = Issue.visible.select('issues.id').joins(:project)
       issues = issues.on_project(@project) unless @project.nil?
-      issues = issues.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues = issues.joins(:status).open if @issues_open_only
       relation_table = CatalogRelationTagCategory.arel_table
       no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
       tmp_tags = ActsAsTaggableOn::Tag
@@ -248,6 +232,7 @@ module IssuesCatalogHelper
         .distinct
         .where(no_category_condition)
         .order('tags.name')
+        .pluck('tags.name')
       tmp_tags.each do |tag|
         div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
       end
@@ -261,6 +246,7 @@ module IssuesCatalogHelper
         .where(catalog_relation_tag_categories: {catalog_tag_category_id: CatalogTagCategory.always.id})
         .distinct
         .order('tags.name')
+        .pluck('tags.name')
     tmp_tags.each do |tag|
       ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
     end
@@ -280,7 +266,7 @@ module IssuesCatalogHelper
       @select_tags.each_with_index do |t, i|
         content_h3 << " and " if i > 0
         tag = tags.detect { |tt| tt['name'] == t }
-        content_h3 << content_tag(:span, render_catalog_link_tag(tag, show_count: true),
+        content_h3 << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true),
                                   class: "tag-nube-8", style: 'font-size: 1em;')
       end
     end
@@ -288,7 +274,7 @@ module IssuesCatalogHelper
 
     content << render_catalog_tags_list(tags, {
                                           show_count: true,
-      open_only: (RedmineTags.settings[:issues_open_only].to_i == 1),
+      open_only: @issues_open_only,
       style: RedmineTags.settings[:issues_sidebar].to_sym
                                         })
 
@@ -316,7 +302,7 @@ module IssuesCatalogHelper
       tag_cloud tags, (1..8).to_a do |tag, weight|
         unless !@select_tags.nil? && @select_tags.include?(tag.name)
           content << ' '.html_safe <<
-          content_tag(item_el, render_catalog_link_tag(tag, options),
+          content_tag(item_el, render_catalog_link_tag(tag.name, show_count: options[:show_count]),
                       { class: "tag-nube-#{weight}",
                         style: (:simple_cloud == style ? 'font-size: 1em;' : '') }) <<
                       ' '.html_safe
@@ -331,7 +317,7 @@ module IssuesCatalogHelper
     unless @catalog_categories
       issues_scope = Issue.visible.select('issues.category_id').joins(:project)
       issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if RedmineTags.settings[:issues_open_only].to_i == 1
+      issues_scope = issues_scope.joins(:status).open if @issues_open_only
       issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
 
       logger.debug "catalog_categories: #{issues_scope.size}"
@@ -392,32 +378,23 @@ module IssuesCatalogHelper
   end
 
   # タグのリンク
-  def render_catalog_link_tag(tag, options = {})
-    name = tag.name
+  def render_catalog_link_tag(name, show_count: false, add_del_btn_selected: false)
     tag_class = 'catalog-tag-label'
 
-    if options[:del_btn_selected]
+    if add_del_btn_selected
       tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
       tag_name << name
-      tmp_sm = @select_mode
-      filters = make_minus_filters(:tags, name)
-      tmp_sm = 'one' if filters.blank?
-      filters << [:status_id, 'o'] if options[:open_only]
-      content = link_to_catalog_filter(tag_name, filters, project_id: @project, sort: 'priority:desc', sm: tmp_sm)
+      content = link_to(tag_name, '#')
     else
-      filters = make_filters(:tags, name)
-      filters << [:status_id, 'o'] if options[:open_only]
-      content = link_to_catalog_filter(name, filters, project_id: @project, sort: 'priority:desc', catalog_history: name, sm: @select_mode)
+      content = link_to(name, '#')
     end
-    if options[:show_count]
-      if @catalog_selected_tags.any? && @tags_operator == 'and'
-        st = @catalog_selected_tags.detect { |t| t.name == name }
-        count = st ? st.count : 0
-      else
-        at = @catalog_all_tags.detect { |t| t.name == name }
-        count = at ? at.count : 0
-      end
-      content << content_tag('span', "(#{count})", class: 'tag-count')
+    if show_count
+      st = @catalog_selected_tags[name]
+      selected_count = st ? st[:count] : 0
+      at = @catalog_all_tags[name]
+      all_count = at ? at[:count] : 0
+      count = (@tags_operator == 'and') ? selected_count : all_count
+      content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
       if count == 0
         tag_class << ' catalog-count-zero'
       end
@@ -471,40 +448,9 @@ module IssuesCatalogHelper
     filters
   end
 
-  def make_minus_filters(minus_type, minus_value)
-    if @select_filters.nil?
-      @select_filters = []
-    end
-    filters = Marshal.load(Marshal.dump(@select_filters))
-    filters.each do |f|
-      if f[0] == minus_type
-        f[2].each do |f2|
-          if f2 == minus_value
-            f[2].delete(f2)
-          end
-        end
-        if f[2].empty?
-          filters.delete(f)
-        end
-      end
-    end
-    filters
-  end
-
-  def make_filters_change_tag_operator(op)
-    if @select_filters.nil?
-      @select_filters = []
-    end
-    filters = Marshal.load(Marshal.dump(@select_filters))
-    filters.each do |f|
-      if f[0] == :tags
-        f[1] = op
-      end
-    end
-    filters
-  end
-
   def make_favorite_filter(user_id)
-    [[:favorites, '=', Array.wrap(user_id)]]
+    filters = [[:favorites, '=', Array.wrap(user_id)]]
+    filters << [:status_id, 'o'] if @issues_open_only
+    filters
   end
 end
