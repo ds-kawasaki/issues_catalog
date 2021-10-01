@@ -5,6 +5,7 @@ $(function () {
   const MAX_HISTORY = 20;
 
   let localStorageKeyCategoryTab = 'catalog-category-tabs-state';
+  let localStorageKeyHistory = 'catalog-history';
   // true if local storage is available
   const storageAvailable = (type) => {
     let storage;
@@ -32,7 +33,7 @@ $(function () {
 
   // railsから受け取るもの
   const issuesCatalogParam = $('#issues-catalog-param').data('issues-catalog');
-  console.log(`select_mode: ${issuesCatalogParam.select_mode}`);
+  // console.log(`select_mode: ${issuesCatalogParam.select_mode}`);
 
   // railsから受け取った選択しているタグ配列
   const getFilterTags = () => {
@@ -71,7 +72,74 @@ $(function () {
     $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
   };
 
+  // ヒストリータブ内容セット
+  const setHistoryOnLoad = () => {
+    const makeTagsCountMap = () => {
+      const map = new Map();
+      for (const tag of document.querySelectorAll('.catalog-tag-label')) {
+        const sCount = tag.querySelector('.tag-count');
+        if (!sCount) { continue; }
+        const allCount = sCount.dataset.allcount;
+        const selectedCount = sCount.dataset.selectedcount;
+        const tagText = tag.querySelector('a').innerText;
+        if (!allCount || !selectedCount || !tagText) { continue; }
+        map[tagText] = [allCount, selectedCount];
+      }
+      return map;
+    };
+    const makeTagElement = (tagText, tagsCountMap, nowMode) => {
+      const a = document.createElement('a');
+      a.href = '#';
+      a.innerText = tagText;
+      const sLabel = document.createElement('span');
+      sLabel.className = 'catalog-tag-label';
+      sLabel.appendChild(a);
+      const counts = tagsCountMap[tagText];
+      if (counts) {
+        const sCount = document.createElement('span');
+        sCount.className = 'tag-count';
+        sCount.dataset.allcount = counts[0];
+        sCount.dataset.selectedcount = counts[1];
+        const cnt = (nowMode === 'and') ? counts[1] : counts[0];
+        sCount.innerText = `(${cnt})`;
+        sLabel.appendChild(sCount);
+        if (cnt === '0') {
+          sLabel.classList.add('catalog-count-zero');
+        }
+      }
+      const ul = document.createElement('ul');
+      ul.className = 'tags';
+      ul.appendChild(sLabel);
+      return ul;
+    };
 
+    const divHistory = document.querySelector('#catalog-category-history');
+    if (!divHistory) { return; }
+    const tagsCountMap = makeTagsCountMap();
+    const nowMode = getNowSelectMode();
+    const rawValue = localStorage.getItem(localStorageKeyHistory);
+    const historys = rawValue ? JSON.parse(rawValue) : [];
+    for (const history of historys) {
+      divHistory.appendChild(makeTagElement(history, tagsCountMap, nowMode));
+    }
+  };
+  //  ヒストリー更新
+  const addHistory = (tagText) => {
+    const rawValue = localStorage.getItem(localStorageKeyHistory);
+    const historys = rawValue ? JSON.parse(rawValue) : [];
+    const idx = historys.indexOf(tagText);
+    if (idx >= 0) {
+      historys.splice(idx, 1);
+    }
+    historys.unshift(tagText);
+    if (historys.length > MAX_HISTORY) {
+      historys.pop();
+    }
+    localStorage.setItem(localStorageKeyHistory, JSON.stringify(historys));
+  };
+
+
+  //  ページ読み込み時にストレージ内容を展開
   const setupFromStorageOnLoad = () => {
     if (!storageAvailable('localStorage')) { return; }
 
@@ -82,12 +150,14 @@ $(function () {
           return s.match(/project-.*/);
         }).sort().join('-');
         localStorageKeyCategoryTab += postfixProject;
+        localStorageKeyHistory += postfixProject;
       } catch (e) {
         // in case of error (probably IE8), continue with the unmodified key
       }
     }
 
     setCatalogTabOnLoad();
+    setHistoryOnLoad();
   };
 
   // サムネイルオンリーボタン 
@@ -131,9 +201,9 @@ $(function () {
           const nowMode = getNowSelectMode();
           const selectTags = getFilterTags();
           if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
+          addHistory(tagText);
           const form = $('#form-search-tag');
           $('<input>').attr({ 'type': 'hidden', 'name': 'sm' }).val(nowMode).appendTo(form);
-          $('<input>').attr({ 'type': 'hidden', 'name': 'catalog_history' }).val(tagText).appendTo(form);
           $('<input>').attr({ 'type': 'hidden', 'name': 'f[]' }).val('tags').appendTo(form);
           switch (nowMode) {
             default:
@@ -175,13 +245,14 @@ $(function () {
   };
 
 
-  //  選択モード切替関連
-  const setupModeSelect = () => {
+  //  タグクリック処理
+  const setupTagLink = () => {
     const makeBaseParams = (nowMode) => {
       const params = [
         ['set_filter', '1'],
         ['sort', 'priority:desc'],
         ['sm', nowMode],
+        ['f[]', 'tags']
       ];
       if (issuesCatalogParam.issues_open_only) {
         params.push(['f[]', 'status_id']);
@@ -190,6 +261,7 @@ $(function () {
       }
       return params;
     };
+    //  選択モードクリック
     for (const radio of document.querySelectorAll('.radio-select-mode')) {
       radio.addEventListener('click', function (event) {
         const selectMode = this.value;
@@ -204,6 +276,7 @@ $(function () {
         }
       });
     }
+    // タグリンククリック
     for (const tag of document.querySelectorAll('.tags a')) {
       tag.addEventListener('click', function (event) {
         const nowMode = getNowSelectMode();
@@ -211,8 +284,7 @@ $(function () {
         const params = makeBaseParams(nowMode);
         const selectTags = getFilterTags();
         if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
-        params.push(['catalog_history', tagText]);
-        params.push(['f[]', 'tags']);
+        addHistory(tagText);
         switch (nowMode) {
           default:
           case 'one':
@@ -232,6 +304,7 @@ $(function () {
         this.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
       });
     }
+    // 選択タグリンククリック（選択解除）
     for (const selectTag of document.querySelectorAll('.selected-tags .catalog-tag-label a')) {
       selectTag.addEventListener('click', function (event) {
         const nowMode = getNowSelectMode();
@@ -248,7 +321,6 @@ $(function () {
           }
         } else {
           const params = makeBaseParams(nowMode);
-          params.push(['f[]', 'tags']);
           switch (nowMode) {
             default:
             case 'one':
@@ -273,7 +345,7 @@ $(function () {
   setupFromStorageOnLoad();
   setupSearchTag();
   setupBtnScrollToTop();
-  setupModeSelect();
+  setupTagLink();
 
 });
 

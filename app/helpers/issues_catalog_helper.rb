@@ -214,11 +214,7 @@ module IssuesCatalogHelper
 
   def render_history_tab
     ret_content = content_tag(:p, l(:history_description))
-    ret_content << content_tag_push(:ul, class: 'history-tags', id: 'catalog-category-history') do |div_history|
-      @tag_history.each do |h|
-        div_history << content_tag(:li, render_catalog_link_tag(h.keys[0], show_count: true), class: 'tags')
-      end
-    end
+    ret_content << content_tag(:ul, '', class: 'history-tags', id: 'catalog-category-history')
     ret_content
   end
 

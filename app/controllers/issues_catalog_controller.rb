@@ -28,7 +28,6 @@ class IssuesCatalogController < ApplicationController
     make_select_filters
     make_catalog_all_tags
     make_catalog_selected_tags
-    update_tag_history
 
     # javascriptに渡すもの
     @to_js_param = {'select_mode' => @select_mode,
@@ -149,37 +148,6 @@ class IssuesCatalogController < ApplicationController
         .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
         .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
         .to_h
-    end
-  end
-
-  def update_tag_history
-    user = User.current
-    if user.nil? || !user.logged?
-      @tag_history = []
-    else
-      old_value = user.pref[:catalog_histories]
-      histories = (old_value || '').split(',').map(&:to_i)
-  
-      current_tag_name = params['catalog_history']
-      unless current_tag_name.nil?
-        current_tag = @catalog_all_tags[current_tag_name]
-        unless current_tag.nil?
-          histories.delete(current_tag[:id])
-          histories.unshift(current_tag[:id])
-          histories.pop if histories.length >= MAX_HISTORIES
-        end
-      end
-  
-      @tag_history = histories.map do |i|
-        @catalog_all_tags.select { |k, v| v[:id] == i }
-      end
-      @tag_history.compact!
-  
-      new_value = histories.join(',')
-      if old_value != new_value
-        user.pref[:catalog_histories] = new_value
-        user.pref.save
-      end
     end
   end
 
