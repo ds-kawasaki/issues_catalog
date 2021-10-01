@@ -278,6 +278,7 @@ $(function () {
     for (const radio of document.querySelectorAll('.radio-select-mode')) {
       radio.addEventListener('click', function (event) {
         const selectMode = this.value;
+        //  タグの後ろの数を変更 
         for (const tagCount of document.querySelectorAll('.catalog-tag-label .tag-count')) {
           const count = (selectMode === 'and') ? tagCount.dataset.selectedcount : tagCount.dataset.allcount;
           tagCount.innerText = `(${count})`;
@@ -286,6 +287,24 @@ $(function () {
           } else {
             tagCount.parentElement.classList.remove('catalog-count-zero');
           }
+        }
+        //  ページ切替URL差し替え 
+        for (const pageLink of document.querySelectorAll('.pagination a')) {
+          const queries = pageLink.search ? pageLink.search.slice(1).split('&') : [];
+          const params = queries.map((x) => {
+            const [key, value] = x.split('=');
+            const decKey = decodeURIComponent(key);
+            let decValue = decodeURIComponent(value);
+            if (decKey === 'sm') {
+              decValue = selectMode;
+            }
+            else if (decKey === 'op[tags]') {
+              decValue = (selectMode === 'and') ? 'and' : '=';
+            }
+            return [decKey, decValue];
+          });
+          // console.log(`page: ${params}`);
+          pageLink.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
         }
       });
     }

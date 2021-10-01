@@ -76,13 +76,6 @@
   background-color: darkslategrey;
 }
 
-.catalog-select-operation {
-  padding-left: 15px;
-  margin-top: 10px;
-}
-.catalog-select-operation .selected {
-  font-weight: bolder;
-}
 .catalog-select-mode-operation {
   padding-left: 15px;
   margin-top: 10px;
