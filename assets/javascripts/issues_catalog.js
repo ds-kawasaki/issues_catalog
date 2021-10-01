@@ -349,5 +349,12 @@ $(function () {
   setupBtnScrollToTop();
   setupTagLink();
 
+
+  // 紛らわしいのでredmine標準検索フォームを非表示
+  const quickSearch = document.querySelector('#quick-search form');
+  if (quickSearch) {
+    quickSearch.style.display = 'none';
+  }
+
 });
 
