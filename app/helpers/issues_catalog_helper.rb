@@ -157,8 +157,9 @@ module IssuesCatalogHelper
                 .where(catalog_relation_tag_categories: {catalog_tag_category_id: tag_category.id})
                 .distinct
                 .order('tags.name')
+                .pluck('tags.name')
               tmp_tags.each do |tag|
-                div_category << content_tag(:li, render_catalog_link_tag(tag.name, show_count: true), class: 'tags')
+                div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
               end
             end
           end
@@ -231,8 +232,9 @@ module IssuesCatalogHelper
         .distinct
         .where(no_category_condition)
         .order('tags.name')
+        .pluck('tags.name')
       tmp_tags.each do |tag|
-        div_other << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true), class: 'tags')
+        div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
       end
     end
   end
@@ -244,8 +246,9 @@ module IssuesCatalogHelper
         .where(catalog_relation_tag_categories: {catalog_tag_category_id: CatalogTagCategory.always.id})
         .distinct
         .order('tags.name')
+        .pluck('tags.name')
     tmp_tags.each do |tag|
-      ret_content << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true), class: 'tags')
+      ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
     end
 
     ret_content
