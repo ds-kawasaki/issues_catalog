@@ -31,6 +31,7 @@ $(function () {
     }
   };
 
+
   // railsから受け取るもの
   const issuesCatalogParam = $('#issues-catalog-param').data('issues-catalog');
   // console.log(`select_mode: ${issuesCatalogParam.select_mode}`);
@@ -50,11 +51,11 @@ $(function () {
 
 
   // メインカテゴリタブ切替クリック時 
-  const tags = $('.category-tab');
-  tags.on('click', function () {
+  const $tags = $('.category-tab');
+  $tags.on('click', function () {
     $('.active-tab').removeClass('active-tab');
     $(this).addClass('active-tab');
-    const index = tags.index(this);
+    const index = $tags.index(this);
     $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
     localStorage.setItem(localStorageKeyCategoryTab, $(this).attr('id'));
   });
@@ -68,9 +69,10 @@ $(function () {
 
     $('.active-tab').removeClass('active-tab');
     activeTab.addClass('active-tab');
-    const index = tags.index(activeTab);
+    const index = $tags.index(activeTab);
     $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
   };
+
 
   // ヒストリータブ内容セット
   const setHistoryOnLoad = () => {
@@ -143,10 +145,10 @@ $(function () {
   const setupFromStorageOnLoad = () => {
     if (!storageAvailable('localStorage')) { return; }
 
-    const bodyClass = $('body').attr('class');
-    if (bodyClass) {
+    const $bodyClass = $('body').attr('class');
+    if ($bodyClass) {
       try {
-        const postfixProject = '-' + bodyClass.split(/\s+/).filter(function (s) {
+        const postfixProject = '-' + $bodyClass.split(/\s+/).filter(function (s) {
           return s.match(/project-.*/);
         }).sort().join('-');
         localStorageKeyCategoryTab += postfixProject;
@@ -160,6 +162,7 @@ $(function () {
     setHistoryOnLoad();
   };
 
+
   // サムネイルオンリーボタン 
   $('#catalog-btn-thumbnails').on('click', function () {
     $(this).toggleClass('only-thumbnails');
@@ -170,9 +173,17 @@ $(function () {
     $('.pagination.top').toggle();
   });
 
+
   // タグ検索関連
   const setupSearchTag = () => {
-    var projectName = '';
+    const makeHidden = (name, value) => {
+      const ret = document.createElement('input');
+      ret.type = 'hidden';
+      ret.name = name;
+      ret.value = value;
+      return ret;
+    };
+    let projectName = '';
     const tmpProjectName = $('body').attr('class').match(/project-([\w-]+)/);
     if (tmpProjectName) {
       projectName = tmpProjectName[1];
@@ -202,25 +213,27 @@ $(function () {
           const selectTags = getFilterTags();
           if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
           addHistory(tagText);
-          const form = $('#form-search-tag');
-          $('<input>').attr({ 'type': 'hidden', 'name': 'sm' }).val(nowMode).appendTo(form);
-          $('<input>').attr({ 'type': 'hidden', 'name': 'f[]' }).val('tags').appendTo(form);
-          switch (nowMode) {
-            default:
-            case 'one':
-              $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('=').appendTo(form);
-              $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(tagText).appendTo(form);
-              break;
-            case 'and':
-              $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('and').appendTo(form);
-              selectTags.forEach(t => $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(t).appendTo(form));
-              break;
-            case 'or':
-              $('<input>').attr({ 'type': 'hidden', 'name': 'op[tags]' }).val('=').appendTo(form);
-              selectTags.forEach(t => $('<input>').attr({ 'type': 'hidden', 'name': 'v[tags][]' }).val(t).appendTo(form));
-              break;
+          const form = document.querySelector('#form-search-tag');
+          if (form) {
+            form.appendChild(makeHidden('sm', nowMode));
+            form.appendChild(makeHidden('f[]', 'tags'));
+            switch (nowMode) {
+              default:
+              case 'one':
+                form.appendChild(makeHidden('op[tags]', '='));
+                form.appendChild(makeHidden('v[tags][]', tagText));
+                break;
+              case 'and':
+                form.appendChild(makeHidden('op[tags]', 'and'));
+                selectTags.forEach(t => form.appendChild(makeHidden('v[tags][]', t)));
+                break;
+              case 'or':
+                form.appendChild(makeHidden('op[tags]', '='));
+                selectTags.forEach(t => form.appendChild(makeHidden('v[tags][]', t)));
+                break;
+            }
+            form.submit();
           }
-          form.submit();
         }
       },
       minLength: 1,
@@ -321,18 +334,7 @@ $(function () {
           }
         } else {
           const params = makeBaseParams(nowMode);
-          switch (nowMode) {
-            default:
-            case 'one':
-              params.push(['op[tags]', '=']);
-              break;
-            case 'and':
-              params.push(['op[tags]', 'and']);
-              break;
-            case 'or':
-              params.push(['op[tags]', '=']);
-              break;
-          }
+          params.push(['op[tags]', ((nowMode === 'and') ? 'and' : '=')]);
           selectTags.forEach(t => params.push(['v[tags][]', t]));
           // console.log(`tag: ${params}`);
           this.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');

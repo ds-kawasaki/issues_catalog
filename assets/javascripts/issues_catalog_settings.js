@@ -1,5 +1,7 @@
 // jQuery用DOM準備完了時 document ready
 $(function () {
+  'use strict';
+
   //  一括タグカテゴリの「一括追加」「一括削除」ボタン押下時
   $('#form-bulk-edit-tag-categories button').on('click', function () {
     const selectCategories = $('#select-catalog-tag-categories').val();
