@@ -47,6 +47,9 @@
 .catalog-icon-clear-selected {
   background-image: url(/images/close_hl.png);
 }
+.catalog-icon-folder {
+  background-image: url(/images/folder.png);
+}
 
 #form-search-tag {
   background-color: azure;
