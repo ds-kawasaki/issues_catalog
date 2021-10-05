@@ -50,22 +50,26 @@ module IssuesCatalogHelper
                 end
                 div_tr << "\n"
               end
+              col_cf2 = catalog_columns[:cf_2]
+              unless col_cf2.nil?
+                val_okiba = format_object(col_cf2.value_object(issue))
+                val_okiba[0] = '' if val_okiba[0] == '"'
+                val_okiba[-1] = '' if val_okiba[-1] == '"'
+              end
               # subject
               col_subject = catalog_columns[:subject]
               unless col_subject.nil?
-                div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: col_subject.css_classes)
+                subject_css = col_subject.css_classes.to_s
+                subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
+                div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: subject_css)
                 div_tr << "\n"
               end
               # cf1
               col_cf1 = catalog_columns[:cf_1]
-              col_cf2 = catalog_columns[:cf_2]
               unless col_cf1.nil?
                 val_preview = format_object(col_cf1.value_object(issue))
-                val_okiba = format_object(col_cf2.value_object(issue)) unless col_cf2.nil?
                 val_preview[0] = '' if val_preview[0] == '"'
                 val_preview[-1] = '' if val_preview[-1] == '"'
-                val_okiba[0] = '' if val_okiba[0] == '"'
-                val_okiba[-1] = '' if val_okiba[-1] == '"'
                 preview = ''.html_safe
                 if MOVIE_EXTS.include?(File.extname(val_preview))
                   preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
@@ -76,7 +80,7 @@ module IssuesCatalogHelper
                                        'data-src': get_visuals_path(val_preview), size: '300x300',
                                         class: 'lozad')
                 end
-                unless val_okiba.empty?
+                if val_okiba.present?
                   if val_okiba.start_with?('Q:', 'q:')
                     val_okiba.slice!(0, 2)
                     val_okiba = 'dseeds.local/data' << val_okiba
@@ -107,6 +111,19 @@ module IssuesCatalogHelper
 
   def get_visuals_path(path_text)
     'https://wLb8vs.d-seeds.com/visuals?path=' << Base64.urlsafe_encode64(path_text)
+  end
+
+  def is_sozai(path_text)
+    return false if path_text.blank? || path_text.length < 5
+
+    # フォルダ名に'.'入っている場合 File.extname だけだと誤判定する。末尾が '.'+3文字 or .jpeg で判定する
+    path_text[-4] == '.' || path_text.slice(-5, 5).casecmp?('.jpeg')
+  end
+
+  def is_foler(path_text)
+    return false if path_text.blank?
+
+    !is_sozai(path_text)
   end
 
   def render_selected_cagalog_tags
