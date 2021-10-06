@@ -10,6 +10,10 @@ module IssuesCatalog
           CatalogTagCategory.search_by_project(self.id)
         end
 
+        def catalog_tag_groups
+          CatalogTagGroup.search_by_project(self.id)
+        end
+
         def catalog_tags(options = {})
           available_catalog_tags options.merge(project: self)
         end

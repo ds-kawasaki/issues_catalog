@@ -9,7 +9,7 @@ class CatalogTagGroupsController < ApplicationController
   def index
     respond_to do |format|
       format.html { redirect_to_settings_in_projects }
-      format.api { @catalog_tag_group = @project.catalog_tag_categories.to_a }
+      format.api { @catalog_tag_group = @project.catalog_tag_groups.to_a }
     end
   end
 
@@ -21,7 +21,7 @@ class CatalogTagGroupsController < ApplicationController
   end
 
   def new
-    @catalog_tag_group = @project.catalog_tag_categories.build
+    @catalog_tag_group = @project.catalog_tag_groups.build
     @catalog_tag_group.safe_attributes = params[:catalog_tag_group]
 
     respond_to do |format|
@@ -31,7 +31,7 @@ class CatalogTagGroupsController < ApplicationController
   end
 
   def create
-    @catalog_tag_group = @project.catalog_tag_categories.build
+    @catalog_tag_group = @project.catalog_tag_groups.build
     @catalog_tag_group.safe_attributes = catalog_tag_group_params
     @catalog_tag_group.project = @project
     if @catalog_tag_group.save
@@ -59,10 +59,10 @@ class CatalogTagGroupsController < ApplicationController
     @catalog_tag_group.safe_attributes = catalog_tag_group_params
     if @catalog_tag_group.save
       respond_to do |format|
-        format.html {
+        format.html do
           flash[:notice] = l(:notice_successful_update)
           redirect_to_settings_in_projects
-        }
+        end
         format.api { render_api_ok }
       end
     else
@@ -74,18 +74,13 @@ class CatalogTagGroupsController < ApplicationController
   end
 
   def destroy
-    # ここでカテゴリ割り当ててるタグを開放する 
-    @catalog_tag_group.catalog_relation_tag_groups.destroy_all
-    if @catalog_tag_group.save
-      respond_to do |format|
-        format.html { redirect_to_settings_in_projects }
-        format.api { render_api_ok }
+    @catalog_tag_group.destroy
+    respond_to do |format|
+      format.html do
+        flash[:notice] = l(:notice_successful_delete)
+        redirect_to_settings_in_projects
       end
-    else
-      respond_to do |format|
-        format.html { redirect_to_settings_in_projects }
-        format.api { render_validation_errors(@catalog_tag_group) }
-      end
+      format.api { render_api_ok }
     end
   end
 

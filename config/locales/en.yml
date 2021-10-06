@@ -31,3 +31,6 @@ en:
   label_user_favorites: "'s Favorites"
   lavel_me: "Me"
   lavel_filter: "Filter"
+  label_catalog_tag_groups: "Tag Groups"
+  label_catalog_tag_group: "Tag Group"
+  label_catalog_tag_group_new: "New Tag Group"

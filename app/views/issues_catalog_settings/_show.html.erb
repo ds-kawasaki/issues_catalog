@@ -37,6 +37,35 @@
   <% end %>
 </fieldset>
 
+<fieldset class="box tabular" id="issues_catalog_manage_groups">
+  <legend><%= l(:label_catalog_tag_groups)%></legend>
+  <div><%= link_to l(:label_catalog_tag_group_new), new_project_catalog_tag_group_path(@project), :class => 'icon icon-add' %></div>
+  <% catalog_tag_groups = @project.catalog_tag_groups %>
+  <% unless catalog_tag_groups.empty? %>
+    <table class="list catalog-tag-groups">
+      <thead><tr>
+        <th><%= l(:label_catalog_tag_groups) %></th>
+        <th><%= l(:label_optional_description) %></th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+      <% for catalog_tag_group in catalog_tag_groups %>
+        <tr id=<%= "catalog_tag_group-#{catalog_tag_group.id}" %> >
+          <td class="name edit-group"><%= catalog_tag_group.name %></td>
+          <td class="description edit-group"><%= catalog_tag_group.description %></td>
+          <td class="buttons">
+            <%= link_to l(:button_edit), edit_catalog_tag_group_path(catalog_tag_group), :class => 'icon icon-edit' %>
+            <%= delete_link catalog_tag_group_path(catalog_tag_group) %>
+          </td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p class="nodata"><%= l :label_no_data %></p>
+  <% end %>
+</fieldset>
+
 <fieldset class="box tabular" id="issues_catalog_manage_tags">
   <legend><%= l(:label_tags) %></legend>
   <% tags = @project.catalog_tags %>

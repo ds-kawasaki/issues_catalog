@@ -165,6 +165,9 @@ td.preview:hover .preview-description {
 table.catalog-tag-categories {
   width: max-content;
 }
+table.catalog-tag-groups {
+  width: max-content;
+}
 table.catalog-tags {
   width: max-content;
 }
