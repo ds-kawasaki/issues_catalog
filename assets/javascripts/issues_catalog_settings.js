@@ -45,6 +45,18 @@ $(function () {
     }
     $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
   };
+  // タググループ名称変更を各所の表示反映
+  const updateGroupName = (group_id, oldName, newName) => {
+    for (const edit of document.querySelectorAll('.edit3-tag')) {
+      if (edit.innerText.includes(oldName)) {
+        edit.innerText = edit.innerText.replace(oldName, newName);
+      }
+    }
+    const orgGroupSelect = document.querySelector('#work-tag-group');
+    for (const option of orgGroupSelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+  };
 
   //  タグカテゴリの項目編集
   const editedCategoryItem = (target, value, oldValue) => {
@@ -59,6 +71,22 @@ $(function () {
       if (column === 'name') { updateCategoryName(category_id, oldValue, value); }  // タグカテゴリ名称変更を各所の表示反映
     }).fail(function (jqXHR, textStatus) {
       console.log(`category change failed: ${category_id} : ${column} : ${value} : ${textStatus}`);
+      target.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
+  };
+  //  タググループの項目編集
+  const editedGroupItem = (target, value, oldValue) => {
+    const group_id = target.parentNode?.id?.slice(18); // 18='catalog_tag_group-'.length
+    const column = target.classList.item(0);
+    $.ajax({
+      type: 'PATCH',
+      url: '/catalog_tag_groups/field_update/',
+      data: `id=${group_id}&catalog_tag_group[${column}]=${value}`,
+    }).done(function () {
+      // console.log(`group changed: ${group_id} : ${column} : ${value}`);
+      if (column === 'name') { updateGroupName(group_id, oldValue, value); }  // タグカテゴリ名称変更を各所の表示反映
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`group change failed: ${group_id} : ${column} : ${value} : ${textStatus}`);
       target.innerText = oldValue;  //  更新失敗したので元に戻す 
     });
   };
@@ -110,6 +138,7 @@ $(function () {
     }
   };
   setupEdit('.edit-category', editedCategoryItem);
+  setupEdit('.edit-group', editedGroupItem);
   setupEdit('.edit-tag', editedTagItem);
 
 
