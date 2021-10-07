@@ -63,7 +63,7 @@ class CatalogTagsController < ApplicationController
   private
 
   def catalog_tag_params
-    params.require(:catalog_tag).permit(:name, catalog_tag_category_ids: [])
+    params.require(:catalog_tag).permit(:name, :description, catalog_tag_category_ids: [], catalog_tag_group_ids: [])
   end
 
   def redirect_to_settings_in_projects

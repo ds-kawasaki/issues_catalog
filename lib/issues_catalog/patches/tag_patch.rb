@@ -7,6 +7,10 @@ module IssuesCatalog
           has_many :catalog_relation_tag_categories
           has_many :catalog_tag_categories, :through => :catalog_relation_tag_categories
           accepts_nested_attributes_for :catalog_relation_tag_categories, allow_destroy: true
+
+          has_many :catalog_relation_tag_groups
+          has_many :catalog_tag_groups, :through => :catalog_relation_tag_groups
+          accepts_nested_attributes_for :catalog_relation_tag_groups, allow_destroy: true
         end
       end
 
