@@ -25,6 +25,16 @@ module IssuesCatalog
             ""
           end
         end
+
+        def catalog_tag_group_names(project_id)
+          if self.catalog_tag_groups.any?
+            self.catalog_tag_groups.map do |i|
+              i.name if i.project_id == project_id
+            end.join(', ')
+          else
+            ""
+          end
+        end
       end
     end
   end
