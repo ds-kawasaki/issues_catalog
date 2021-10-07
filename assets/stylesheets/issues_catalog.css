@@ -17,6 +17,7 @@
   padding: 2px 4px;
   display: inline-block;
   margin: 1px;
+  position: relative;
 }
 .catalog-tag-label a {
   color: inherit;
@@ -25,6 +26,34 @@
   color: #666;
   background-color: #ddd;
 }
+.tag-tooltip {
+  display: none;
+  position: absolute;
+  width: max-content;
+  min-width: 80px;
+  padding: 10px;
+  line-height: 1.6em;
+  border-radius: 10px;
+  color: whitesmoke;
+  background-color: black;
+  transition: all 0.1s;
+}
+.tag-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: 40px;
+  border: 15px solid transparent;
+  border-top: 15px solid black;
+  margin-left: -30px;
+  transform: rotate(180deg);
+}
+.catalog-tag-label:hover .tag-tooltip {
+  display: block;
+  top: 30px;
+  left: 0px;
+}
+
 
 .catalog-my-favorite {
   padding: 4px 4px;

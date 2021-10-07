@@ -405,16 +405,21 @@ module IssuesCatalogHelper
     else
       content = link_to(name, '#')
     end
+
+    at = @catalog_all_tags[name]
     if show_count
       st = @catalog_selected_tags[name]
       selected_count = st ? st[:count] : 0
-      at = @catalog_all_tags[name]
       all_count = at ? at[:count] : 0
       count = (@tags_operator == 'and') ? selected_count : all_count
       content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
       if count == 0
         tag_class << ' catalog-count-zero'
       end
+    end
+
+    if at && at[:description]
+      content << content_tag(:div, content_tag(:div, at[:description], class: 'tag-description'), class: 'tag-tooltip')
     end
 
     content_tag 'span', content, class: tag_class

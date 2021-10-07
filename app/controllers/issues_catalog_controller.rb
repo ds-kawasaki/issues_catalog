@@ -125,10 +125,10 @@ class IssuesCatalogController < ApplicationController
 
     @catalog_all_tags = ActsAsTaggableOn::Tag
       .joins(:taggings)
-      .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
-      .group('tags.id, tags.name, tags.taggings_count')
+      .select('tags.id, tags.name, tags.description, tags.taggings_count, COUNT(taggings.id) as count')
+      .group('tags.id, tags.name, tags.description, tags.taggings_count')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
+      .map { |tag| [tag.name, { id: tag.id, count: tag.count, description: tag.description }] }
       .to_h
   end
 
