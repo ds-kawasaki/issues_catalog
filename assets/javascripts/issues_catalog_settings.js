@@ -35,8 +35,8 @@ $(function () {
         edit.innerText = edit.innerText.replace(oldName, newName);
       }
     }
-    const orgSelect = document.querySelector('#work-tag-category');
-    for (const option of orgSelect?.options) {
+    const orgCategorySelect = document.querySelector('#work-tag-category');
+    for (const option of orgCategorySelect?.options) {
       if (option.text === oldName) { option.text = newName; }
     }
     const bulkSelect = document.querySelector('#select-catalog-tag-categories');
@@ -113,15 +113,15 @@ $(function () {
   setupEdit('.edit-tag', editedTagItem);
 
   //  タグのカテゴリ選択編集
-  const orgSelect = document.querySelector('#work-tag-category');
-  if (orgSelect) {
-    const makeSelect = (orgText, tmpSelect_id) => {
+  const orgCategorySelect = document.querySelector('#work-tag-category');
+  if (orgCategorySelect) {
+    const makeCategorySelect = (orgText, tmpSelect_class, tmpSelect_id) => {
       const orgValues = orgText.split(',').map(x => x.trim());
       const newSelect = document.createElement('select');
       newSelect.id = tmpSelect_id;
-      newSelect.className = 'tmp-select';
+      newSelect.className = tmpSelect_class;
       newSelect.multiple = true;
-      for (const option of orgSelect.options) {
+      for (const option of orgCategorySelect.options) {
         const op = document.createElement('option');
         op.value = option.value;
         op.text = option.text;
@@ -130,7 +130,7 @@ $(function () {
       }
       return newSelect;
     };
-    const setupSelect2 = ($newSelect, target, tag_id) => {
+    const setupCategorySelect2 = ($newSelect, target, tag_id) => {
       $newSelect.select2({
         width: 'resolve',
         placeholder: 'Multi-select',
@@ -164,14 +164,78 @@ $(function () {
     for (const edit of document.querySelectorAll('.edit2-tag')) {
       edit.addEventListener('click', function (event) {
         const target = this;
-        const tmp = target.querySelector('.tmp-select');
+        const tmp = target.querySelector('.tmp-category-select');
         if (tmp) { return; }
         const tag_id = target.parentNode?.id?.slice(4); // 4='tag-'.length
         target.setAttribute('data-value', target.innerText);
-        const newSelect = makeSelect(target.innerText, `tmp-select-${tag_id}`);
+        const newSelect = makeCategorySelect(target.innerText, 'tmp-category-select', `tmp-category-select-${tag_id}`);
         target.innerText = '';
         target.appendChild(newSelect);
-        setupSelect2($(newSelect), target, tag_id);
+        setupCategorySelect2($(newSelect), target, tag_id);
+      });
+    }
+  }
+
+  //  タグのグループ選択編集
+  const orgGroupSelect = document.querySelector('#work-tag-group');
+  if (orgGroupSelect) {
+    const makeGroupSelect = (orgText, tmpSelect_class, tmpSelect_id) => {
+      const orgValues = orgText.split(',').map(x => x.trim());
+      const newSelect = document.createElement('select');
+      newSelect.id = tmpSelect_id;
+      newSelect.className = tmpSelect_class;
+      newSelect.multiple = true;
+      for (const option of orgGroupSelect.options) {
+        const op = document.createElement('option');
+        op.value = option.value;
+        op.text = option.text;
+        if (orgValues.includes(op.text)) { op.setAttribute('selected', 'selected'); }
+        newSelect.appendChild(op);
+      }
+      return newSelect;
+    };
+    const setupGroupSelect2 = ($newSelect, target, tag_id) => {
+      $newSelect.select2({
+        width: 'resolve',
+        placeholder: 'Multi-select',
+        closeOnSelect: false,
+        allowClear: false
+      });
+      $newSelect.select2('open');
+      $newSelect.on('select2:close', function (event) {
+        const values = Array.from(this.options).filter(x => x.selected).map(x => x.text).join(', ');
+        let sendValues = Array.from(this.options).filter(x => x.selected).map(x => x.value);
+        if (sendValues.length == 0) { sendValues = ['']; }
+        while (target.firstChild) { target.removeChild(target.firstChild); }
+        target.innerText = values;
+        const oldValue = target.getAttribute('data-value');
+        if (oldValue === values) { return; }
+        event.preventDefault();
+        const data = { 'id': tag_id, 'catalog_tag': { 'catalog_tag_group_ids': sendValues } }
+        $.ajax({
+          type: 'PATCH',
+          url: '/catalog_tags/field_update/',
+          data: data,
+          dataType: 'json'
+        }).done(function () {
+          console.log(`tag changed ${tag_id} : ${sendValues}`);
+        }).fail(function (jqXHR, textStatus) {
+          console.log(`tag change failed: ${tag_id} : ${sendValues} : ${textStatus}`);
+          target.innerText = oldValue;  //  更新失敗したので元に戻す 
+        });
+      });
+    };
+    for (const edit of document.querySelectorAll('.edit3-tag')) {
+      edit.addEventListener('click', function (event) {
+        const target = this;
+        const tmp = target.querySelector('.tmp-group-select');
+        if (tmp) { return; }
+        const tag_id = target.parentNode?.id?.slice(4); // 4='tag-'.length
+        target.setAttribute('data-value', target.innerText);
+        const newSelect = makeGroupSelect(target.innerText, 'tmp-group-select', `tmp-group-select-${tag_id}`);
+        target.innerText = '';
+        target.appendChild(newSelect);
+        setupGroupSelect2($(newSelect), target, tag_id);
       });
     }
   }

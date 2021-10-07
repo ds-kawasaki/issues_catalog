@@ -88,7 +88,7 @@
             <td class="name edit-tag"><%= tag.name %></td>
             <td class="description edit-tag"><%= tag.description %></td>
             <td class="category edit2-tag"><%= tag.catalog_tag_category_names(@project.id) %></td>
-            <td class="group"><%= tag.catalog_tag_group_names(@project.id) %></td>
+            <td class="group edit3-tag"><%= tag.catalog_tag_group_names(@project.id) %></td>
             <td class="buttons">
               <%= link_to(l(:button_edit), edit_project_catalog_tag_path(tag), class: 'icon icon-edit') %>
             </td>
@@ -96,9 +96,15 @@
         <% end %>
       </tbody>
     </table>
-    <% items = select_items_catalog_tag_categories %>
+    <% category_items = select_items_catalog_tag_categories %>
+    <% group_items = @project.catalog_tag_groups.collect { |c| [c.name, c.id] } %>
     <select name="work" id="work-tag-category" multiple style="display:none;">
-      <% items.each do |item| %>
+      <% category_items.each do |item| %>
+        <option value=<%= item[1] %> ><%= item[0] %></option>
+      <% end %>
+    </select>
+    <select name="work" id="work-tag-group" multiple style="display:none;">
+      <% group_items.each do |item| %>
         <option value=<%= item[1] %> ><%= item[0] %></option>
       <% end %>
     </select>
@@ -109,7 +115,7 @@
         <%= hidden_field_tag 'operate', 'none' %>
         <%= error_messages_for 'catalog_tag' %>
         <%= form.select :catalog_tag_category_ids,
-                items,
+                category_items,
                 { label: :label_catalog_tag_category }, { multiple: true, id: 'select-catalog-tag-categories' } %>
         <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
         <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
