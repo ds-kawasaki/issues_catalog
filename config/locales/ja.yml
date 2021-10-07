@@ -34,3 +34,4 @@ ja:
   label_catalog_tag_groups: "タググループ"
   label_catalog_tag_group: "タググループ"
   label_catalog_tag_group_new: "新しいタググループ"
+  label_bulk_edit_tag_groups: "チェックしたタグに一括タググループ編集"

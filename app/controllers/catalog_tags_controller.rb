@@ -29,21 +29,41 @@ class CatalogTagsController < ApplicationController
     operate = params[:operate]
     return if operate.blank? || operate == 'none'
 
-    sabun = params[:catalog_tag_category_ids].reject(&:blank?).map(&:to_i)
+    if params[:catalog_tag_category_ids].present?
+      category_sabun = params[:catalog_tag_category_ids].reject(&:blank?).map(&:to_i)
+      ActsAsTaggableOn::Tag.where(id: params[:ids]).each do |tag|
+        old_category_list = tag.catalog_tag_category_ids.to_s
 
-    ActsAsTaggableOn::Tag.where(id: params[:ids]).each do |tag|
-      old_list = tag.catalog_tag_category_ids.to_s
+        case operate
+        when 'op_add'
+          tag.catalog_tag_category_ids |= category_sabun
+        when 'op_del'
+          tag.catalog_tag_category_ids -= category_sabun
+        end
 
-      case operate
-      when 'op_add'
-        tag.catalog_tag_category_ids |= sabun
-      when 'op_del'
-        tag.catalog_tag_category_ids -= sabun
+        new_category_list = tag.catalog_tag_category_ids.to_s
+        unless old_category_list == new_category_list
+          tag.save
+        end
       end
+    end
 
-      new_list = tag.catalog_tag_category_ids.to_s
-      unless old_list == new_list
-        tag.save
+    if params[:catalog_tag_group_ids].present?
+      group_sabun = params[:catalog_tag_group_ids].reject(&:blank?).map(&:to_i)
+      ActsAsTaggableOn::Tag.where(id: params[:ids]).each do |tag|
+        old_group_list = tag.catalog_tag_group_ids.to_s
+
+        case operate
+        when 'op_add'
+          tag.catalog_tag_group_ids |= group_sabun
+        when 'op_del'
+          tag.catalog_tag_group_ids -= group_sabun
+        end
+
+        new_group_list = tag.catalog_tag_group_ids.to_s
+        unless old_group_list == new_group_list
+          tag.save
+        end
       end
     end
 

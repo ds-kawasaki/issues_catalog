@@ -121,6 +121,19 @@
         <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
       <% end %>
     </fieldset>
+    <fieldset class="box tabular">
+      <legend><%= l(:label_bulk_edit_tag_groups) %></legend>
+      <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-groups') do |form| %>
+        <%= hidden_field_tag 'project_id', @project.id %>
+        <%= hidden_field_tag 'operate', 'none' %>
+        <%= error_messages_for 'catalog_tag' %>
+        <%= form.select :catalog_tag_group_ids,
+                group_items,
+                { label: :label_catalog_tag_group }, { multiple: true, id: 'select-catalog-tag-groups' } %>
+        <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-groups' %>
+        <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-groups' %>
+      <% end %>
+    </fieldset>
   <% else %>
     <p class="nodata"><%= l :label_no_data %></p>
   <% end %>

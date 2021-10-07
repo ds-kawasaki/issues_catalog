@@ -2,23 +2,28 @@
 $(function () {
   'use strict';
 
-  //  一括タグカテゴリの「一括追加」「一括削除」ボタン押下時
-  $('#form-bulk-edit-tag-categories button').on('click', function () {
-    const selectCategories = $('#select-catalog-tag-categories').val();
-    if (!selectCategories.length) { return; }
-    // console.log(selectCategories);
-    const form = $(this).parents('form');
-    form.find('[name=ids\\[\\]]').remove();
-    let checkIdes = false;
-    $('input[name=ids\\[\\]]:checked').each(function () {
-      $('<input>').attr({ 'type': 'hidden', 'name': 'ids[]' }).val($(this).val()).appendTo(form);
-      checkIdes = true;
+  const setupBulkFormButton = (buttonQuery, selectQuery) => {
+    $(buttonQuery).on('click', function () {
+      const selects = $(selectQuery).val();
+      if (!selects.length) { return; }
+      // console.log(selects);
+      const form = $(this).parents('form');
+      form.find('[name=ids\\[\\]]').remove();
+      let checkIdes = false;
+      $('input[name=ids\\[\\]]:checked').each(function () {
+        $('<input>').attr({ 'type': 'hidden', 'name': 'ids[]' }).val($(this).val()).appendTo(form);
+        checkIdes = true;
+      });
+      if (checkIdes) {
+        form.find('[name=operate]').val($(this).val());
+        form.submit();
+      }
     });
-    if (checkIdes) {
-      form.find('[name=operate]').val($(this).val());
-      form.submit();
-    }
-  });
+  };
+  //  一括タグカテゴリの「一括追加」「一括削除」ボタン押下時
+  setupBulkFormButton('#form-bulk-edit-tag-categories button', '#select-catalog-tag-categories');
+  //  一括タググループの「一括追加」「一括削除」ボタン押下時
+  setupBulkFormButton('#form-bulk-edit-tag-groups button', '#select-catalog-tag-groups');
 
   //  すべてにチェックつける・はずす
   $('input[type=checkbox].toggle-selection').on('change', function () {
@@ -56,6 +61,11 @@ $(function () {
     for (const option of orgGroupSelect?.options) {
       if (option.text === oldName) { option.text = newName; }
     }
+    const bulkSelect = document.querySelector('#select-catalog-tag-groups');
+    for (const option of bulkSelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
   };
 
 
