@@ -88,10 +88,18 @@ $(function () {
         type: 'PATCH',
         url: targetUrl,
         data: `id=${targetId}&${paramName}[${column}]=${value}`,
-      }).done(function () {
-        // console.log(`${paramName} changed: ${targetId} : ${column} : ${value}`);
-        if (column === 'name' && editedCallback) {
-          editedCallback(targetId, oldValue, value); // 名称変更を各所の表示反映
+      }).done(function (data) {
+        if (data.status === 'SUCCESS') {
+          if (column === 'name' && editedCallback) {
+            editedCallback(targetId, oldValue, value); // 名称変更を各所の表示反映
+          }
+        } else {
+          console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
+          if (data.message) {
+            alert(data.message);
+            console.log(data.message);
+          }
+          target.innerText = oldValue;  //  更新失敗したので元に戻す 
         }
       }).fail(function (jqXHR, textStatus) {
         console.log(`${paramName} change failed: ${targetId} : ${column} : ${value} : ${textStatus}`);
@@ -157,14 +165,22 @@ $(function () {
           const oldValue = target.getAttribute('data-value');
           if (oldValue === values) { return; }
           event.preventDefault();
-          const data = { 'id': tag_id, 'catalog_tag': { [param_ids]: sendValues } }
           $.ajax({
             type: 'PATCH',
             url: '/catalog_tags/field_update/',
-            data: data,
+            data: { 'id': tag_id, 'catalog_tag': { [param_ids]: sendValues } },
             dataType: 'json'
-          }).done(function () {
-            // console.log(`tag changed ${tag_id} : ${sendValues}`);
+          }).done(function (data) {
+            if (data.status === 'SUCCESS') {
+              // console.log(`tag changed ${tag_id} : ${sendValues}`);
+            } else {
+              console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
+              if (data.message) {
+                alert(data.message);
+                console.log(data.message);
+              }
+              target.innerText = oldValue;  //  更新失敗したので元に戻す 
+            }
           }).fail(function (jqXHR, textStatus) {
             console.log(`tag change failed: ${tag_id} : ${sendValues} : ${textStatus}`);
             target.innerText = oldValue;  //  更新失敗したので元に戻す 
