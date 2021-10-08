@@ -72,7 +72,8 @@ $(function () {
   const setupEdit = (className, idSliceNum, targetUrl, paramName, editedCallback) => {
     const editedItem = (event) => {
       const target = event.target;
-      target.innerText = target.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+      // target.innerText = target.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+      target.innerText = target.innerText.replace(/[\r\n]/g, '');  //  改行削除 
       const oldValue = target.getAttribute('data-value');
       if (oldValue === target.innerText) return true;
       if (target.innerText.length === 0) {
