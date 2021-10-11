@@ -150,6 +150,27 @@ module IssuesCatalogHelper
         div_m_op << label_tag('radio-select-mode-or', l(:label_operator_or), class: 'label-select-mode')
       end
     end
+    if @catalog_selected_tag_groups.present?
+      content << content_tag(:hr, '', class: 'catalog-separator')
+      content << content_tag_push(:div, class: 'catalog-selected-tag-groups') do |div_grp|
+        div_grp << content_tag(:div, l(:label_selected_tag_group), class: 'catalog-lavel-selected-tag-group')
+        @catalog_selected_tag_groups.each do |group|
+          div_grp << content_tag_push(:fieldset, '', class: 'catalog-tag-group') do |field|
+            field << content_tag(:legend, group.name)
+            field << content_tag(:div, group.description)
+            tmp_tags = ActsAsTaggableOn::Tag
+              .includes(:catalog_relation_tag_groups)
+              .where(catalog_relation_tag_groups: {catalog_tag_group_id: group.id})
+              .distinct
+              .order('tags.name')
+              .pluck('tags.name')
+            tmp_tags.each do |tag|
+              field << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+            end
+          end
+        end
+      end
+    end
     content
   end
 
@@ -405,16 +426,21 @@ module IssuesCatalogHelper
     else
       content = link_to(name, '#')
     end
+
+    at = @catalog_all_tags[name]
     if show_count
       st = @catalog_selected_tags[name]
       selected_count = st ? st[:count] : 0
-      at = @catalog_all_tags[name]
       all_count = at ? at[:count] : 0
       count = (@tags_operator == 'and') ? selected_count : all_count
       content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
       if count == 0
         tag_class << ' catalog-count-zero'
       end
+    end
+
+    if at && at[:description]
+      content << content_tag(:div, content_tag(:div, at[:description], class: 'tag-description'), class: 'tag-tooltip')
     end
 
     content_tag 'span', content, class: tag_class

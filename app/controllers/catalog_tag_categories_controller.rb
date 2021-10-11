@@ -95,7 +95,8 @@ class CatalogTagCategoriesController < ApplicationController
     if @catalog_tag_category.save
       render json: @catalog_tag_category
     else
-      head :bad_request
+      messages = Array.wrap(@catalog_tag_category).map {|object| object.errors.full_messages}.flatten.join('\n')
+      render json: { status: 'ERROR', message: messages, data: @catalog_tag_category }
     end
   end
 

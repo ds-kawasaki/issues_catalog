@@ -1,0 +1,7 @@
+<h2><%=l(:label_catalog_tag_group_new)%></h2>
+
+<%= labelled_form_for @catalog_tag_group, :as => :catalog_tag_group,
+                      :url => project_catalog_tag_groups_path(@project) do |f| %>
+<%= render :partial => 'catalog_tag_groups/form', :locals => { :f => f } %>
+<%= submit_tag l(:button_create) %>
+<% end %>

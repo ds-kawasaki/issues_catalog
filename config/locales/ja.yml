@@ -31,3 +31,8 @@ ja:
   label_user_favorites: "さんのお気に入り"
   lavel_me: "自分"
   lavel_filter: "選択素材のみ表示"
+  label_catalog_tag_groups: "タググループ"
+  label_catalog_tag_group: "タググループ"
+  label_catalog_tag_group_new: "新しいタググループ"
+  label_bulk_edit_tag_groups: "チェックしたタグに一括タググループ編集"
+  label_selected_tag_group: "選択タグに関連するグループ"
