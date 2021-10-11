@@ -28,6 +28,7 @@ class IssuesCatalogController < ApplicationController
     make_select_filters
     make_catalog_all_tags
     make_catalog_selected_tags
+    make_catalog_selected_groups
 
     # javascriptに渡すもの
     @to_js_param = {'select_mode' => @select_mode,
@@ -56,8 +57,10 @@ class IssuesCatalogController < ApplicationController
   def update_tag
     operate = params[:operate]
     return if operate.blank?
+
     sabun = params[:tag_list]
     return if sabun.blank?
+
     sabun = sabun.split(ActsAsTaggableOn.delimiter) unless sabun.is_a?(Array)
 
     Issue.where(:id => params[:issue_ids]).each do |issue|
@@ -151,4 +154,16 @@ class IssuesCatalogController < ApplicationController
     end
   end
 
+  def make_catalog_selected_groups
+    @catalog_selected_tag_groups = []
+    if @select_tags.present?
+      tags_scope = @select_tags.map {|t| @catalog_all_tags[t][:id]}
+      @catalog_selected_tag_groups = CatalogTagGroup
+        .joins(:catalog_relation_tag_groups)
+        .where(catalog_relation_tag_groups: {tag_id: tags_scope})
+        .distinct
+        .order('catalog_tag_groups.name')
+        .to_a
+    end
+  end
 end
