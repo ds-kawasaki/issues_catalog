@@ -197,7 +197,7 @@ module IssuesCatalogHelper
                 .order('tags.name')
                 .pluck('tags.name')
               tmp_tags.each do |tag|
-                div_category << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
+                div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
               end
             end
           end
