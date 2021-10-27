@@ -87,7 +87,7 @@ class CatalogTagGroupsController < ApplicationController
   def field_update
     @catalog_tag_group.safe_attributes = catalog_tag_group_params
     if @catalog_tag_group.save
-      render json: @catalog_tag_group
+      render json: { status: 'SUCCESS', data: @catalog_tag_group }
     else
       messages = Array.wrap(@catalog_tag_group).map {|object| object.errors.full_messages}.flatten.join('\n')
       render json: { status: 'ERROR', message: messages, data: @catalog_tag_group }
