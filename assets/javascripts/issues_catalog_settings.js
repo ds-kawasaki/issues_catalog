@@ -90,8 +90,27 @@ $(function () {
         data: `id=${targetId}&${paramName}[${column}]=${value}`,
       }).done(function (data) {
         if (data.status === 'SUCCESS') {
-          if (column === 'name' && editedCallback) {
-            editedCallback(targetId, oldValue, value); // 名称変更を各所の表示反映
+          if (column === 'name') {
+            if (editedCallback) {
+              editedCallback(targetId, oldValue, value); // 名称変更を各所の表示反映
+            }
+            // const targetTr = target.parentNode;
+            // if (targetTr) { //  name欄編集したら並べ替え 
+            //   const targetTbody = targetTr.parentNode;
+            //   if (targetTbody && targetTbody.children.length > 1) {
+            //     targetTbody.removeChild(targetTr);
+            //     for (const c of targetTbody.children) {
+            //       const cValue = c.querySelector('.name')?.innerText;
+            //       if (cValue > value) {
+            //         targetTbody.insertBefore(targetTr, c);
+            //         break;
+            //       }
+            //     }
+            //     if (!targetTr.parentNode) {
+            //       targetTbody.appendChild(targetTr);
+            //     }
+            //   }
+            // }
           }
         } else {
           console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
