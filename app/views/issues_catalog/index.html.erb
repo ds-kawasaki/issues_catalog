@@ -1,8 +1,7 @@
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('lozad.min', plugin: 'issues_catalog') %>
-
-<div id="issues-catalog-param" data-issues-catalog="<%= @to_js_param.to_json %>"></div>
+<%= javascript_tag("const IssuesCatalogParam = #{@to_js_param.to_json};") %>
 
 <% content_for :sidebar do %>
   <%= render :partial => 'catalog_sidebar' %>

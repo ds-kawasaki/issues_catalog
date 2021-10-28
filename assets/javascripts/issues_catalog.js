@@ -33,12 +33,12 @@ $(function () {
 
 
   // railsから受け取るもの
-  const issuesCatalogParam = $('#issues-catalog-param').data('issues-catalog');
-  // console.log(`select_mode: ${issuesCatalogParam.select_mode}`);
+  // console.log(`select_mode: ${IssuesCatalogParam.select_mode}`);
+  // console.dir(IssuesCatalogParam);
 
   // railsから受け取った選択しているタグ配列
   const getFilterTags = () => {
-    const tags = issuesCatalogParam.select_filters.find(x => x[0] == 'tags');
+    const tags = IssuesCatalogParam.select_filters.find(x => x[0] == 'tags');
     return (tags && tags.length >= 2) ? tags[2] : [];
   };
   // タグ選択モードラジオボタンの現状 
@@ -46,7 +46,7 @@ $(function () {
     for (const radio of document.querySelectorAll('.radio-select-mode')) {
       if (radio.checked) { return radio.value; }
     }
-    return issuesCatalogParam.select_mode;
+    return IssuesCatalogParam.select_mode;
   };
 
 
@@ -267,7 +267,7 @@ $(function () {
         ['sm', nowMode],
         ['f[]', 'tags']
       ];
-      if (issuesCatalogParam.issues_open_only) {
+      if (IssuesCatalogParam.issues_open_only) {
         params.push(['f[]', 'status_id']);
         params.push(['op[status_id]', 'o']);
         params.push(['v[status_id][]', '']);
@@ -341,8 +341,8 @@ $(function () {
       selectTag.addEventListener('click', function (event) {
         const nowMode = getNowSelectMode();
         let tagText = this.innerText;
-        if (tagText.startsWith(issuesCatalogParam.label_clear)) {
-          tagText = tagText.slice(issuesCatalogParam.label_clear.length);
+        if (tagText.startsWith(IssuesCatalogParam.label_clear)) {
+          tagText = tagText.slice(IssuesCatalogParam.label_clear.length);
         }
         // console.log(`selected-tag: ${tagText}`);
         const selectTags = getFilterTags().filter(x => x !== tagText);
