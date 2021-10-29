@@ -27,7 +27,6 @@ class IssuesCatalogController < ApplicationController
 
     make_select_filters
     make_catalog_all_tags
-    make_catalog_selected_tags
     make_catalog_selected_groups
 
     # javascriptに渡すもの
@@ -131,26 +130,22 @@ class IssuesCatalogController < ApplicationController
       .select('tags.id, tags.name, tags.description, tags.taggings_count, COUNT(taggings.id) as count')
       .group('tags.id, tags.name, tags.description, tags.taggings_count')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      .map { |tag| [tag.name, { id: tag.id, count: tag.count, description: tag.description }] }
+      .map { |tag| [tag.name, { id: tag.id, count: tag.count, select_count: 0, description: tag.description }] }
       .to_h
-  end
 
-  def make_catalog_selected_tags
-    @catalog_selected_tags = {}
-    unless @select_filters.empty?
-      issues_scope = Issue.visible.select('issues.id').joins(:project)
-      issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if @issues_open_only
+    if @select_filters.present?
       issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
       issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-
-      @catalog_selected_tags = ActsAsTaggableOn::Tag
+      selected_tags = ActsAsTaggableOn::Tag
         .joins(:taggings)
         .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
         .group('tags.id, tags.name, tags.taggings_count')
         .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-        .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
-        .to_h
+      selected_tags.each do |tag|
+        if @catalog_all_tags[tag.name]
+          @catalog_all_tags[tag.name][:select_count] = tag.count
+        end
+      end
     end
   end
 

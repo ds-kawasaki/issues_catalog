@@ -429,8 +429,7 @@ module IssuesCatalogHelper
 
     at = @catalog_all_tags[name]
     if show_count
-      st = @catalog_selected_tags[name]
-      selected_count = st ? st[:count] : 0
+      selected_count = at ? at[:select_count] : 0
       all_count = at ? at[:count] : 0
       count = (@tags_operator == 'and') ? selected_count : all_count
       content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
