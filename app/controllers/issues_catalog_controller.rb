@@ -33,7 +33,10 @@ class IssuesCatalogController < ApplicationController
     @to_js_param = {'select_mode' => @select_mode,
                     'issues_open_only' => @issues_open_only,
                     'label_clear' => l(:button_clear),
-                    'select_filters' => @select_filters }
+                    'select_filters' => @select_filters,
+                    'tags' => get_catalog_all_tags,
+                    'tag_categories' => get_catalog_tag_categories,
+                    'tag_groups' => get_catalog_tag_groups}
   end
 
   def add_tag
@@ -130,7 +133,8 @@ class IssuesCatalogController < ApplicationController
       .select('tags.id, tags.name, tags.description, tags.taggings_count, COUNT(taggings.id) as count')
       .group('tags.id, tags.name, tags.description, tags.taggings_count')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      .map { |tag| [tag.name, { id: tag.id, count: tag.count, select_count: 0, description: tag.description }] }
+      .preload(:catalog_tag_categories, :catalog_tag_groups)
+      .map { |tag| [tag.name, { id: tag.id, count: tag.count, select_count: 0, description: tag.description, categories: tag.catalog_tag_category_ids, groups: tag.catalog_tag_group_ids }] }
       .to_h
 
     if @select_filters.present?
@@ -147,6 +151,30 @@ class IssuesCatalogController < ApplicationController
         end
       end
     end
+  end
+
+  def get_catalog_all_tags
+    tmp_tags = @catalog_all_tags.map do |key, val|
+      { name: key, id: val[:id], count: val[:count], select_count: val[:select_count], description: val[:description], categories: val[:categories], groups: val[:groups] }
+    end
+    tmp_tags.sort_by! {|v| v[:name]}
+  end
+
+  def get_catalog_tag_categories
+    tmp_categories = CatalogTagCategory.search_by_project(@project.id).map do |cate|
+      { name: cate.name, id: cate.id, description: cate.description }
+    end
+    tmp_categories.sort_by! {|v| v[:name]}
+
+    always = CatalogTagCategory.always
+    tmp_categories.unshift({ name: always.name, id: always.id, description: always.description })
+  end
+
+  def get_catalog_tag_groups
+    tmp_groups = CatalogTagGroup.search_by_project(@project.id).map do |grp|
+      { name: grp.name, id: grp.id, description: grp.description }
+    end
+    tmp_groups.sort_by! {|v| v[:name]}
   end
 
   def make_catalog_selected_groups
