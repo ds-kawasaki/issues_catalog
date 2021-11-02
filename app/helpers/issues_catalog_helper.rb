@@ -126,89 +126,11 @@ module IssuesCatalogHelper
     !is_sozai(path_text)
   end
 
-  def render_selected_cagalog_tags
-    content = ''.html_safe
-    unless @select_tags.nil?
-      content << content_tag_push(:div, class: 'selected-tags') do |div_tags|
-        op = (@tags_operator == 'and') ? ' and ' : ' or '
-        @select_tags.each_with_index do |t, i|
-          tag = @catalog_all_tags[t]
-          unless tag.nil?
-            div_tags << content_tag(:span, op) if i > 0
-            div_tags << render_catalog_link_tag(t, show_count: true, add_del_btn_selected: true)
-          end
-        end
-        div_tags << content_tag(:span, " : ")
-        div_tags << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
-      end
-      content << content_tag_push(:div, class: 'catalog-select-mode-operation') do |div_m_op|
-        div_m_op << radio_button_tag('select-mode', 'one', @select_mode == 'one', id: 'radio-select-mode-one', class: 'radio-select-mode')
-        div_m_op << label_tag('radio-select-mode-one', l(:label_operator_one), class: 'label-select-mode')
-        div_m_op << radio_button_tag('select-mode', 'and', @select_mode == 'and', id: 'radio-select-mode-and', class: 'radio-select-mode')
-        div_m_op << label_tag('radio-select-mode-and', l(:label_operator_and), class: 'label-select-mode')
-        div_m_op << radio_button_tag('select-mode', 'or', @select_mode == 'or', id: 'radio-select-mode-or', class: 'radio-select-mode')
-        div_m_op << label_tag('radio-select-mode-or', l(:label_operator_or), class: 'label-select-mode')
-      end
-    end
-    if @catalog_selected_tag_groups.present?
-      content << content_tag(:hr, '', class: 'catalog-separator')
-      content << content_tag_push(:div, class: 'catalog-selected-tag-groups') do |div_grp|
-        div_grp << content_tag(:div, l(:label_selected_tag_group), class: 'catalog-lavel-selected-tag-group')
-        @catalog_selected_tag_groups.each do |group|
-          div_grp << content_tag_push(:fieldset, '', class: 'catalog-tag-group') do |field|
-            field << content_tag(:legend, group.name)
-            field << content_tag(:div, group.description)
-            tmp_tags = ActsAsTaggableOn::Tag
-              .includes(:catalog_relation_tag_groups)
-              .where(catalog_relation_tag_groups: {catalog_tag_group_id: group.id})
-              .distinct
-              .order('tags.name')
-              .pluck('tags.name')
-            tmp_tags.each do |tag|
-              field << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-            end
-          end
-        end
-      end
-    end
-    content
-  end
-
   def render_catalog_tag_tabs
     catalog_tag_categories = @project.catalog_tag_categories
-    ret_content = content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
+    content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
       tabs_areas = ''.html_safe
       contents_areas = ''.html_safe
-      if catalog_tag_categories.any?
-        catalog_tag_categories.each_with_index do |tag_category, i|
-          is_selected = (i == 0)
-          tab_class = 'category-tab'
-          tab_class << ' active-tab' if is_selected
-          tabs_areas << content_tag(:li, tag_category.name, class: tab_class, id: 'category-tab-id' << i.to_s)
-          content_class = 'category-content'
-          content_class << ' show-content' if is_selected
-          contents_areas << content_tag_push(:div, class: content_class) do |div_page|
-            div_page << content_tag(:p, tag_category.description)
-            div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
-              tmp_tags = ActsAsTaggableOn::Tag
-                .includes(:catalog_relation_tag_categories)
-                .where(catalog_relation_tag_categories: {catalog_tag_category_id: tag_category.id})
-                .distinct
-                .order('tags.name')
-                .pluck('tags.name')
-              tmp_tags.each do |tag|
-                div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-              end
-            end
-          end
-        end
-      else
-        tabs_areas << content_tag(:li, l(:label_catalog_tag_category_none), class: 'category-tab active-tab', id: 'category-tab-none')
-        contents_areas << content_tag_push(:div, class: 'category-content show-content') do |div_none_category|
-          div_none_category << render_catalog_categories
-          div_none_category << render_catalog_tags
-        end
-      end
 
       tabs_areas << content_tag(:li, l(:label_favorite_tab), class: 'category-tab', id: 'category-tab-favorite')
       contents_areas << content_tag(:div, render_favorite_tab, class: 'category-content')
@@ -221,12 +143,6 @@ module IssuesCatalogHelper
       end
       div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
     end
-
-    if catalog_tag_categories.any?
-      ret_content << content_tag(:hr, '', class: 'catalog-separator')
-      ret_content << redner_none_category_tags
-    end
-    ret_content
   end
 
   def render_favorite_tab
@@ -254,41 +170,6 @@ module IssuesCatalogHelper
   def render_history_tab
     ret_content = content_tag(:p, l(:history_description))
     ret_content << content_tag(:ul, '', class: 'history-tags', id: 'catalog-category-history')
-    ret_content
-  end
-
-  def redner_none_category_tags
-    content_tag_push(:div, class: 'other-tags') do |div_other|
-      issues = Issue.visible.select('issues.id').joins(:project)
-      issues = issues.on_project(@project) unless @project.nil?
-      issues = issues.joins(:status).open if @issues_open_only
-      relation_table = CatalogRelationTagCategory.arel_table
-      no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
-      tmp_tags = ActsAsTaggableOn::Tag
-        .joins(:taggings)
-        .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
-        .distinct
-        .where(no_category_condition)
-        .order('tags.name')
-        .pluck('tags.name')
-      tmp_tags.each do |tag|
-        div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-      end
-    end
-  end
-
-  def render_catalog_tag_always
-    ret_content = ''.html_safe
-    tmp_tags = ActsAsTaggableOn::Tag
-        .includes(:catalog_relation_tag_categories)
-        .where(catalog_relation_tag_categories: {catalog_tag_category_id: CatalogTagCategory.always.id})
-        .distinct
-        .order('tags.name')
-        .pluck('tags.name')
-    tmp_tags.each do |tag|
-      ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-    end
-
     ret_content
   end
 
