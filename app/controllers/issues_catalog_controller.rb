@@ -26,8 +26,6 @@ class IssuesCatalogController < ApplicationController
     @issues_open_only = RedmineTags.settings[:issues_open_only].to_i == 1
 
     make_select_filters
-    make_catalog_all_tags
-    make_catalog_selected_groups
 
     # javascriptに渡すもの
     @to_js_param = {'select_mode' => @select_mode,
@@ -129,70 +127,56 @@ class IssuesCatalogController < ApplicationController
     end
   end
 
-  def make_catalog_all_tags
+  def get_catalog_all_tags
+    selected_tags = {}
+    if @select_filters.present?
+      select_issues_scope = Issue.visible.select('issues.id').joins(:project)
+      select_issues_scope = select_issues_scope.on_project(@project) unless @project.nil?
+      select_issues_scope = select_issues_scope.joins(:status).open if @issues_open_only
+      select_issues_scope = select_issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
+      select_issues_scope = select_issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+      selected_tags = ActsAsTaggableOn::Tag
+        .joins(:taggings)
+        .select('tags.name, COUNT(taggings.id) as count')
+        .group('tags.name')
+        .where(taggings: { taggable_type: 'Issue', taggable_id: select_issues_scope})
+        .map { |tag| [tag.name, tag.count] }
+        .to_h
+    end
+
     issues_scope = Issue.visible.select('issues.id').joins(:project)
     issues_scope = issues_scope.on_project(@project) unless @project.nil?
     issues_scope = issues_scope.joins(:status).open if @issues_open_only
-
-    @catalog_all_tags = ActsAsTaggableOn::Tag
+    ActsAsTaggableOn::Tag
       .joins(:taggings)
-      .select('tags.id, tags.name, tags.description, tags.taggings_count, COUNT(taggings.id) as count')
-      .group('tags.id, tags.name, tags.description, tags.taggings_count')
+      .select('tags.id, tags.name, tags.description, COUNT(taggings.id) as count')
+      .group('tags.id, tags.name, tags.description')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
+      .order('tags.name')
       .preload(:catalog_tag_categories, :catalog_tag_groups)
-      .map { |tag| [tag.name, { id: tag.id, count: tag.count, select_count: 0, description: tag.description, categories: tag.catalog_tag_category_ids, groups: tag.catalog_tag_group_ids }] }
-      .to_h
-
-    if @select_filters.present?
-      issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
-      issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-      selected_tags = ActsAsTaggableOn::Tag
-        .joins(:taggings)
-        .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
-        .group('tags.id, tags.name, tags.taggings_count')
-        .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      selected_tags.each do |tag|
-        if @catalog_all_tags[tag.name]
-          @catalog_all_tags[tag.name][:select_count] = tag.count
-        end
+      .map do |tag|
+        { name: tag.name,
+          id: tag.id,
+          count: tag.count,
+          select_count: selected_tags[tag.name] || 0,
+          description: tag.description,
+          categories: tag.catalog_tag_category_ids,
+          groups: tag.catalog_tag_group_ids }
       end
-    end
-  end
-
-  def get_catalog_all_tags
-    tmp_tags = @catalog_all_tags.map do |key, val|
-      { name: key, id: val[:id], count: val[:count], select_count: val[:select_count], description: val[:description], categories: val[:categories], groups: val[:groups] }
-    end
-    tmp_tags.sort_by! {|v| v[:name]}
   end
 
   def get_catalog_tag_categories
     tmp_categories = CatalogTagCategory.search_by_project(@project.id).map do |cate|
       { name: cate.name, id: cate.id, description: cate.description }
     end
-    tmp_categories.sort_by! {|v| v[:name]}
 
     always = CatalogTagCategory.always
     tmp_categories.unshift({ name: always.name, id: always.id, description: always.description })
   end
 
   def get_catalog_tag_groups
-    tmp_groups = CatalogTagGroup.search_by_project(@project.id).map do |grp|
+    CatalogTagGroup.search_by_project(@project.id).map do |grp|
       { name: grp.name, id: grp.id, description: grp.description }
-    end
-    tmp_groups.sort_by! {|v| v[:name]}
-  end
-
-  def make_catalog_selected_groups
-    @catalog_selected_tag_groups = []
-    if @select_tags.present?
-      tags_scope = @select_tags.map {|t| @catalog_all_tags[t][:id]}
-      @catalog_selected_tag_groups = CatalogTagGroup
-        .joins(:catalog_relation_tag_groups)
-        .where(catalog_relation_tag_groups: {tag_id: tags_scope})
-        .distinct
-        .order('catalog_tag_groups.name')
-        .to_a
     end
   end
 end
