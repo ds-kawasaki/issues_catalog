@@ -38,6 +38,7 @@ class IssuesCatalogController < ApplicationController
                     'label_operator_and' => l(:label_operator_and),
                     'label_operator_or' => l(:label_operator_or),
                     'label_selected_tag_group' => l(:label_selected_tag_group),
+                    'label_tag_category_none' => l(:label_catalog_tag_category_none),
                     'select_filters' => @select_filters,
                     'tags' => get_catalog_all_tags,
                     'tag_categories' => get_catalog_tag_categories,

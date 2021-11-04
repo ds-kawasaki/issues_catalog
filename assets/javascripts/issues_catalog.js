@@ -72,7 +72,7 @@ $(function () {
   };
 
   //  タグのエレメント作成 
-  const makeTagElement = (tagText, nowMode, elmName, addClearBtn=false) => {
+  const makeTagElement = (tagText, nowMode, elmName, addClearBtn = false) => {
     const a = document.createElement('a');
     a.href = '#';
     if (addClearBtn) {
@@ -116,40 +116,60 @@ $(function () {
     const nowMode = getNowSelectMode();
     const sidebarCategoryTabs = document.querySelector('ul.tabs-area');
     if (sidebarCategoryTabs) {
-      for (let i = cateNum - 1; i > 0; --i) {  //  子の先頭にいれるので逆順 
-        const li = createElementWithClassText('li', 'category-tab', IssuesCatalogParam.tag_categories[i].name);
-        li.id = `category-tab-id${i - 1}`;
-        if (i === 1) { li.classList.add('active-tab'); }
+      if (cateNum === 1) {
+        const li = createElementWithClassText('li', 'category-tab', IssuesCatalogParam.label_tag_category_none);
+        li.id = `category-tab-none`;
+        li.classList.add('active-tab');
         sidebarCategoryTabs.prepend(li);
+      } else {
+        for (let i = cateNum - 1; i > 0; --i) {  //  子の先頭にいれるので逆順 
+          const li = createElementWithClassText('li', 'category-tab', IssuesCatalogParam.tag_categories[i].name);
+          li.id = `category-tab-id${i - 1}`;
+          if (i === 1) { li.classList.add('active-tab'); }
+          sidebarCategoryTabs.prepend(li);
+        }
       }
     }
     const sidebarCategoryContents = document.querySelector('div.contents-area');
     if (sidebarCategoryContents) {
-      for (let i = cateNum - 1; i > 0; --i) {  //  子の先頭にいれるので逆順 
-        const ulTags = createElementWithClassText('ul', 'category-tags', '');
-        const categoryId = IssuesCatalogParam.tag_categories[i].id;
+      if (cateNum === 1) {
+        const ulTags = createElementWithClassText('ul', 'tags', '');
         for (const tag of IssuesCatalogParam.tags) {
-          if (tag.categories.includes(categoryId)) {
-            ulTags.appendChild(makeTagElement(tag.name, nowMode, 'ul'));
-          }
+          ulTags.appendChild(makeTagElement(tag.name, nowMode, 'ul'));
         }
         const divContent = createElementWithClassText('div', 'category-content', '');
-        divContent.appendChild(createElementWithClassText('p', '', IssuesCatalogParam.tag_categories[i].description));
         divContent.appendChild(ulTags);
         if (i === 1) { divContent.classList.add('show-content'); }
         sidebarCategoryContents.prepend(divContent);
-      }
-    }
-    const sidebarCatalogSelector = document.querySelector('div.catalog-selector');
-    if (sidebarCatalogSelector) {
-      sidebarCatalogSelector.appendChild(createElementWithClassText('hr', 'catalog-separator', ''));
-      const divOtherTags = createElementWithClassText('div', 'other-tags', '');
-      for (const tag of IssuesCatalogParam.tags) {
-        if (tag.categories.length == 0) {
-          divOtherTags.appendChild(makeTagElement(tag.name, nowMode, 'span'));
+      } else {
+        for (let i = cateNum - 1; i > 0; --i) {  //  子の先頭にいれるので逆順 
+          const ulTags = createElementWithClassText('ul', 'category-tags', '');
+          const categoryId = IssuesCatalogParam.tag_categories[i].id;
+          for (const tag of IssuesCatalogParam.tags) {
+            if (tag.categories.includes(categoryId)) {
+              ulTags.appendChild(makeTagElement(tag.name, nowMode, 'ul'));
+            }
+          }
+          const divContent = createElementWithClassText('div', 'category-content', '');
+          divContent.appendChild(createElementWithClassText('p', '', IssuesCatalogParam.tag_categories[i].description));
+          divContent.appendChild(ulTags);
+          if (i === 1) { divContent.classList.add('show-content'); }
+          sidebarCategoryContents.prepend(divContent);
         }
       }
-      sidebarCatalogSelector.appendChild(divOtherTags);
+    }
+    if (cateNum > 1) {
+      const sidebarCatalogSelector = document.querySelector('div.catalog-selector');
+      if (sidebarCatalogSelector) {
+        sidebarCatalogSelector.appendChild(createElementWithClassText('hr', 'catalog-separator', ''));
+        const divOtherTags = createElementWithClassText('div', 'other-tags', '');
+        for (const tag of IssuesCatalogParam.tags) {
+          if (tag.categories.length == 0) {
+            divOtherTags.appendChild(makeTagElement(tag.name, nowMode, 'span'));
+          }
+        }
+        sidebarCatalogSelector.appendChild(divOtherTags);
+      }
     }
   };
   //  ページ読み込み時に選択タグ（常時表示）展開
@@ -172,7 +192,7 @@ $(function () {
     if (tagsSelected && filterTags.length > 0) {
       const divSelectedTags = createElementWithClassText('div', 'selected-tags', '');
       const selectedGroups = [];
-      for (let i=0; i<filterTags.length; ++i) {
+      for (let i = 0; i < filterTags.length; ++i) {
         if (i > 0) {
           divSelectedTags.appendChild(createElementWithClassText('span', '', (IssuesCatalogParam.select_mode === 'and') ? ' and ' : ' or '));
         }
