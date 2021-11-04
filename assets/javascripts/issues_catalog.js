@@ -110,6 +110,20 @@ $(function () {
   };
 
 
+  //  ページ読み込み時にタグにツールチップ追加
+  const setTagTooltipOnLoad = () => {
+    for (const tag of document.querySelectorAll('.catalog-tag-label')) {
+      const tagText = tag.querySelector('a')?.innerText;
+      if (tagText) {
+        const mapTag = mapAllTags[tagText];
+        if (mapTag && mapTag.description) {
+          const divTooltip = createElementWithClassText('div', 'tag-tooltip', '');
+          divTooltip.appendChild(createElementWithClassText('div', 'tag-description', mapTag.description));
+          tag.appendChild(divTooltip);
+        }
+      }
+    }
+  };
   //  ページ読み込み時にサイドバータグ展開
   const setSidebarTagsOnLoad = () => {
     const cateNum = IssuesCatalogParam.tag_categories.length;
@@ -322,8 +336,6 @@ $(function () {
       }
     }
 
-    setSelectedTagsOnLoad();
-    setSidebarTagsOnLoad();
     setCatalogTabOnLoad();
     setHistoryOnLoad();
     setSidebarTagsClickOnLoad();
@@ -530,6 +542,9 @@ $(function () {
   };
 
 
+  setTagTooltipOnLoad();
+  setSelectedTagsOnLoad();
+  setSidebarTagsOnLoad();
   setupFromStorageOnLoad();
   setupSearchTag();
   setupBtnScrollToTop();
