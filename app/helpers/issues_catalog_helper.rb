@@ -30,8 +30,8 @@ module IssuesCatalogHelper
         div_table << content_tag(:thead)
         div_table << content_tag_push(:tbody) do |div_tbody|
           grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
-            tr_id = 'issue-' << issue.id.to_s
-            tr_class = 'hascontextmenu ' << cycle('odd', 'even') << issue.css_classes
+            tr_id = "issue-#{issue.id}"
+            tr_class = "hascontextmenu #{cycle('odd', 'even')} #{issue.css_classes}"
             tr_class << "idnt idnt-#{level}" if level > 0
             div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
               # id
@@ -97,8 +97,13 @@ module IssuesCatalogHelper
               # tags
               col_tags = catalog_columns[:tags]
               unless col_tags.nil?
-                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t.name) }.join(', ').html_safe
-                div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
+                tags_val = ActsAsTaggableOn::Tag
+                  .select('tags.name')
+                  .joins(:taggings)
+                  .where(taggings: { taggable_type: 'Issue', taggable_id: issue.id})
+                  .pluck('tags.name')
+                  .collect { |t| content_tag('span', link_to(t, '#'), class: 'catalog-tag-label') }.join(', ').html_safe
+                div_tr << content_tag(:td, tags_val, class: 'tags')
               end
             end
             div_tbody << "\n"
@@ -171,11 +176,6 @@ module IssuesCatalogHelper
     ret_content = content_tag(:p, l(:history_description))
     ret_content << content_tag(:ul, '', class: 'history-tags', id: 'catalog-category-history')
     ret_content
-  end
-
-  # タグのリンク
-  def render_catalog_link_tag(name)
-    content_tag('span', link_to(name, '#'), class: 'catalog-tag-label')
   end
 
   # link_to_filterのコントローラー違い
