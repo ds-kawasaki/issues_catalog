@@ -47,6 +47,18 @@ $(function () {
 
   // railsから受け取るもの
   // console.dir(IssuesCatalogParam);
+  //  and検索時のタグ数の初期化 
+  if (IssuesCatalogParam.selected_tags.length > 0) {
+    const tmpMaps = new Map();
+    for (const tag of IssuesCatalogParam.tags) {
+      tmpMaps[tag.id] = tag;
+    }
+    for (const selectTag of IssuesCatalogParam.selected_tags) {
+      if (tmpMaps[selectTag.id]) {
+        tmpMaps[selectTag.id].select_count = selectTag.select_count;
+      }
+    }
+  }
   //  タグ名からアクセスするパラメーター 
   const mapAllTags = new Map();
   for (const tag of IssuesCatalogParam.tags) {

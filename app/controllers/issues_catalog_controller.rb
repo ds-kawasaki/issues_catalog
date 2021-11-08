@@ -39,6 +39,7 @@ class IssuesCatalogController < ApplicationController
                     'label_tag_category_none' => l(:label_catalog_tag_category_none),
                     'select_filters' => @select_filters,
                     'tags' => get_catalog_all_tags,
+                    'selected_tags' => get_catalog_selected_tags,
                     'tag_categories' => get_catalog_tag_categories,
                     'tag_groups' => get_catalog_tag_groups}
   end
@@ -128,22 +129,6 @@ class IssuesCatalogController < ApplicationController
   end
 
   def get_catalog_all_tags
-    selected_tags = {}
-    if @select_filters.present?
-      select_issues_scope = Issue.visible.select('issues.id').joins(:project)
-      select_issues_scope = select_issues_scope.on_project(@project) unless @project.nil?
-      select_issues_scope = select_issues_scope.joins(:status).open if @issues_open_only
-      select_issues_scope = select_issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
-      select_issues_scope = select_issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-      selected_tags = ActsAsTaggableOn::Tag
-        .joins(:taggings)
-        .select('tags.name, COUNT(taggings.id) as count')
-        .group('tags.name')
-        .where(taggings: { taggable_type: 'Issue', taggable_id: select_issues_scope})
-        .map { |tag| [tag.name, tag.count] }
-        .to_h
-    end
-
     issues_scope = Issue.visible.select('issues.id').joins(:project)
     issues_scope = issues_scope.on_project(@project) unless @project.nil?
     issues_scope = issues_scope.joins(:status).open if @issues_open_only
@@ -154,15 +139,35 @@ class IssuesCatalogController < ApplicationController
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
       .order('tags.name')
       .preload(:catalog_tag_categories, :catalog_tag_groups)
-      .map do |tag|
+      .collect do |tag|
         { name: tag.name,
           id: tag.id,
           count: tag.count,
-          select_count: selected_tags[tag.name] || 0,
+          select_count: 0,
           description: tag.description,
           categories: tag.catalog_tag_category_ids,
           groups: tag.catalog_tag_group_ids }
       end
+  end
+
+  def get_catalog_selected_tags
+    if @select_filters.present?
+      select_issues_scope = Issue.visible.select('issues.id').joins(:project)
+      select_issues_scope = select_issues_scope.on_project(@project) unless @project.nil?
+      select_issues_scope = select_issues_scope.joins(:status).open if @issues_open_only
+      select_issues_scope = select_issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
+      select_issues_scope = select_issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+      ActsAsTaggableOn::Tag
+        .joins(:taggings)
+        .select('tags.id, COUNT(taggings.id) as count')
+        .group('tags.id')
+        .where(taggings: { taggable_type: 'Issue', taggable_id: select_issues_scope})
+        .collect do |tag|
+          { id: tag.id, select_count: tag.count }
+        end
+    else
+      {}
+    end
   end
 
   def get_catalog_tag_categories
