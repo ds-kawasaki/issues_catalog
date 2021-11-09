@@ -29,82 +29,74 @@ module IssuesCatalogHelper
       div_autoscroll << content_tag_push(:table, class: 'list catalog-issues odd-even' << @query.css_classes) do |div_table|
         div_table << content_tag(:thead)
         div_table << content_tag_push(:tbody) do |div_tbody|
-          grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
+          Issue.where(id: @issue_ids)
+               .preload(:project, :tracker, :status, :priority, :custom_values, :attachments, :favorites)
+               .sort_by { |o| @issue_ids.index(o.id) }
+               .each do |issue|
             tr_id = "issue-#{issue.id}"
             tr_class = "hascontextmenu #{cycle('odd', 'even')} #{issue.css_classes}"
-            tr_class << "idnt idnt-#{level}" if level > 0
             div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
               # id
-              col_id = catalog_columns[:id]
-              col_priority = catalog_columns[:priority]
-              unless col_id.nil?
-                div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
-                  div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
-                    id_class = "favorite-#{issue.id}"
-                    id_class << ' icon icon-fav' if issue.favorited?
-                    div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
-                    div_issue_top << content_tag(:span, link_to(col_id.value_object(issue), issue_path(issue)), class: id_class)
-                    div_issue_top << content_tag(:span, col_priority.value_object(issue), class: 'catalog-issue-priority') unless col_priority.nil?
-                    div_issue_top << link_to_context_menu
-                  end
+              div_tr << content_tag_push(:td, class: 'id') do |div_td|
+                div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
+                  id_class = "favorite-#{issue.id}"
+                  id_class << ' icon icon-fav' if issue.favorites.find { |f| f.user_id == User.current.id }
+                  div_issue_top << check_box_tag("ids[]", issue.id.to_s, false, id: nil)
+                  div_issue_top << content_tag(:span, link_to(issue.id.to_s, issue_path(issue)), class: id_class)
+                  div_issue_top << content_tag(:span, issue.priority.to_s, class: 'catalog-issue-priority')
+                  div_issue_top << link_to_context_menu
                 end
-                div_tr << "\n"
               end
-              col_cf2 = catalog_columns[:cf_2]
-              unless col_cf2.nil?
-                val_okiba = format_object(col_cf2.value_object(issue))
+              div_tr << "\n"
+              cv_preview = issue.custom_field_values.detect { |v| v.custom_field.id == 1 }
+              cv_okiva = issue.custom_field_values.detect { |v| v.custom_field.id == 2 }
+              if cv_preview.present?
+                val_preview = cv_preview.value
+                val_preview[0] = '' if val_preview[0] == '"'
+                val_preview[-1] = '' if val_preview[-1] == '"'
+              end
+              if cv_okiva.present?
+                val_okiba = cv_okiva.value
                 val_okiba[0] = '' if val_okiba[0] == '"'
                 val_okiba[-1] = '' if val_okiba[-1] == '"'
               end
               # subject
-              col_subject = catalog_columns[:subject]
-              unless col_subject.nil?
-                subject_css = col_subject.css_classes.to_s
-                subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
-                div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: subject_css)
-                div_tr << "\n"
-              end
+              subject_css = 'subject'
+              subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
+              div_tr << content_tag(:td, link_to(issue.subject.to_s, issue_path(issue)), class: subject_css)
+              div_tr << "\n"
               # cf1
-              col_cf1 = catalog_columns[:cf_1]
-              unless col_cf1.nil?
-                val_preview = format_object(col_cf1.value_object(issue))
-                val_preview[0] = '' if val_preview[0] == '"'
-                val_preview[-1] = '' if val_preview[-1] == '"'
-                preview = ''.html_safe
-                if MOVIE_EXTS.include?(File.extname(val_preview))
-                  preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                       'data-src': get_visuals_path(val_preview), size: '300x300',
-                                       autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
-                else
-                  preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                       'data-src': get_visuals_path(val_preview), size: '300x300',
-                                        class: 'lozad')
-                end
-                if val_okiba.present?
-                  if val_okiba.start_with?('Q:', 'q:')
-                    val_okiba.slice!(0, 2)
-                    val_okiba = 'dseeds.local/data' << val_okiba
-                  end
-                  preview = link_to(preview, 'file://' << val_okiba)
-                end
-                if issue.description?
-                  tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
-                  preview << content_tag(:div, tooltip, class: 'preview-description')
-                end
-                div_tr << content_tag(:td, preview, class: 'preview')
-                div_tr << "\n"
+              preview = ''.html_safe
+              if MOVIE_EXTS.include?(File.extname(val_preview))
+                preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                     'data-src': get_visuals_path(val_preview), size: '300x300',
+                                     autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+              else
+                preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                     'data-src': get_visuals_path(val_preview), size: '300x300',
+                                     class: 'lozad')
               end
+              if val_okiba.present?
+                if val_okiba.start_with?('Q:', 'q:')
+                  val_okiba.slice!(0, 2)
+                  val_okiba = 'dseeds.local/data' << val_okiba
+                end
+                preview = link_to(preview, 'file://' << val_okiba)
+              end
+              if issue.description?
+                tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
+                preview << content_tag(:div, tooltip, class: 'preview-description')
+              end
+              div_tr << content_tag(:td, preview, class: 'preview')
+              div_tr << "\n"
               # tags
-              col_tags = catalog_columns[:tags]
-              unless col_tags.nil?
-                tags_val = ActsAsTaggableOn::Tag
-                  .select('tags.name')
-                  .joins(:taggings)
-                  .where(taggings: { taggable_type: 'Issue', taggable_id: issue.id})
-                  .pluck('tags.name')
-                  .collect { |t| content_tag('span', link_to(t, '#'), class: 'catalog-tag-label') }.join(', ').html_safe
-                div_tr << content_tag(:td, tags_val, class: 'tags')
-              end
+              tags_val = ActsAsTaggableOn::Tag
+                .select('tags.name')
+                .joins(:taggings)
+                .where(taggings: { taggable_type: 'Issue', taggable_id: issue.id})
+                .pluck('tags.name')
+                .collect { |t| content_tag('span', link_to(t, '#'), class: 'catalog-tag-label') }.join(', ').html_safe
+              div_tr << content_tag(:td, tags_val, class: 'tags')
             end
             div_tbody << "\n"
           end

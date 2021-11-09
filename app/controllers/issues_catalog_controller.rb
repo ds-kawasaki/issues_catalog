@@ -17,10 +17,10 @@ class IssuesCatalogController < ApplicationController
   MAX_HISTORIES = 20
 
   def index
-    retrieve_query IssueQuery, false
+    retrieve_query(IssueQuery, false)
     @issue_count = @query.issue_count
     @issue_pages = Paginator.new @issue_count, per_page_option, params['page']
-    @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
+    @issue_ids = @query.issue_ids(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
     @select_mode = params['sm'] || 'one'
     @issues_open_only = RedmineTags.settings[:issues_open_only].to_i == 1
