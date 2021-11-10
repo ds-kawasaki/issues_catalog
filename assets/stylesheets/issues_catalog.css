@@ -159,13 +159,13 @@ table.catalog-issues td.id {
 table.catalog-issues td.subject {
   width: 300px;
 }
-table.catalog-issues td.preview {
+table.catalog-issues td.thumbnail {
   position: relative;
 }
 table.catalog-issues td.tags {
   width: 300px;
 }
-.preview-description {
+.thumbnail-description {
   display: none;
   position: absolute;
   padding: 5px;
@@ -174,7 +174,7 @@ table.catalog-issues td.tags {
   background-color: #fff9c4;
   transition: all 0.1s;
 }
-.preview-description::before {
+.thumbnail-description::before {
   content: '';
   position: absolute;
   top: 3%;
@@ -184,7 +184,7 @@ table.catalog-issues td.tags {
   margin-left: -15px;
   transform: rotate(90deg);
 }
-td.preview:hover .preview-description {
+td.thumbnail:hover .thumbnail-description {
   display: block;
   top: 0px;
   left: 30px;

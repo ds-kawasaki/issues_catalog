@@ -42,12 +42,12 @@ module IssuesCatalogHelper
                 end
               end
               div_tr << "\n"
-              cv_preview = issue.custom_field_values.detect { |v| v.custom_field.id == 1 }
+              cv_thumbnail = issue.custom_field_values.detect { |v| v.custom_field.id == 1 }
               cv_okiva = issue.custom_field_values.detect { |v| v.custom_field.id == 2 }
-              if cv_preview.present?
-                val_preview = cv_preview.value
-                val_preview[0] = '' if val_preview[0] == '"'
-                val_preview[-1] = '' if val_preview[-1] == '"'
+              if cv_thumbnail.present?
+                val_thumbnail = cv_thumbnail.value
+                val_thumbnail[0] = '' if val_thumbnail[0] == '"'
+                val_thumbnail[-1] = '' if val_thumbnail[-1] == '"'
               end
               if cv_okiva.present?
                 val_okiba = cv_okiva.value
@@ -60,24 +60,24 @@ module IssuesCatalogHelper
               div_tr << content_tag(:td, link_to(issue.subject.to_s, issue_path(issue)), class: subject_css)
               div_tr << "\n"
               # cf1
-              preview = ''.html_safe
-              if MOVIE_EXTS.include?(File.extname(val_preview))
-                preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                     'data-src': get_visuals_path(val_preview), size: '300x300',
-                                     autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+              thumbnail = ''.html_safe
+              if MOVIE_EXTS.include?(File.extname(val_thumbnail))
+                thumbnail << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                       'data-src': get_visuals_path(val_thumbnail), size: '300x300',
+                                       autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
               else
-                preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                     'data-src': get_visuals_path(val_preview), size: '300x300',
-                                     class: 'lozad')
+                thumbnail << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                       'data-src': get_visuals_path(val_thumbnail), size: '300x300',
+                                       class: 'lozad')
               end
               if val_okiba.present?
-                preview = link_to(preview, 'file://' << val_okiba)
+                thumbnail = link_to(thumbnail, 'file://' << val_okiba)
               end
               if issue.description?
                 tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
-                preview << content_tag(:div, tooltip, class: 'preview-description')
+                thumbnail << content_tag(:div, tooltip, class: 'thumbnail-description')
               end
-              div_tr << content_tag(:td, preview, class: 'preview')
+              div_tr << content_tag(:td, thumbnail, class: 'thumbnail')
               div_tr << "\n"
               # tags
               tags_val = ActsAsTaggableOn::Tag
