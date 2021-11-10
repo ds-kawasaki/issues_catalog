@@ -16,6 +16,10 @@ module IssuesCatalogHelper
   MOVIE_EXTS = ['.avi', '.mp4', '.mov']
 
   def render_catalog_issues
+    cfid_thumbnails = Setting.plugin_issues_catalog[:catalog_cf_thumbnails].to_i
+    cfid_place = Setting.plugin_issues_catalog[:catalog_cf_place].to_i
+    thumbnail_base_url = Setting.plugin_issues_catalog[:catalog_url_thumbnails].freeze
+
     html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
     html_text << query_columns_hidden_tags(@query)
     html_text << "\n"
@@ -42,12 +46,13 @@ module IssuesCatalogHelper
                 end
               end
               div_tr << "\n"
-              cv_thumbnail = issue.custom_field_values.detect { |v| v.custom_field.id == 1 }
-              cv_okiva = issue.custom_field_values.detect { |v| v.custom_field.id == 2 }
+              cv_thumbnail = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_thumbnails }
+              cv_okiva = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_place }
               if cv_thumbnail.present?
                 val_thumbnail = cv_thumbnail.value
                 val_thumbnail[0] = '' if val_thumbnail[0] == '"'
                 val_thumbnail[-1] = '' if val_thumbnail[-1] == '"'
+                url_thumbnail = thumbnail_base_url + Base64.urlsafe_encode64(val_thumbnail)
               end
               if cv_okiva.present?
                 val_okiba = cv_okiva.value
@@ -59,26 +64,28 @@ module IssuesCatalogHelper
               subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
               div_tr << content_tag(:td, link_to(issue.subject.to_s, issue_path(issue)), class: subject_css)
               div_tr << "\n"
-              # cf1
-              thumbnail = ''.html_safe
-              if MOVIE_EXTS.include?(File.extname(val_thumbnail))
-                thumbnail << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                       'data-src': get_visuals_path(val_thumbnail), size: '300x300',
-                                       autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
-              else
-                thumbnail << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                       'data-src': get_visuals_path(val_thumbnail), size: '300x300',
-                                       class: 'lozad')
+              # thumbnail
+              if url_thumbnail.present?
+                thumbnail = ''.html_safe
+                if MOVIE_EXTS.include?(File.extname(val_thumbnail))
+                  thumbnail << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                         'data-src': url_thumbnail, size: '300x300',
+                                         autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+                else
+                  thumbnail << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                         'data-src': url_thumbnail, size: '300x300',
+                                         class: 'lozad')
+                end
+                if val_okiba.present?
+                  thumbnail = link_to(thumbnail, 'file://' << val_okiba)
+                end
+                if issue.description?
+                  tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
+                  thumbnail << content_tag(:div, tooltip, class: 'thumbnail-description')
+                end
+                div_tr << content_tag(:td, thumbnail, class: 'thumbnail')
+                div_tr << "\n"
               end
-              if val_okiba.present?
-                thumbnail = link_to(thumbnail, 'file://' << val_okiba)
-              end
-              if issue.description?
-                tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
-                thumbnail << content_tag(:div, tooltip, class: 'thumbnail-description')
-              end
-              div_tr << content_tag(:td, thumbnail, class: 'thumbnail')
-              div_tr << "\n"
               # tags
               tags_val = ActsAsTaggableOn::Tag
                 .select('tags.name')
@@ -94,10 +101,6 @@ module IssuesCatalogHelper
       end
     end
     return raw(html_text)
-  end
-
-  def get_visuals_path(path_text)
-    'https://wLb8vs.d-seeds.com/visuals?path=' << Base64.urlsafe_encode64(path_text)
   end
 
   def is_sozai(path_text)

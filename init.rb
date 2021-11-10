@@ -23,4 +23,7 @@ Redmine::Plugin.register :issues_catalog do
 
   # menu setting
   menu :project_menu, :issues_catalog, { controller: 'issues_catalog', action: 'index' }, caption: :label_catalog, before: :issues, param: :project_id
+
+  # configer setting
+  settings default: { 'empty' => true }, partial: 'issues_catalog_settings/settings'
 end
