@@ -77,10 +77,6 @@ module IssuesCatalogHelper
                                      class: 'lozad')
               end
               if val_okiba.present?
-                if val_okiba.start_with?('Q:', 'q:')
-                  val_okiba.slice!(0, 2)
-                  val_okiba = 'dseeds.local/data' << val_okiba
-                end
                 preview = link_to(preview, 'file://' << val_okiba)
               end
               if issue.description?
