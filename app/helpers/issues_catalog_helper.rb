@@ -13,15 +13,9 @@ module IssuesCatalogHelper
     @select_tags.present? || @select_category.present? || @favorites.present? || @issues_filters.present?
   end
 
-  CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags, :priority]
-
   MOVIE_EXTS = ['.avi', '.mp4', '.mov']
 
   def render_catalog_issues
-    catalog_columns = CATALOG_COLUMN_NAMES.collect do |col|
-      [col, @query.available_columns.detect { |c| c.name == col }]
-    end.to_h
-
     html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
     html_text << query_columns_hidden_tags(@query)
     html_text << "\n"
