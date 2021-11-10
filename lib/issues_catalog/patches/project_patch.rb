@@ -25,8 +25,8 @@ module IssuesCatalog
 
           result_scope = ActsAsTaggableOn::Tag
             .joins(:taggings)
-            .select('tags.id, tags.name, tags.description, tags.taggings_count, COUNT(taggings.id) as count')
-            .group('tags.id, tags.name, tags.description, tags.taggings_count')
+            .select('tags.id, tags.name, tags.description, COUNT(taggings.id) as count')
+            .group('tags.id, tags.name, tags.description')
             .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
             .order('tags.name')
             .preload(:catalog_tag_categories, :catalog_tag_groups)

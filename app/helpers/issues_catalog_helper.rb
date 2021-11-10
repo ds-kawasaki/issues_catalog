@@ -13,14 +13,12 @@ module IssuesCatalogHelper
     @select_tags.present? || @select_category.present? || @favorites.present? || @issues_filters.present?
   end
 
-  CATALOG_COLUMN_NAMES = [:id, :subject, :cf_1, :cf_2, :tags, :priority]
-
   MOVIE_EXTS = ['.avi', '.mp4', '.mov']
 
   def render_catalog_issues
-    catalog_columns = CATALOG_COLUMN_NAMES.collect do |col|
-      [col, @query.available_columns.detect { |c| c.name == col }]
-    end.to_h
+    cfid_thumbnails = Setting.plugin_issues_catalog[:catalog_cf_thumbnails].to_i
+    cfid_place = Setting.plugin_issues_catalog[:catalog_cf_place].to_i
+    thumbnail_base_url = Setting.plugin_issues_catalog[:catalog_url_thumbnails].freeze
 
     html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
     html_text << query_columns_hidden_tags(@query)
@@ -29,77 +27,73 @@ module IssuesCatalogHelper
       div_autoscroll << content_tag_push(:table, class: 'list catalog-issues odd-even' << @query.css_classes) do |div_table|
         div_table << content_tag(:thead)
         div_table << content_tag_push(:tbody) do |div_tbody|
-          grouped_issue_list(@issues, @query) do |issue, level, group_name, group_count, group_totals|
-            tr_id = 'issue-' << issue.id.to_s
-            tr_class = 'hascontextmenu ' << cycle('odd', 'even') << issue.css_classes
-            tr_class << "idnt idnt-#{level}" if level > 0
+          Issue.where(id: @issue_ids)
+               .preload(:project, :tracker, :status, :priority, :custom_values, :attachments, :favorites)
+               .sort_by { |o| @issue_ids.index(o.id) }
+               .each do |issue|
+            tr_id = "issue-#{issue.id}"
+            tr_class = "hascontextmenu #{cycle('odd', 'even')} #{issue.css_classes}"
             div_tbody << content_tag_push(:tr, id: tr_id, class: tr_class) do |div_tr|
               # id
-              col_id = catalog_columns[:id]
-              col_priority = catalog_columns[:priority]
-              unless col_id.nil?
-                div_tr << content_tag_push(:td, class: col_id.css_classes) do |div_td|
-                  div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
-                    id_class = "favorite-#{issue.id}"
-                    id_class << ' icon icon-fav' if issue.favorited?
-                    div_issue_top << check_box_tag("ids[]", issue.id, false, id: nil)
-                    div_issue_top << content_tag(:span, link_to(col_id.value_object(issue), issue_path(issue)), class: id_class)
-                    div_issue_top << content_tag(:span, col_priority.value_object(issue), class: 'catalog-issue-priority') unless col_priority.nil?
-                    div_issue_top << link_to_context_menu
-                  end
+              div_tr << content_tag_push(:td, class: 'id') do |div_td|
+                div_td << content_tag_push(:div, class: 'catalog-issue-top') do |div_issue_top|
+                  id_class = "favorite-#{issue.id}"
+                  id_class << ' icon icon-fav' if issue.favorites.find { |f| f.user_id == User.current.id }
+                  div_issue_top << check_box_tag("ids[]", issue.id.to_s, false, id: nil)
+                  div_issue_top << content_tag(:span, link_to(issue.id.to_s, issue_path(issue)), class: id_class)
+                  div_issue_top << content_tag(:span, issue.priority.to_s, class: 'catalog-issue-priority')
+                  div_issue_top << link_to_context_menu
                 end
-                div_tr << "\n"
               end
-              col_cf2 = catalog_columns[:cf_2]
-              unless col_cf2.nil?
-                val_okiba = format_object(col_cf2.value_object(issue))
+              div_tr << "\n"
+              cv_thumbnail = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_thumbnails }
+              cv_okiva = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_place }
+              if cv_thumbnail.present?
+                val_thumbnail = cv_thumbnail.value
+                val_thumbnail[0] = '' if val_thumbnail[0] == '"'
+                val_thumbnail[-1] = '' if val_thumbnail[-1] == '"'
+                url_thumbnail = thumbnail_base_url + Base64.urlsafe_encode64(val_thumbnail)
+              end
+              if cv_okiva.present?
+                val_okiba = cv_okiva.value
                 val_okiba[0] = '' if val_okiba[0] == '"'
                 val_okiba[-1] = '' if val_okiba[-1] == '"'
               end
               # subject
-              col_subject = catalog_columns[:subject]
-              unless col_subject.nil?
-                subject_css = col_subject.css_classes.to_s
-                subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
-                div_tr << content_tag(:td, link_to(col_subject.value_object(issue), issue_path(issue)), class: subject_css)
-                div_tr << "\n"
-              end
-              # cf1
-              col_cf1 = catalog_columns[:cf_1]
-              unless col_cf1.nil?
-                val_preview = format_object(col_cf1.value_object(issue))
-                val_preview[0] = '' if val_preview[0] == '"'
-                val_preview[-1] = '' if val_preview[-1] == '"'
-                preview = ''.html_safe
-                if MOVIE_EXTS.include?(File.extname(val_preview))
-                  preview << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                       'data-src': get_visuals_path(val_preview), size: '300x300',
-                                       autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+              subject_css = 'subject'
+              subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
+              div_tr << content_tag(:td, link_to(issue.subject.to_s, issue_path(issue)), class: subject_css)
+              div_tr << "\n"
+              # thumbnail
+              if url_thumbnail.present?
+                thumbnail = ''.html_safe
+                if MOVIE_EXTS.include?(File.extname(val_thumbnail))
+                  thumbnail << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                         'data-src': url_thumbnail, size: '300x300',
+                                         autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
                 else
-                  preview << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                       'data-src': get_visuals_path(val_preview), size: '300x300',
-                                        class: 'lozad')
+                  thumbnail << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                         'data-src': url_thumbnail, size: '300x300',
+                                         class: 'lozad')
                 end
                 if val_okiba.present?
-                  if val_okiba.start_with?('Q:', 'q:')
-                    val_okiba.slice!(0, 2)
-                    val_okiba = 'dseeds.local/data' << val_okiba
-                  end
-                  preview = link_to(preview, 'file://' << val_okiba)
+                  thumbnail = link_to(thumbnail, 'file://' << val_okiba)
                 end
                 if issue.description?
                   tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
-                  preview << content_tag(:div, tooltip, class: 'preview-description')
+                  thumbnail << content_tag(:div, tooltip, class: 'thumbnail-description')
                 end
-                div_tr << content_tag(:td, preview, class: 'preview')
+                div_tr << content_tag(:td, thumbnail, class: 'thumbnail')
                 div_tr << "\n"
               end
               # tags
-              col_tags = catalog_columns[:tags]
-              unless col_tags.nil?
-                tags_val = col_tags.value(issue).collect{ |t| render_catalog_link_tag(t.name) }.join(', ').html_safe
-                div_tr << content_tag(:td, tags_val, class: col_tags.css_classes)
-              end
+              tags_val = ActsAsTaggableOn::Tag
+                .select('tags.name')
+                .joins(:taggings)
+                .where(taggings: { taggable_type: 'Issue', taggable_id: issue.id})
+                .pluck('tags.name')
+                .collect { |t| content_tag('span', link_to(t, '#'), class: 'catalog-tag-label') }.join(', ').html_safe
+              div_tr << content_tag(:td, tags_val, class: 'tags')
             end
             div_tbody << "\n"
           end
@@ -107,10 +101,6 @@ module IssuesCatalogHelper
       end
     end
     return raw(html_text)
-  end
-
-  def get_visuals_path(path_text)
-    'https://wLb8vs.d-seeds.com/visuals?path=' << Base64.urlsafe_encode64(path_text)
   end
 
   def is_sozai(path_text)
@@ -126,89 +116,11 @@ module IssuesCatalogHelper
     !is_sozai(path_text)
   end
 
-  def render_selected_cagalog_tags
-    content = ''.html_safe
-    unless @select_tags.nil?
-      content << content_tag_push(:div, class: 'selected-tags') do |div_tags|
-        op = (@tags_operator == 'and') ? ' and ' : ' or '
-        @select_tags.each_with_index do |t, i|
-          tag = @catalog_all_tags[t]
-          unless tag.nil?
-            div_tags << content_tag(:span, op) if i > 0
-            div_tags << render_catalog_link_tag(t, show_count: true, add_del_btn_selected: true)
-          end
-        end
-        div_tags << content_tag(:span, " : ")
-        div_tags << content_tag(:span, link_to(l(:label_clear_select), controller: 'issues_catalog', action: 'index'))
-      end
-      content << content_tag_push(:div, class: 'catalog-select-mode-operation') do |div_m_op|
-        div_m_op << radio_button_tag('select-mode', 'one', @select_mode == 'one', id: 'radio-select-mode-one', class: 'radio-select-mode')
-        div_m_op << label_tag('radio-select-mode-one', l(:label_operator_one), class: 'label-select-mode')
-        div_m_op << radio_button_tag('select-mode', 'and', @select_mode == 'and', id: 'radio-select-mode-and', class: 'radio-select-mode')
-        div_m_op << label_tag('radio-select-mode-and', l(:label_operator_and), class: 'label-select-mode')
-        div_m_op << radio_button_tag('select-mode', 'or', @select_mode == 'or', id: 'radio-select-mode-or', class: 'radio-select-mode')
-        div_m_op << label_tag('radio-select-mode-or', l(:label_operator_or), class: 'label-select-mode')
-      end
-    end
-    if @catalog_selected_tag_groups.present?
-      content << content_tag(:hr, '', class: 'catalog-separator')
-      content << content_tag_push(:div, class: 'catalog-selected-tag-groups') do |div_grp|
-        div_grp << content_tag(:div, l(:label_selected_tag_group), class: 'catalog-lavel-selected-tag-group')
-        @catalog_selected_tag_groups.each do |group|
-          div_grp << content_tag_push(:fieldset, '', class: 'catalog-tag-group') do |field|
-            field << content_tag(:legend, group.name)
-            field << content_tag(:div, group.description)
-            tmp_tags = ActsAsTaggableOn::Tag
-              .includes(:catalog_relation_tag_groups)
-              .where(catalog_relation_tag_groups: {catalog_tag_group_id: group.id})
-              .distinct
-              .order('tags.name')
-              .pluck('tags.name')
-            tmp_tags.each do |tag|
-              field << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-            end
-          end
-        end
-      end
-    end
-    content
-  end
-
   def render_catalog_tag_tabs
     catalog_tag_categories = @project.catalog_tag_categories
-    ret_content = content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
+    content_tag_push(:div, class: 'category-tab-contents') do |div_tabs|
       tabs_areas = ''.html_safe
       contents_areas = ''.html_safe
-      if catalog_tag_categories.any?
-        catalog_tag_categories.each_with_index do |tag_category, i|
-          is_selected = (i == 0)
-          tab_class = 'category-tab'
-          tab_class << ' active-tab' if is_selected
-          tabs_areas << content_tag(:li, tag_category.name, class: tab_class, id: 'category-tab-id' << i.to_s)
-          content_class = 'category-content'
-          content_class << ' show-content' if is_selected
-          contents_areas << content_tag_push(:div, class: content_class) do |div_page|
-            div_page << content_tag(:p, tag_category.description)
-            div_page << content_tag_push(:ul, class: 'category-tags') do |div_category|
-              tmp_tags = ActsAsTaggableOn::Tag
-                .includes(:catalog_relation_tag_categories)
-                .where(catalog_relation_tag_categories: {catalog_tag_category_id: tag_category.id})
-                .distinct
-                .order('tags.name')
-                .pluck('tags.name')
-              tmp_tags.each do |tag|
-                div_category << content_tag(:li, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-              end
-            end
-          end
-        end
-      else
-        tabs_areas << content_tag(:li, l(:label_catalog_tag_category_none), class: 'category-tab active-tab', id: 'category-tab-none')
-        contents_areas << content_tag_push(:div, class: 'category-content show-content') do |div_none_category|
-          div_none_category << render_catalog_categories
-          div_none_category << render_catalog_tags
-        end
-      end
 
       tabs_areas << content_tag(:li, l(:label_favorite_tab), class: 'category-tab', id: 'category-tab-favorite')
       contents_areas << content_tag(:div, render_favorite_tab, class: 'category-content')
@@ -221,12 +133,6 @@ module IssuesCatalogHelper
       end
       div_tabs << content_tag(:div, contents_areas, class: 'contents-area')
     end
-
-    if catalog_tag_categories.any?
-      ret_content << content_tag(:hr, '', class: 'catalog-separator')
-      ret_content << redner_none_category_tags
-    end
-    ret_content
   end
 
   def render_favorite_tab
@@ -257,195 +163,6 @@ module IssuesCatalogHelper
     ret_content
   end
 
-  def redner_none_category_tags
-    content_tag_push(:div, class: 'other-tags') do |div_other|
-      issues = Issue.visible.select('issues.id').joins(:project)
-      issues = issues.on_project(@project) unless @project.nil?
-      issues = issues.joins(:status).open if @issues_open_only
-      relation_table = CatalogRelationTagCategory.arel_table
-      no_category_condition = relation_table.where(relation_table[:tag_id].eq(ActsAsTaggableOn::Tag.arel_table[:id])).project("'X'").exists.not
-      tmp_tags = ActsAsTaggableOn::Tag
-        .joins(:taggings)
-        .where(taggings: { taggable_type: 'Issue', taggable_id: issues })
-        .distinct
-        .where(no_category_condition)
-        .order('tags.name')
-        .pluck('tags.name')
-      tmp_tags.each do |tag|
-        div_other << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-      end
-    end
-  end
-
-  def render_catalog_tag_always
-    ret_content = ''.html_safe
-    tmp_tags = ActsAsTaggableOn::Tag
-        .includes(:catalog_relation_tag_categories)
-        .where(catalog_relation_tag_categories: {catalog_tag_category_id: CatalogTagCategory.always.id})
-        .distinct
-        .order('tags.name')
-        .pluck('tags.name')
-    tmp_tags.each do |tag|
-      ret_content << content_tag(:span, render_catalog_link_tag(tag, show_count: true), class: 'tags')
-    end
-
-    ret_content
-  end
-
-  def render_catalog_tags
-    tags = @catalog_all_tags
-
-    content = ''.html_safe
-
-    content_h3 = ''.html_safe
-    content_h3 << l(:label_tag)
-    unless @select_tags.nil?
-      content_h3 << " : "
-      @select_tags.each_with_index do |t, i|
-        content_h3 << " and " if i > 0
-        tag = tags.detect { |tt| tt['name'] == t }
-        content_h3 << content_tag(:span, render_catalog_link_tag(tag.name, show_count: true),
-                                  class: "tag-nube-8", style: 'font-size: 1em;')
-      end
-    end
-    content << content_tag(:h3, content_h3)
-
-    content << render_catalog_tags_list(tags, {
-                                          show_count: true,
-      open_only: @issues_open_only,
-      style: RedmineTags.settings[:issues_sidebar].to_sym
-                                        })
-
-    content_tag :div, content, class: "catalog-selector-tags"
-  end
-
-  def render_catalog_tags_list(tags, options = {})
-    unless tags.blank?
-      content, style = '', options.delete(:style)
-      # prevent ActsAsTaggableOn::TagsHelper from calling `all`
-      # otherwise we will need sort tags after `tag_cloud`
-      tags = tags.to_a
-      tags = sort_tags_array(tags)
-      if :list == style
-        list_el, item_el = 'ul', 'li'
-      elsif :simple_cloud == style
-        list_el, item_el = 'div', 'span'
-      elsif :cloud == style
-        list_el, item_el = 'div', 'span'
-        tags = cloudify tags
-      else
-        raise 'Unknown list style'
-      end
-      content = content.html_safe
-      tag_cloud tags, (1..8).to_a do |tag, weight|
-        unless !@select_tags.nil? && @select_tags.include?(tag.name)
-          content << ' '.html_safe <<
-          content_tag(item_el, render_catalog_link_tag(tag.name, show_count: options[:show_count]),
-                      { class: "tag-nube-#{weight}",
-                        style: (:simple_cloud == style ? 'font-size: 1em;' : '') }) <<
-                      ' '.html_safe
-        end
-      end
-      content_tag list_el, content, class: 'tags',
-        style: (:simple_cloud == style ? 'text-align: left;' : '')
-    end
-  end
-
-  def catalog_categories
-    unless @catalog_categories
-      issues_scope = Issue.visible.select('issues.category_id').joins(:project)
-      issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if @issues_open_only
-      issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-
-      logger.debug "catalog_categories: #{issues_scope.size}"
-
-      @catalog_categories = IssueCategory.where(id: issues_scope)
-        .order('issue_categories.name')
-    end
-    @catalog_categories
-  end
-
-  def render_catalog_categories
-    categories = catalog_categories
-
-    content = ''.html_safe
-
-    content_h3 = ''.html_safe
-    content_h3 << l(:field_category)
-    unless @select_category.nil?
-      content_h3 << " : "
-      category = categories.find { |c| c.name == @select_category.name }
-      content_h3 << render_catalog_link_category(category)
-    end
-    content << content_tag(:h3, content_h3)
-
-    if @select_category.nil?
-      content << render_catalog_categories_list(categories, {
-                                                  show_count: true,
-        style: RedmineTags.settings[:issues_sidebar].to_sym
-                                                })
-    end
-
-    content_tag :div, content, class: "catalog-selector-categories"
-  end
-
-  def render_catalog_categories_list(categories, options = {})
-    unless categories.blank?
-      content = ''.html_safe
-      categories.each do |category|
-        content << ' '.html_safe << render_catalog_link_category(category, options)
-      end
-      content_tag 'div', content, class: 'categories', style: 'text-align: left;'
-    end
-  end
-
-  # カテゴリのリンク
-  def render_catalog_link_category(category, options = {})
-    filters = make_filters(:category_id, category.id)
-    filters << [:status_id, 'o'] if options[:open_only]
-
-    content = link_to_catalog_filter(category.name, filters, project_id: @project, sort: 'priority:desc')
-    if options[:show_count] && category.respond_to?(:count)
-      content << content_tag('span', "(#{category.count})", class: 'category-count')
-    end
-
-    tag_bg_color = tag_color(category)
-    tag_fg_color = tag_fg_color(tag_bg_color)
-    content_tag 'span', content, { class: 'catalog-category-label', style: "background-color: #{tag_bg_color}; color: #{tag_fg_color}" }
-  end
-
-  # タグのリンク
-  def render_catalog_link_tag(name, show_count: false, add_del_btn_selected: false)
-    tag_class = 'catalog-tag-label'
-
-    if add_del_btn_selected
-      tag_name = content_tag(:span, l(:button_clear), class: 'icon-only catalog-icon-clear-selected')
-      tag_name << name
-      content = link_to(tag_name, '#')
-    else
-      content = link_to(name, '#')
-    end
-
-    at = @catalog_all_tags[name]
-    if show_count
-      st = @catalog_selected_tags[name]
-      selected_count = st ? st[:count] : 0
-      all_count = at ? at[:count] : 0
-      count = (@tags_operator == 'and') ? selected_count : all_count
-      content << content_tag('span', "(#{count})", class: 'tag-count', data: { allCount: all_count, selectedCount: selected_count })
-      if count == 0
-        tag_class << ' catalog-count-zero'
-      end
-    end
-
-    if at && at[:description]
-      content << content_tag(:div, content_tag(:div, at[:description], class: 'tag-description'), class: 'tag-tooltip')
-    end
-
-    content_tag 'span', content, class: tag_class
-  end
-
   # link_to_filterのコントローラー違い
   def link_to_catalog_filter(title, filters, options = {})
     options.merge! link_to_catalog_filter_options(filters)
@@ -464,31 +181,6 @@ module IssuesCatalogHelper
       options[:v][name] = value.instance_of?(Array) ? value : [value]
     end
     options
-  end
-
-  def make_filters(add_type, add_value)
-    if @select_filters.nil?
-      @select_filters = []
-    end
-    filters = Marshal.load(Marshal.dump(@select_filters))
-    is_add = false
-    filters.each do |f|
-      if f[0] == add_type
-        if @select_mode == 'one'
-          f[2] = add_value
-        else
-          unless f[2].include?(add_value)
-            f[2] <<= add_value
-          end
-        end
-        is_add = true
-      end
-    end
-    unless is_add
-      op = (add_type == :tags) ? @tags_operator : '='
-      filters <<= [add_type, op, add_value]
-    end
-    filters
   end
 
   def make_favorite_filter(user_id)

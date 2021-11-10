@@ -17,24 +17,31 @@ class IssuesCatalogController < ApplicationController
   MAX_HISTORIES = 20
 
   def index
-    retrieve_query IssueQuery, false
+    retrieve_query(IssueQuery, false)
     @issue_count = @query.issue_count
     @issue_pages = Paginator.new @issue_count, per_page_option, params['page']
-    @issues = @query.issues(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
+    @issue_ids = @query.issue_ids(:offset => @issue_pages.offset, :limit => @issue_pages.per_page)
 
     @select_mode = params['sm'] || 'one'
     @issues_open_only = RedmineTags.settings[:issues_open_only].to_i == 1
 
     make_select_filters
-    make_catalog_all_tags
-    make_catalog_selected_tags
-    make_catalog_selected_groups
 
     # javascriptに渡すもの
     @to_js_param = {'select_mode' => @select_mode,
                     'issues_open_only' => @issues_open_only,
                     'label_clear' => l(:button_clear),
-                    'select_filters' => @select_filters }
+                    'label_clear_select' => l(:label_clear_select),
+                    'label_operator_one' => l(:label_operator_one),
+                    'label_operator_and' => l(:label_operator_and),
+                    'label_operator_or' => l(:label_operator_or),
+                    'label_selected_tag_group' => l(:label_selected_tag_group),
+                    'label_tag_category_none' => l(:label_catalog_tag_category_none),
+                    'select_filters' => @select_filters,
+                    'tags' => get_catalog_all_tags,
+                    'selected_tags' => get_catalog_selected_tags,
+                    'tag_categories' => get_catalog_tag_categories,
+                    'tag_groups' => get_catalog_tag_groups}
   end
 
   def add_tag
@@ -121,49 +128,60 @@ class IssuesCatalogController < ApplicationController
     end
   end
 
-  def make_catalog_all_tags
+  def get_catalog_all_tags
     issues_scope = Issue.visible.select('issues.id').joins(:project)
     issues_scope = issues_scope.on_project(@project) unless @project.nil?
     issues_scope = issues_scope.joins(:status).open if @issues_open_only
-
-    @catalog_all_tags = ActsAsTaggableOn::Tag
+    ActsAsTaggableOn::Tag
       .joins(:taggings)
-      .select('tags.id, tags.name, tags.description, tags.taggings_count, COUNT(taggings.id) as count')
-      .group('tags.id, tags.name, tags.description, tags.taggings_count')
+      .select('tags.id, tags.name, tags.description, COUNT(taggings.id) as count')
+      .group('tags.id, tags.name, tags.description')
       .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-      .map { |tag| [tag.name, { id: tag.id, count: tag.count, description: tag.description }] }
-      .to_h
+      .order('tags.name')
+      .preload(:catalog_tag_categories, :catalog_tag_groups)
+      .collect do |tag|
+        { name: tag.name,
+          id: tag.id,
+          count: tag.count,
+          select_count: 0,
+          description: tag.description,
+          categories: tag.catalog_tag_category_ids,
+          groups: tag.catalog_tag_group_ids }
+      end
   end
 
-  def make_catalog_selected_tags
-    @catalog_selected_tags = {}
-    unless @select_filters.empty?
-      issues_scope = Issue.visible.select('issues.id').joins(:project)
-      issues_scope = issues_scope.on_project(@project) unless @project.nil?
-      issues_scope = issues_scope.joins(:status).open if @issues_open_only
-      issues_scope = issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
-      issues_scope = issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
-
-      @catalog_selected_tags = ActsAsTaggableOn::Tag
+  def get_catalog_selected_tags
+    if @select_filters.present?
+      select_issues_scope = Issue.visible.select('issues.id').joins(:project)
+      select_issues_scope = select_issues_scope.on_project(@project) unless @project.nil?
+      select_issues_scope = select_issues_scope.joins(:status).open if @issues_open_only
+      select_issues_scope = select_issues_scope.where(category_id: @select_category.id) unless @select_category.nil?
+      select_issues_scope = select_issues_scope.tagged_with(@select_tags) unless @select_tags.nil?
+      ActsAsTaggableOn::Tag
         .joins(:taggings)
-        .select('tags.id, tags.name, tags.taggings_count, COUNT(taggings.id) as count')
-        .group('tags.id, tags.name, tags.taggings_count')
-        .where(taggings: { taggable_type: 'Issue', taggable_id: issues_scope})
-        .map { |tag| [tag.name, { id: tag.id, count: tag.count }] }
-        .to_h
+        .select('tags.id, COUNT(taggings.id) as count')
+        .group('tags.id')
+        .where(taggings: { taggable_type: 'Issue', taggable_id: select_issues_scope})
+        .collect do |tag|
+          { id: tag.id, select_count: tag.count }
+        end
+    else
+      {}
     end
   end
 
-  def make_catalog_selected_groups
-    @catalog_selected_tag_groups = []
-    if @select_tags.present?
-      tags_scope = @select_tags.map {|t| @catalog_all_tags[t][:id]}
-      @catalog_selected_tag_groups = CatalogTagGroup
-        .joins(:catalog_relation_tag_groups)
-        .where(catalog_relation_tag_groups: {tag_id: tags_scope})
-        .distinct
-        .order('catalog_tag_groups.name')
-        .to_a
+  def get_catalog_tag_categories
+    tmp_categories = CatalogTagCategory.search_by_project(@project.id).map do |cate|
+      { name: cate.name, id: cate.id, description: cate.description }
+    end
+
+    always = CatalogTagCategory.always
+    tmp_categories.unshift({ name: always.name, id: always.id, description: always.description })
+  end
+
+  def get_catalog_tag_groups
+    CatalogTagGroup.search_by_project(@project.id).map do |grp|
+      { name: grp.name, id: grp.id, description: grp.description }
     end
   end
 end

@@ -1,8 +1,7 @@
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('lozad.min', plugin: 'issues_catalog') %>
-
-<div id="issues-catalog-param" data-issues-catalog="<%= @to_js_param.to_json %>"></div>
+<%= javascript_tag("const IssuesCatalogParam = #{@to_js_param.to_json};") %>
 
 <% content_for :sidebar do %>
   <%= render :partial => 'catalog_sidebar' %>
@@ -25,7 +24,6 @@
   <div class="catalog-tag-selected">
     <fieldset class="box" id="catalog_tags_selected">
       <legend><%= l(:label_selected_tags)%></legend>
-      <%= render_selected_cagalog_tags %>
     </fieldset>
   </div>
   <span class="catalog-btn-thumbnails" id="catalog-btn-thumbnails">
@@ -33,7 +31,6 @@
   </span>
 </div>
 <div class="catalog-always-selector">
-  <%= render_catalog_tag_always %>
 </div>
 
 <% if catalog_select_any? %>

@@ -2,6 +2,6 @@
   <%= render_catalog_tag_tabs %>
 </div>
 <div>
-  <%= debug(@query.filters) if Rails.env.development? %>
+  <%= debug(@query.filters) if Rails.env.development? && @query.present? %>
   <%= debug(params) if Rails.env.development? %>
 </div>

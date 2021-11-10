@@ -1,0 +1,16 @@
+<% html_title l(:label_settings), l(:issues_catalog) %>
+
+<% cf_options = IssueCustomField.sorted.collect { |cf| [cf.name, cf.id] } %>
+
+<p>
+  <%= label_tag('settings[catalog_cf_thumbnails]', l(:label_cf_thumbnails)) %>
+  <%= select_tag('settings[catalog_cf_thumbnails]', options_for_select(cf_options, @settings[:catalog_cf_thumbnails]), include_blank: true) %>
+</p>
+<p>
+  <%= label_tag('settings[catalog_cf_place]', l(:label_cf_place)) %>
+  <%= select_tag('settings[catalog_cf_place]', options_for_select(cf_options, @settings[:catalog_cf_place]), include_blank: true) %>
+</p>
+<p>
+  <%= label_tag('settings[catalog_url_thumbnails]', l(:label_url_thumbnails_service)) %>
+  <%= text_field_tag('settings[catalog_url_thumbnails]', @settings[:catalog_url_thumbnails], size: 200) %>
+</p>

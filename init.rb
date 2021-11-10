@@ -12,7 +12,7 @@ Redmine::Plugin.register :issues_catalog do
   name 'Issues Catalog plugin'
   author 'ds-kawasaki'
   description 'issues catalog plugin for Redmine'
-  version '0.9.1'
+  version '1.0.0'
   url 'https://github.com/ds-kawasaki/issues_catalog'
   author_url 'https://github.com/ds-kawasaki'
 
@@ -23,4 +23,7 @@ Redmine::Plugin.register :issues_catalog do
 
   # menu setting
   menu :project_menu, :issues_catalog, { controller: 'issues_catalog', action: 'index' }, caption: :label_catalog, before: :issues, param: :project_id
+
+  # configer setting
+  settings default: { 'empty' => true }, partial: 'issues_catalog_settings/settings'
 end
