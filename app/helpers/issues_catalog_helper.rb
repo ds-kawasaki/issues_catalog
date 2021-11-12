@@ -18,6 +18,7 @@ module IssuesCatalogHelper
   def render_catalog_issues
     cfid_thumbnails = Setting.plugin_issues_catalog[:catalog_cf_thumbnails].to_i
     cfid_place = Setting.plugin_issues_catalog[:catalog_cf_place].to_i
+    cfid_image = Setting.plugin_issues_catalog[:catalog_cf_image].to_i
     thumbnail_base_url = Setting.plugin_issues_catalog[:catalog_url_thumbnails].freeze
 
     html_text = hidden_field_tag('back_url', url_for(:params => request.query_parameters), :id => nil)
@@ -48,21 +49,41 @@ module IssuesCatalogHelper
               div_tr << "\n"
               cv_thumbnail = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_thumbnails }
               cv_okiva = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_place }
+              cv_image = issue.custom_field_values.detect { |v| v.custom_field.id == cfid_image }
               if cv_thumbnail.present?
                 val_thumbnail = cv_thumbnail.value
-                val_thumbnail[0] = '' if val_thumbnail[0] == '"'
-                val_thumbnail[-1] = '' if val_thumbnail[-1] == '"'
-                url_thumbnail = thumbnail_base_url + Base64.urlsafe_encode64(val_thumbnail)
+                if val_thumbnail.present?
+                  val_thumbnail[0] = '' if val_thumbnail[0] == '"'
+                  val_thumbnail[-1] = '' if val_thumbnail[-1] == '"'
+                  url_thumbnail = thumbnail_base_url + Base64.urlsafe_encode64(val_thumbnail)
+                end
               end
               if cv_okiva.present?
                 val_okiba = cv_okiva.value
-                val_okiba[0] = '' if val_okiba[0] == '"'
-                val_okiba[-1] = '' if val_okiba[-1] == '"'
+                if val_okiba.present?
+                  val_okiba[0] = '' if val_okiba[0] == '"'
+                  val_okiba[-1] = '' if val_okiba[-1] == '"'
+                end
+              end
+              if cv_image.present?
+                val_image = cv_image.value
+                if val_image.present?
+                  val_image[0] = '' if val_image[0] == '"'
+                  val_image[-1] = '' if val_image[-1] == '"'
+                end
+              end
+              # データ調整前の暫定処理 
+              if val_okiba.blank? && is_foler(val_image)
+                val_okiba = val_image
               end
               # subject
-              subject_css = 'subject'
-              subject_css << ' icon catalog-icon-folder' if is_foler(val_okiba)
-              div_tr << content_tag(:td, link_to(issue.subject.to_s, issue_path(issue)), class: subject_css)
+              if val_okiba.present?
+                class_subject = 'subject'
+                class_subject << ' icon catalog-icon-folder' if is_foler(val_okiba)
+                div_tr << content_tag(:td, link_to(issue.subject.to_s, 'file://' << val_okiba), class: class_subject)
+              else
+                div_tr << content_tag(:td, issue.subject.to_s, class: 'subject')
+              end
               div_tr << "\n"
               # thumbnail
               if url_thumbnail.present?
@@ -76,8 +97,8 @@ module IssuesCatalogHelper
                                          'data-src': url_thumbnail, size: '300x300',
                                          class: 'lozad')
                 end
-                if val_okiba.present?
-                  thumbnail = link_to(thumbnail, 'file://' << val_okiba)
+                if val_image.present?
+                  thumbnail = link_to(thumbnail, 'file://' << val_image)
                 end
                 if issue.description?
                   tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')

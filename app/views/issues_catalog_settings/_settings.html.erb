@@ -11,6 +11,10 @@
   <%= select_tag('settings[catalog_cf_place]', options_for_select(cf_options, @settings[:catalog_cf_place]), include_blank: true) %>
 </p>
 <p>
+  <%= label_tag('settings[catalog_cf_image]', l(:label_cf_image)) %>
+  <%= select_tag('settings[catalog_cf_image]', options_for_select(cf_options, @settings[:catalog_cf_image]), include_blank: true) %>
+</p>
+<p>
   <%= label_tag('settings[catalog_url_thumbnails]', l(:label_url_thumbnails_service)) %>
   <%= text_field_tag('settings[catalog_url_thumbnails]', @settings[:catalog_url_thumbnails], size: 200) %>
 </p>

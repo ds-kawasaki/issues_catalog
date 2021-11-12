@@ -38,4 +38,5 @@ ja:
   label_selected_tag_group: "選択タグに関連するグループ"
   label_cf_thumbnails: "サムネイルのカスタムフィールド"
   label_cf_place: "置き場所のカスタムフィールド"
+  label_cf_image: "画像素材のカスタムフィールド"
   label_url_thumbnails_service: "サムネイル取得サービスURL"
