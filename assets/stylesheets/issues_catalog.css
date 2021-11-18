@@ -189,6 +189,11 @@ td.thumbnail:hover .thumbnail-description {
   top: 0px;
   left: 30px;
 }
+img.stackForLink {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
 table.catalog-tag-categories {
   width: max-content;

@@ -55,7 +55,12 @@ module IssuesCatalogHelper
                 if val_thumbnail.present?
                   val_thumbnail[0] = '' if val_thumbnail[0] == '"'
                   val_thumbnail[-1] = '' if val_thumbnail[-1] == '"'
-                  url_thumbnail = thumbnail_base_url + Base64.urlsafe_encode64(val_thumbnail)
+                  if val_thumbnail.match?(/^youtube=/i)
+                    youtube_movie_id = val_thumbnail.sub(/^youtube=/i, '')
+                    url_thumbnail = "https://www.youtube.com/embed/#{youtube_movie_id}"
+                  else
+                    url_thumbnail = thumbnail_base_url + Base64.urlsafe_encode64(val_thumbnail)
+                  end
                 end
               end
               if cv_okiva.present?
@@ -72,7 +77,7 @@ module IssuesCatalogHelper
                   val_image[-1] = '' if val_image[-1] == '"'
                 end
               end
-              # データ調整前の暫定処理 
+              # データ調整前の暫定処理
               if val_okiba.blank? && is_foler(val_image)
                 val_okiba = val_image
               end
@@ -88,17 +93,26 @@ module IssuesCatalogHelper
               # thumbnail
               if url_thumbnail.present?
                 thumbnail = ''.html_safe
-                if MOVIE_EXTS.include?(File.extname(val_thumbnail))
-                  thumbnail << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                         'data-src': url_thumbnail, size: '300x300',
-                                         autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+                if youtube_movie_id.present?
+                  thumbnail << content_tag(:iframe, '', width: '300', height: '300',
+                                           src: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                           'data-src': "https://www.youtube.com/embed/#{youtube_movie_id}?autoplay=1&loop=1&playlist=#{youtube_movie_id}&mute=1&playsinline=1&rel=0&controls=0",
+                                           frameborder: 0, allowfullscreen: true, class: 'lozad')
+                  thumbnail << link_to(image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', size: '300x300', class: 'stackForLink'),
+                                       "https://www.youtube.com/watch?v=#{youtube_movie_id}", target: :_blank, rel: 'noopenner noreferrer')
                 else
-                  thumbnail << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
-                                         'data-src': url_thumbnail, size: '300x300',
-                                         class: 'lozad')
-                end
-                if val_image.present?
-                  thumbnail = link_to(thumbnail, 'file://' << val_image)
+                  if MOVIE_EXTS.include?(File.extname(val_thumbnail))
+                    thumbnail << video_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                           'data-src': url_thumbnail, size: '300x300',
+                                           autoplay: true, playsinline: true, muted: true, loop: true, preload: 'none', class: 'lozad')
+                  else
+                    thumbnail << image_tag('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+                                           'data-src': url_thumbnail, size: '300x300',
+                                           class: 'lozad')
+                  end
+                  if val_image.present?
+                    thumbnail = link_to(thumbnail, 'file://' << val_image)
+                  end
                 end
                 if issue.description?
                   tooltip = content_tag(:div, textilizable(issue, :description, :attachments => issue.attachments), class: 'wiki')
