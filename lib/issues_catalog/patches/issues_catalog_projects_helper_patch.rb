@@ -5,13 +5,14 @@ module IssuesCatalog
     module ProjectsHelperMethodsIssuesCatalog
       def project_settings_tabs
         tabs = super
-    
+
         action = { name: 'issues_catalog',
           action: :show,
           partial: 'issues_catalog_settings/show',
+          onclick: 'showTab(\'issues_catalog\', this.href); showTab(\'manage_tag_categories\', this.href)',
           label: :issues_catalog }
         tabs << action if @project.module_enabled?(:issues_catalog)
-    
+
         tabs
       end
     end

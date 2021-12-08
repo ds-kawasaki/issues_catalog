@@ -1,0 +1,30 @@
+<div><%= link_to l(:label_catalog_tag_category_new), new_project_catalog_tag_category_path(@project), :class => 'icon icon-add' %></div>
+<% catalog_tag_categories = @project.catalog_tag_categories %>
+<% unless catalog_tag_categories.empty? %>
+  <table class="list catalog-tag-categories">
+    <thead><tr>
+      <th><%= l(:label_catalog_tag_categories) %></th>
+      <th><%= l(:label_optional_description) %></th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+    <% for catalog_tag_category in catalog_tag_categories %>
+      <tr id=<%= "catalog_tag_category-#{catalog_tag_category.id}" %> >
+        <td class="name edit-category"><%= catalog_tag_category.name %></td>
+        <td class="description edit-category"><%= catalog_tag_category.description %></td>
+        <td class="buttons">
+          <%= delete_link catalog_tag_category_path(catalog_tag_category) %>
+        </td>
+      </tr>
+    <% end %>
+    <tr>
+      <td class="name"><%= CatalogTagCategory.always.name %></td>
+      <td class="description"><%= CatalogTagCategory.always.description %></td>
+      <td class="buttons">
+      </td>
+    </tr>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l :label_no_data %></p>
+<% end %>
