@@ -22,6 +22,12 @@ catalog_tabs = [
     url: {tab: 'issues_catalog', sub_tab: 'manage_tags'},
     label: :label_tags
   },
+  {
+    name: 'manage_synonyms',
+    partial: 'issues_catalog_settings/manage_synonyms',
+    url: {tab: 'issues_catalog', sub_tab: 'manage_synonyms'},
+    label: :label_synonyms
+  },
 ]
 %>
 <%= render_tabs(catalog_tabs) %>

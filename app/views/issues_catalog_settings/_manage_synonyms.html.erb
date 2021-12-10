@@ -1,0 +1,27 @@
+<div><%= link_to l(:label_synonym_new), new_synonym_path, class: 'icon icon-add' %></div>
+<% synonyms = Synonym.all.order(:term) %>
+<% if synonyms.present? %>
+  <table class="list synonyms">
+    <thead>
+      <tr>
+        <th><%= l(:field_name) %></th>
+        <th><%= l(:field_synonyms) %></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% synonyms.each do |s| %>
+        <tr class="<%= cycle('odd', 'even') %>">
+          <td class="term"><%= s.term %></td>
+          <td class="synonyms"><%= s.synonyms.join(',') %></td>
+          <td class="buttons">
+            <%= link_to l(:button_edit), edit_synonym_path(s), class: 'icon icon-edit' %>
+            <%= delete_link(synonym_path(s)) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>
