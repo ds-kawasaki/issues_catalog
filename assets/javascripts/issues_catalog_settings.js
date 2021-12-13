@@ -31,6 +31,93 @@ $(function () {
     $(this).parents('table').find('input[name=ids\\[\\]]').prop('checked', checked);
   });
 
+  class NewDialog {
+    constructor(dialog_id, trigger_id, bg_id, submitCallback) {
+      this.dialog = document.getElementById(dialog_id);
+      this.trigger = document.getElementById(trigger_id);
+      this.backGround = document.getElementById(bg_id);
+      this.submitCallback = submitCallback;
+      this.setupShowDialog();
+      this.setupHideDialog();
+    }
+    setupShowDialog() {
+      this.trigger?.addEventListener('click', () => {
+        if (!this.dialog) { return; }
+        this.dialog.showModal();
+        this.dialog.style.visibility = 'visible';
+        this.dialog.classList.remove('is-motioned');
+        this.dialog.setAttribute('tabIndex', '0');
+        this.dialog.focus();
+      });
+    }
+    setupHideDialog() {
+      if (!this.dialog) { return; }
+      this.dialog.querySelector('.dialog-button-submit')?.addEventListener('click', () => {
+        if (this.submitCallback) {
+          this.submitCallback(this.dialog);
+        }
+        this.hideProcess('submit');
+      });
+      this.dialog.querySelector('.dialog-button-cancel')?.addEventListener('click', () => {
+        this.hideProcess('cancel');
+      });
+      this.dialog.addEventListener('cancel', () => {
+        this.hideProcess('cancel from escape key');
+      });
+    }
+    hideProcess(resText) {
+      if (!this.dialog) { return; }
+      this.dialog.close(resText);
+      this.dialog.classList.add('is-motioned');
+      if (this.backGround) {
+        this.backGround.setAttribute('tabIndex', '0');
+        this.backGround.focus();
+      }
+      setTimeout(() => {
+        this.dialog.style.visibility = 'hidden';
+      }, 250);
+    }
+  }
+
+  const callbackNewCatalogTagCategory = (dialog) => {
+    if (!dialog) { return; }
+    const formAction = dialog.querySelector('form').action;
+    const datName = dialog.querySelector('input[name=\'catalog_tag_category[name]\']').value;
+    const datDescription = dialog.querySelector('input[name=\'catalog_tag_category[description]\']').value;
+    const datUtf8 = dialog.querySelector('input[name=utf8]').value;
+    const datToken = dialog.querySelector('input[name=authenticity_token]').value;
+    let projectName = '';
+    const tmpProjectName = $('body').attr('class').match(/project-([\w-]+)/);
+    if (tmpProjectName) {
+      projectName = tmpProjectName[1];
+    }
+    console.log(`callbackNew: ${datName} : ${datDescription} : ${projectName} : ${datUtf8} : ${datToken} : ${formAction}`);
+    $.ajax({
+      type: 'POST',
+      url: `/projects/${projectName}/catalog_tag_categories.json`,
+      dataType: 'json',
+      data: {
+        utf8: datUtf8,
+        authenticity_token: datToken,
+        catalog_tag_category: {
+          name: datName,
+          description: datDescription
+        }
+      }
+    }).done(function (data) {
+      if (data.status === 'SUCCESS') {
+      } else {
+        console.log(`catalog_tag_categories/new : status ${data.status}`);
+        if (data.message) {
+          alert(data.message);
+          console.log(data.message);
+        }
+      }
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`catalog_tag_categories/new failed: ${textStatus}`);
+    });
+  };
+  const dialogNewCategory = new NewDialog('dialog-new-catalog-tag-category', 'add-catalog-tag-category', 'tab-content-manage_tag_categories', callbackNewCatalogTagCategory);
 
 
   // タグカテゴリ名称変更を各所の表示反映
