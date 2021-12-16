@@ -40,17 +40,15 @@ class CatalogTagCategoriesController < ApplicationController
           flash[:notice] = l(:notice_successful_create)
           redirect_to_settings_in_projects
         end
-        format.js
         format.api { render :action => 'show', :status => :created, :location => catalog_tag_category_path(@catalog_tag_category) }
-        format.json { render json: { status: 'SUCCESS', data: @catalog_tag_category } }
+        # format.json { render json: { status: 'SUCCESS', data: @catalog_tag_category } }
       end
     else
-      messages = Array.wrap(@catalog_tag_category).map {|object| object.errors.full_messages}.flatten.join('\n')
+      # messages = Array.wrap(@catalog_tag_category).map {|object| object.errors.full_messages}.flatten.join('\n')
       respond_to do |format|
         format.html { render :action => 'new'}
-        format.js   { render :action => 'new'}
         format.api { render_validation_errors(@catalog_tag_category) }
-        format.json { render json: { status: 'ERROR', message: messages, data: @catalog_tag_category } }
+        # format.json { render json: { status: 'ERROR', message: messages, data: @catalog_tag_category } }
       end
     end
   end

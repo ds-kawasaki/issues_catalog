@@ -81,40 +81,56 @@ $(function () {
 
   const callbackNewCatalogTagCategory = (dialog) => {
     if (!dialog) { return; }
-    const formAction = dialog.querySelector('form').action;
     const datName = dialog.querySelector('input[name=\'catalog_tag_category[name]\']').value;
     const datDescription = dialog.querySelector('input[name=\'catalog_tag_category[description]\']').value;
-    const datUtf8 = dialog.querySelector('input[name=utf8]').value;
-    const datToken = dialog.querySelector('input[name=authenticity_token]').value;
-    let projectName = '';
-    const tmpProjectName = $('body').attr('class').match(/project-([\w-]+)/);
-    if (tmpProjectName) {
-      projectName = tmpProjectName[1];
-    }
-    console.log(`callbackNew: ${datName} : ${datDescription} : ${projectName} : ${datUtf8} : ${datToken} : ${formAction}`);
+    const apiKey = IssuesCatalogSettingParam.user.apiKey;
+    let projectName = IssuesCatalogSettingParam.project?.identifier;
+    console.log(`callbackNew: ${datName} : ${datDescription} : ${projectName} : ${apiKey}`);
     $.ajax({
       type: 'POST',
       url: `/projects/${projectName}/catalog_tag_categories.json`,
-      dataType: 'json',
+      headers: {
+        'X-Redmine-API-Key': apiKey
+      },
+      dataType: 'text',
+      format: 'json',
       data: {
-        utf8: datUtf8,
-        authenticity_token: datToken,
         catalog_tag_category: {
           name: datName,
           description: datDescription
         }
       }
     }).done(function (data) {
-      if (data.status === 'SUCCESS') {
-      } else {
-        console.log(`catalog_tag_categories/new : status ${data.status}`);
-        if (data.message) {
-          alert(data.message);
-          console.log(data.message);
+      if (data.startsWith('{')) {
+        const retData = JSON.parse(data);
+        // console.dir(retData);
+        const tableBody = document.querySelector('table.catalog-tag-categories')?.querySelector('tbody');
+        if (tableBody) {
+          const addTr = document.createElement('tr');
+          addTr.id = `catalog_tag_category-${retData.catalog_tag_category.id}`;
+          const tdName = document.createElement('td');
+          tdName.classList.add('name', 'edit-category');
+          tdName.innerText = retData.catalog_tag_category.name;
+          const tdDescription = document.createElement('td');
+          tdDescription.classList.add('description', 'edit-category');
+          tdDescription.innerText = retData.catalog_tag_category.description;
+          //  TODO: イベントリスナー登録 
+          addTr.appendChild(tdName);
+          addTr.appendChild(tdDescription);
+          tableBody.insertBefore(addTr, tableBody.lastElementChild);  //  最後（常時表示）の手前に挿入
         }
+      } else {
+        console.log(data);
       }
     }).fail(function (jqXHR, textStatus) {
-      console.log(`catalog_tag_categories/new failed: ${textStatus}`);
+      const message = (jqXHR.responseText.startsWith('{')) ?
+        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
+        jqXHR.responseText;
+      alert(message);
+      console.log(message);
+      // console.log(`catalog_tag_categories/new failed: ${textStatus} : ${jqXHR.statusText} : ${jqXHR.responseText}`);
+      // alert(jqXHR.responseText);
+      // console.dir(jqXHR);
     });
   };
   const dialogNewCategory = new NewDialog('dialog-new-catalog-tag-category', 'add-catalog-tag-category', 'tab-content-manage_tag_categories', callbackNewCatalogTagCategory);
