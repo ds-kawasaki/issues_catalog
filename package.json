@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",
-    "dev": "webpack serve --content-base public"
+    "dev": "webpack serve --content-base assets",
+    "start:dev": "NODE_ENV=development webpack --watch --progress"
   }
 }
