@@ -1,6 +1,7 @@
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('issues_catalog', plugin: 'issues_catalog') %>
 <%= javascript_include_tag('lozad.min', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('bundle', plugin: 'issues_catalog') %>
 <%= javascript_tag("const IssuesCatalogParam = #{@to_js_param.to_json};") %>
 
 <% content_for :sidebar do %>
@@ -37,11 +38,13 @@
   <span class="pagination top"><%= pagination_links_full @issue_pages, @issue_count %></span>
   <%= form_tag({}, :data => {:cm_url => issues_context_menu_path}) do -%>
     <%= render_catalog_issues %>
-  <% end -%>
+  <% end %>
   <span class="pagination bottom"><%= pagination_links_full @issue_pages, @issue_count %></span>
 
   <%= context_menu %>
-<% end -%>
+<% end %>
+
+<div id="hello-svelte"></div>
 
 <button id="btn-scroll-to-top">≫</button>
 

@@ -5,6 +5,19 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "pwa-chrome",
+      "url": "http://prg-kawasaki-s:8000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "command": "npm run dev",
+      "name": "Run npm start",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
       "name": "Rails server",
       "type": "Ruby",
       "request": "launch",
