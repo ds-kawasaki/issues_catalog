@@ -1,36 +1,10 @@
+import { wrapLocalStorage } from './modules/localStorage.js';
+import { setHistoryOnLoad, addHistory } from './modules/history.js';
+
+
 // jQuery用DOM準備完了時 document ready
 $(function () {
   'use strict';
-
-  const MAX_HISTORY = 20;
-
-  let localStorageKeyCategoryTab = 'catalog-category-tabs-state';
-  let localStorageKeyHistory = 'catalog-history';
-  // true if local storage is available
-  const storageAvailable = (type) => {
-    let storage;
-    try {
-      storage = window[type];
-      const testValue = '__storage_test__';
-      storage.setItem(testValue, testValue);
-      storage.removeItem(testValue);
-      return true;
-    } catch (e) {
-      return e instanceof DOMException && (
-        // everything except Firefox
-        e.code === 22 ||
-        // Firefox
-        e.code === 1014 ||
-        // test name field too, because code might not be present
-        // everything except Firefox
-        e.name === 'QuotaExceededError' ||
-        // Firefox
-        e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
-        // acknowledge QuotaExceededError only if there's something already stored
-        (storage && storage.length !== 0);
-    }
-  };
-
 
   //  エレメント作成ヘルパー 
   const createElementWithClassText = (elem, className, text) => {
@@ -120,6 +94,13 @@ $(function () {
       return elm;
     }
   };
+  function makeTagElementNowMode(tagText, elmName, addClearBtn = false) {
+    const nowMode = getNowSelectMode();
+    function tmp(tagText, elmName) {
+      return makeTagElement(tagText, nowMode, elmName, addClearBtn);
+    }
+    return tmp;
+  }
 
 
   //  ページ読み込み時にタグにツールチップ追加
@@ -139,7 +120,8 @@ $(function () {
   //  ページ読み込み時にサイドバータグ展開
   const setSidebarTagsOnLoad = () => {
     const cateNum = IssuesCatalogParam.tag_categories.length;
-    const nowMode = getNowSelectMode();
+    // const nowMode = getNowSelectMode();
+    const funcMakeTagElementNowMode = makeTagElementNowMode();
     const sidebarCategoryTabs = document.querySelector('ul.tabs-area');
     if (sidebarCategoryTabs) {
       if (cateNum === 1) {
@@ -161,7 +143,7 @@ $(function () {
       if (cateNum === 1) {
         const ulTags = createElementWithClassText('ul', 'tags', '');
         for (const tag of IssuesCatalogParam.tags) {
-          ulTags.appendChild(makeTagElement(tag.name, nowMode, 'ul'));
+          ulTags.appendChild(funcMakeTagElementNowMode(tag.name, 'ul'));
         }
         const divContent = createElementWithClassText('div', 'category-content', '');
         divContent.appendChild(ulTags);
@@ -173,7 +155,7 @@ $(function () {
           const categoryId = IssuesCatalogParam.tag_categories[i].id;
           for (const tag of IssuesCatalogParam.tags) {
             if (tag.categories.includes(categoryId)) {
-              ulTags.appendChild(makeTagElement(tag.name, nowMode, 'ul'));
+              ulTags.appendChild(funcMakeTagElementNowMode(tag.name, 'ul'));
             }
           }
           const divContent = createElementWithClassText('div', 'category-content', '');
@@ -191,7 +173,7 @@ $(function () {
         const divOtherTags = createElementWithClassText('div', 'other-tags', '');
         for (const tag of IssuesCatalogParam.tags) {
           if (tag.categories.length == 0) {
-            divOtherTags.appendChild(makeTagElement(tag.name, nowMode, 'span'));
+            divOtherTags.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
           }
         }
         sidebarCatalogSelector.appendChild(divOtherTags);
@@ -213,6 +195,7 @@ $(function () {
       parent.appendChild(label);
     };
     const nowMode = getNowSelectMode();
+    const funcMakeTagElementNowMode = makeTagElementNowMode();
     const tagsSelected = document.querySelector('#catalog_tags_selected');
     const filterTags = getFilterTags();
     if (tagsSelected && filterTags.length > 0) {
@@ -222,7 +205,7 @@ $(function () {
         if (i > 0) {
           divSelectedTags.appendChild(createElementWithClassText('span', '', (IssuesCatalogParam.select_mode === 'and') ? ' and ' : ' or '));
         }
-        divSelectedTags.appendChild(makeTagElement(filterTags[i], nowMode, 'span', true));
+        divSelectedTags.appendChild(funcMakeTagElementNowMode(filterTags[i], 'span', true));
         const mapTag = mapAllTags[filterTags[i]];
         if (mapTag && mapTag.groups && mapTag.groups.length > 0) {
           for (const grp of mapTag.groups) {
@@ -258,7 +241,7 @@ $(function () {
             fieldsetGroup.appendChild(createElementWithClassText('div', '', grp.description));
             for (const tag of IssuesCatalogParam.tags) {
               if (tag.groups.includes(selectedGroup)) {
-                fieldsetGroup.appendChild(makeTagElement(tag.name, nowMode, 'span'));
+                fieldsetGroup.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
               }
             }
             divGroup.appendChild(fieldsetGroup);
@@ -271,7 +254,7 @@ $(function () {
     if (alwaysSelector) {
       for (const tag of IssuesCatalogParam.tags) {
         if (tag.categories.includes(IssuesCatalogParam.tag_categories[0].id)) {
-          alwaysSelector.appendChild(makeTagElement(tag.name, nowMode, 'span'));
+          alwaysSelector.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
         }
       }
     }
@@ -286,13 +269,13 @@ $(function () {
       $(this).addClass('active-tab');
       const index = $tags.index(this);
       $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
-      localStorage.setItem(localStorageKeyCategoryTab, $(this).attr('id'));
+      wrapLocalStorage.setCategoryTab($(this).attr('id'));
     });
   };
 
   // メインカテゴリタブ切替読み込み時
   const setCatalogTabOnLoad = () => {
-    const cateTab = localStorage.getItem(localStorageKeyCategoryTab);
+    const cateTab = wrapLocalStorage.getCategoryTab();
     if (!cateTab) { return; }
     const activeTab = $('#' + cateTab);
     if (!activeTab.length) { return; }
@@ -304,54 +287,6 @@ $(function () {
   };
 
 
-  // ヒストリータブ内容セット
-  const setHistoryOnLoad = () => {
-    const divHistory = document.querySelector('#catalog-category-history');
-    if (!divHistory) { return; }
-    const nowMode = getNowSelectMode();
-    const rawValue = localStorage.getItem(localStorageKeyHistory);
-    const historys = rawValue ? JSON.parse(rawValue) : [];
-    for (const history of historys) {
-      divHistory.appendChild(makeTagElement(history, nowMode, 'ul'));
-    }
-  };
-  //  ヒストリー更新
-  const addHistory = (tagText) => {
-    const rawValue = localStorage.getItem(localStorageKeyHistory);
-    const historys = rawValue ? JSON.parse(rawValue) : [];
-    const idx = historys.indexOf(tagText);
-    if (idx >= 0) {
-      historys.splice(idx, 1);
-    }
-    historys.unshift(tagText);
-    if (historys.length > MAX_HISTORY) {
-      historys.pop();
-    }
-    localStorage.setItem(localStorageKeyHistory, JSON.stringify(historys));
-  };
-
-
-  //  ページ読み込み時にストレージ内容を展開
-  const setupFromStorageOnLoad = () => {
-    if (!storageAvailable('localStorage')) { return; }
-
-    const $bodyClass = $('body').attr('class');
-    if ($bodyClass) {
-      try {
-        const postfixProject = '-' + $bodyClass.split(/\s+/).filter(function (s) {
-          return s.match(/project-.*/);
-        }).sort().join('-');
-        localStorageKeyCategoryTab += postfixProject;
-        localStorageKeyHistory += postfixProject;
-      } catch (e) {
-        // in case of error (probably IE8), continue with the unmodified key
-      }
-    }
-
-    setCatalogTabOnLoad();
-    setHistoryOnLoad();
-    setSidebarTagsClickOnLoad();
-  };
 
 
   // サムネイルオンリーボタン 
@@ -557,7 +492,13 @@ $(function () {
   setTagTooltipOnLoad();
   setSelectedTagsOnLoad();
   setSidebarTagsOnLoad();
-  setupFromStorageOnLoad();
+  if (wrapLocalStorage.setupFromStorageOnLoad()) {
+    const funcMakeTagElementNowMode = makeTagElementNowMode();
+    setCatalogTabOnLoad();
+    setHistoryOnLoad(funcMakeTagElementNowMode);
+    setSidebarTagsClickOnLoad();
+  }
+
   setupSearchTag();
   setupBtnScrollToTop();
   setupTagLink();
