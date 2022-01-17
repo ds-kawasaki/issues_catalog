@@ -1,10 +1,11 @@
+'use strict';
+
 import { wrapLocalStorage } from './modules/localStorage.js';
 import { setHistoryOnLoad, addHistory } from './modules/history.js';
 
 
 // jQuery用DOM準備完了時 document ready
 $(function () {
-  'use strict';
 
   //  エレメント作成ヘルパー 
   const createElementWithClassText = (elem, className, text) => {
