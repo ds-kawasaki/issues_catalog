@@ -33,7 +33,8 @@
 <% end %>
 <dialog id="dialog-new-catalog-tag-category" class="dialog-panel-new">
   <h2><%=l(:label_catalog_tag_category_new)%></h2>
-  <%= form_with model: CatalogTagCategory.new, url: project_catalog_tag_categories_path(@project) do |f| %>
+  <%= labelled_form_for CatalogTagCategory.new, :as => :catalog_tag_category,
+                        :url => project_catalog_tag_categories_path(@project) do |f| %>
     <%= render :partial => 'catalog_tag_categories/form', :locals => { :f => f } %>
     <div class="buttons">
       <button type="button" class="dialog-button-submit" id="submit-dialog-new-catalog-tag-category"><%= l(:button_create) %></button>
