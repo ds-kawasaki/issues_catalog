@@ -1,6 +1,6 @@
 <% html_title l(:label_settings), l(:issues_catalog) %>
 <%= stylesheet_link_tag('issues_catalog', plugin: 'issues_catalog') %>
-<%= javascript_include_tag('issues_catalog_settings', plugin: 'issues_catalog') %>
+<%= javascript_include_tag('settings', plugin: 'issues_catalog') %>
 <%= javascript_tag("const IssuesCatalogSettingParam = #{create_issues_catalog_settings_context(@project).to_json};") %>
 
 <%

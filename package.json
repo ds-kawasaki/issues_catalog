@@ -1,0 +1,20 @@
+{
+  "name": "issues_catalog",
+  "version": "1.0.0",
+  "description": "プラグインのjavascriptをwebpackで管理",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode=production",
+    "build:dev": "webpack --mode=development --devtool=source-map"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github:ds-kawasaki/issues_catalog.git"
+  },
+  "author": "ds-kawasaki",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.66.0",
+    "webpack-cli": "^4.9.1"
+  }
+}
