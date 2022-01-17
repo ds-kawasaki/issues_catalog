@@ -4,6 +4,7 @@ import { setupBulkFormButton } from './modules/bulkFormButton.js';
 import { NewDialog } from './modules/newDialog.js';
 import { setupEdit } from './modules/setupEdit.js';
 import { setupTagsMultiSelect } from './modules/setupTagsMultiSelect.js';
+import { EditCategory } from './modules/editCategory.js';
 
 
 // jQuery用DOM準備完了時 document ready
@@ -112,9 +113,12 @@ $(function () {
     $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
   };
 
-  setupEdit('.edit-category', 21, '/catalog_tag_categories/field_update/', 'catalog_tag_category', updateCategoryName); // 21='catalog_tag_category-'.length
+  // setupEdit('.edit-category', 21, '/catalog_tag_categories/field_update/', 'catalog_tag_category', updateCategoryName); // 21='catalog_tag_category-'.length
   setupEdit('.edit-group', 18, '/catalog_tag_groups/field_update/', 'catalog_tag_group', updateGroupName); // 18='catalog_tag_group-'.length
   setupEdit('.edit-tag', 4, '/catalog_tags/field_update/', 'catalog_tag', null); // 4='tag-'.length
+  for (const edit of document.querySelectorAll('.edit-category')) {
+    new EditCategory(edit);
+  }
 
 
   setupTagsMultiSelect('#work-tag-category', 'catalog_tag_category_ids', '.edit2-tag');

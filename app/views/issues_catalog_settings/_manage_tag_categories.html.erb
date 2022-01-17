@@ -12,10 +12,11 @@
     </tr></thead>
     <tbody>
     <% for catalog_tag_category in catalog_tag_categories %>
-      <tr id=<%= "catalog_tag_category-#{catalog_tag_category.id}" %> >
-        <td class="name edit-category"><%= catalog_tag_category.name %></td>
-        <td class="description edit-category"><%= catalog_tag_category.description %></td>
+      <tr id=<%= "catalog_tag_category-#{catalog_tag_category.id}" %> class="edit-category">
+        <td class="name editable"><%= catalog_tag_category.name %></td>
+        <td class="description editable"><%= catalog_tag_category.description %></td>
         <td class="buttons">
+          <%= link_to l(:button_edit), edit_catalog_tag_category_path(catalog_tag_category), :class => 'icon icon-edit' %>
           <%= delete_link catalog_tag_category_path(catalog_tag_category) %>
         </td>
       </tr>
