@@ -111,7 +111,8 @@ export class EditCategory {
     }
     event.preventDefault();
 
-    const params = this.#makeParam();
+    const params = {};
+    params[target.classList.item(0)] = target.innerText;
     $.ajax({
       type: 'PUT',
       url: `/catalog_tag_categories/${this.targetId}.json`,
@@ -134,13 +135,5 @@ export class EditCategory {
       console.log(`「${target.innerText}」 ${message}`);
       target.innerText = oldValue;  //  更新失敗したので元に戻す 
     });
-  }
-
-  #makeParam() {
-    let ret = {};
-    for (const [key, value] of this.columns) {
-      ret[key] = value.innerText;
-    }
-    return ret;
   }
 }
