@@ -40,13 +40,11 @@ class CatalogTagGroupsController < ApplicationController
           flash[:notice] = l(:notice_successful_create)
           redirect_to_settings_in_projects
         end
-        format.js
         format.api { render :action => 'show', :status => :created, :location => catalog_tag_group_path(@catalog_tag_group) }
       end
     else
       respond_to do |format|
         format.html { render :action => 'new'}
-        format.js   { render :action => 'new'}
         format.api { render_validation_errors(@catalog_tag_group) }
       end
     end
