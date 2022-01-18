@@ -111,8 +111,10 @@ export class EditCategory {
     }
     event.preventDefault();
 
+    const column = target.classList.item(0);
+    const value = target.innerText || '__none__';
     const params = {};
-    params[target.classList.item(0)] = target.innerText;
+    params[column] = value;
     $.ajax({
       type: 'PUT',
       url: `/catalog_tag_categories/${this.targetId}.json`,
@@ -124,7 +126,11 @@ export class EditCategory {
       data: { catalog_tag_category: params }
     }).done((data, textStatus, jqXHR) => {
       // console.log(`jqXHR.status: ${jqXHR.status}`);
-      if (!((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304)) {
+      if ((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304) {
+        if (column === 'name') {
+          EditCategory.#updateCategoryName(oldValue, value);
+        }
+      } else {
         target.innerText = oldValue;  //  更新失敗したので元に戻す 
       }
     }).fail((jqXHR) => {
@@ -136,4 +142,23 @@ export class EditCategory {
       target.innerText = oldValue;  //  更新失敗したので元に戻す 
     });
   }
+
+  // タグカテゴリ名称変更を各所の表示反映
+  static #updateCategoryName(oldName, newName) {
+    for (const edit of document.querySelectorAll('.edit2-tag')) {
+      if (edit.innerText.includes(oldName)) {
+        edit.innerText = edit.innerText.replace(oldName, newName);
+      }
+    }
+    const orgCategorySelect = document.querySelector('#work-tag-category');
+    for (const option of orgCategorySelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    const bulkSelect = document.querySelector('#select-catalog-tag-categories');
+    for (const option of bulkSelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
+  };
+
 }
