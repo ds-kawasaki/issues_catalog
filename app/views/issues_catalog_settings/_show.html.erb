@@ -6,6 +6,12 @@
 <%
 catalog_tabs = [
   {
+    name: 'manage_tags',
+    partial: 'issues_catalog_settings/manage_tags',
+    url: {tab: 'issues_catalog', sub_tab: 'manage_tags'},
+    label: :label_tags
+  },
+  {
     name: 'manage_tag_categories',
     partial: 'issues_catalog_settings/manage_tag_categories',
     url: {tab: 'issues_catalog', sub_tab: 'manage_tag_categories'},
@@ -16,12 +22,6 @@ catalog_tabs = [
     partial: 'issues_catalog_settings/manage_tag_groups',
     url: {tab: 'issues_catalog', sub_tab: 'manage_tag_groups'},
     label: :label_catalog_tag_groups
-  },
-  {
-    name: 'manage_tags',
-    partial: 'issues_catalog_settings/manage_tags',
-    url: {tab: 'issues_catalog', sub_tab: 'manage_tags'},
-    label: :label_tags
   },
   {
     name: 'manage_synonyms',
