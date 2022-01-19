@@ -11,9 +11,9 @@
     </thead>
     <tbody>
       <% synonyms.each do |s| %>
-        <tr class="<%= cycle('odd', 'even') %>">
-          <td class="term"><%= s.term %></td>
-          <td class="synonyms"><%= s.synonyms.join(',') %></td>
+        <tr class="edit-synonym" data-keyterm="<%= s.term %>">
+          <td class="term editable"><%= s.term %></td>
+          <td class="synonyms multieditable"><%= s.synonyms.join(',') %></td>
           <td class="buttons">
             <%= link_to l(:button_edit), edit_synonym_path(s), class: 'icon icon-edit' %>
             <%= delete_link(synonym_path(s)) %>
@@ -25,3 +25,59 @@
 <% else %>
   <p class="nodata"><%= l(:label_no_data) %></p>
 <% end %>
+<div>
+  <button type="button" class="add-button" id="add-synonym"><%= l(:label_synonym_new) %></button>
+</div>
+<dialog id="dialog-new-synonym" class="dialog-panel-new">
+  <h2><%=l(:label_synonym_new)%></h2>
+  <% tmp_synonym = Synonym.new %>
+  <%= form_with model: tmp_synonym do |f| %>
+    <%= error_messages_for 'synonym' %>
+    <table class="synonym-form">
+      <tbody>
+        <tr>
+          <td><%= f.label l(:label_term) %></td>
+          <td><%= f.text_field :term, required: true %></td>
+        </tr>
+        <tr>
+          <td><%= f.label l(:label_synonyms) %></td>
+          <td id="synonym-form-synonyms">
+            <% if tmp_synonym.synonyms.present? %>
+              <% tmp_synonym.synonyms.each_with_index do |s, idx| %>
+                <div>
+                  <%= f.text_field :synonyms, name: 'synonym[synonyms][]', required: true, value: s %>
+                  <%= link_to(l(:button_delete), '#', class: 'icon icon-del del-synonym') if idx > 0 %>
+                </div>
+              <% end %>
+            <% else %>
+              <div>
+                <%= f.text_field :synonyms, name: 'synonym[synonyms][]', required: true %>
+              </div>
+            <% end %>
+            <div class="buttons">
+              <%= link_to '', '#', class: 'icon icon-add', id: 'add-synonym-word' %>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <%= javascript_tag do %>
+$(function() {
+  $('#add-synonym-word').on('click', function() {
+    $parent = $(this).parent();
+    $parent.before('<div><input name="synonym[synonyms][]" required="required" type="text"><a class="icon icon-del del-synonym"></a></div>');
+    $parent.find('.del-synonym').on('click', function() {
+      $(this).parent().remove();
+    });
+  });
+  $('#synonym-form-synonyms .del-synonym').on('click', function() {
+    $(this).parent().remove();
+  });
+});
+    <% end %>
+    <div class="buttons">
+      <button type="button" class="dialog-button-submit" id="submit-dialog-new-synonym"><%= l(:button_create) %></button>
+      <button type="button" class="dialog-button-cancel" id="cancel-dialog-new-synonym"><%= l(:button_cancel) %></button>
+    </div>
+  <% end %>
+</dialog>

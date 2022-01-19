@@ -5,6 +5,7 @@ import { setupEdit } from './modules/setupEdit.js';
 import { setupTagsMultiSelect } from './modules/setupTagsMultiSelect.js';
 import { EditCategory } from './modules/editCategory.js';
 import { EditGroup } from './modules/editGroup.js';
+import { EditSynonym } from './modules/editSynonym.js';
 
 
 // jQuery用DOM準備完了時 document ready
@@ -23,6 +24,7 @@ $(function () {
 
   EditCategory.init();
   EditGroup.init();
+  EditSynonym.init();
 
 
   setupEdit('.edit-tag', 4, '/catalog_tags/field_update/', 'catalog_tag', null); // 4='tag-'.length
