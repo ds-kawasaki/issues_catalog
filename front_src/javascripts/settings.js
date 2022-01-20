@@ -3,6 +3,7 @@
 import { setupBulkFormButton } from './modules/bulkFormButton.js';
 import { setupEdit } from './modules/setupEdit.js';
 import { setupTagsMultiSelect } from './modules/setupTagsMultiSelect.js';
+import { EditTableBase } from './modules/editTableBase.js';
 import { EditCategory } from './modules/editCategory.js';
 import { EditGroup } from './modules/editGroup.js';
 import { EditSynonym } from './modules/editSynonym.js';
@@ -22,6 +23,7 @@ $(function () {
   });
 
 
+  EditTableBase.init();
   EditCategory.init();
   EditGroup.init();
   EditSynonym.init();
