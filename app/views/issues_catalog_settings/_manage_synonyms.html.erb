@@ -42,18 +42,9 @@
         <tr>
           <td><%= f.label l(:label_synonyms) %></td>
           <td id="synonym-form-synonyms">
-            <% if tmp_synonym.synonyms.present? %>
-              <% tmp_synonym.synonyms.each_with_index do |s, idx| %>
-                <div>
-                  <%= f.text_field :synonyms, name: 'synonym[synonyms][]', required: true, value: s %>
-                  <%= link_to(l(:button_delete), '#', class: 'icon icon-del del-synonym') if idx > 0 %>
-                </div>
-              <% end %>
-            <% else %>
-              <div>
-                <%= f.text_field :synonyms, name: 'synonym[synonyms][]', required: true %>
-              </div>
-            <% end %>
+            <div>
+              <%= f.text_field :synonyms, name: 'synonym[synonyms][]', required: true %>
+            </div>
             <div class="buttons">
               <%= link_to '', '#', class: 'icon icon-add', id: 'add-synonym-word' %>
             </div>
@@ -64,14 +55,12 @@
     <%= javascript_tag do %>
 $(function() {
   $('#add-synonym-word').on('click', function() {
-    $parent = $(this).parent();
-    $parent.before('<div><input name="synonym[synonyms][]" required="required" type="text"><a class="icon icon-del del-synonym"></a></div>');
-    $parent.find('.del-synonym').on('click', function() {
+    $content = $('<div class="synonym-words-added"><input name="synonym[synonyms][]" required="required" type="text"><a class="icon icon-del del-synonym"></a></div>');
+    $content.find('.del-synonym').on('click', function(e) {
+      e.preventDefault();
       $(this).parent().remove();
     });
-  });
-  $('#synonym-form-synonyms .del-synonym').on('click', function() {
-    $(this).parent().remove();
+    $(this).parent().before($content);
   });
 });
     <% end %>

@@ -85,10 +85,7 @@ export class EditSynonym {
           const retData = JSON.parse(data);
           const addTr = EditSynonym.makeTableRow(retData.synonym);
           tableBody.appendChild(addTr);
-          dialog.querySelector('input[name=\'synonym[term]\']').value = '';
-          for (const v of dialog.querySelectorAll('input[name=\'synonym[synonyms][]\']')) {
-            v.value = '';
-          }
+          EditSynonym.clearDialog(dialog);  //  次の追加に備えてダイアログクリア
         }
       } else {
         console.log(data);
@@ -100,6 +97,14 @@ export class EditSynonym {
       alert(message);
       console.log(message);
     });
+  }
+
+  static clearDialog(dialog) {
+    for (const v of dialog.querySelectorAll('.synonym-words-added')) {
+      v.parentNode.removeChild(v);
+    }
+    dialog.querySelector('input[name=\'synonym[term]\']').value = '';
+    dialog.querySelector('input[name=\'synonym[synonyms][]\']').value = '';
   }
 
   #editedItem(event) {
