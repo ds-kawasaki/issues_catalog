@@ -4,7 +4,7 @@ import { NewDialog } from './newDialog.js';
 
 export class EditGroup extends EditTableBase {
   constructor(elemTr) {
-    super(elemTr);
+    super(elemTr, 'editable-group');
     elemTr.targetId = elemTr.id.slice(18);  // 18='catalog_tag_group-'.length
   }
 
@@ -13,30 +13,30 @@ export class EditGroup extends EditTableBase {
       new EditGroup(edit);
     }
     new NewDialog('dialog-new-catalog-tag-group', 'add-catalog-tag-group', 'tab-content-manage_tag_groups', this.#callbackNewDialog);
-    EditTableBase.registEdit('name editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('description editable', this.#startEditItem, this.#editedItem);
+    EditTableBase.registEdit('name group editable', this.#startEditItem, this.#editedItem);
+    EditTableBase.registEdit('description group editable', this.#startEditItem, this.#editedItem);
   }
 
   static makeTableRow(newItem) {
     const aDelBtn = document.createElement('a');
-    aDelBtn.classList.add('icon', 'icon-del');
+    aDelBtn.className = 'icon icon-del';
     aDelBtn.setAttribute('data-method', 'delete');
     aDelBtn.setAttribute('data-confirm', 'よろしいですか？');
     aDelBtn.setAttribute('rel', 'nofollow');
     aDelBtn.href = `/catalog_tag_groups/${newItem.id}`;
     aDelBtn.appendChild(document.createTextNode('削除'));
     const tdName = document.createElement('td');
-    tdName.classList.add('name', 'editable');
+    tdName.className = 'name group editable';
     tdName.appendChild(document.createTextNode(newItem.name));
     const tdDescription = document.createElement('td');
-    tdDescription.classList.add('description', 'editable');
+    tdDescription.className = 'description group editable';
     tdDescription.appendChild(document.createTextNode(newItem.description));
     const tdButtons = document.createElement('td');
-    tdButtons.classList.add('buttons');
+    tdButtons.classname = 'buttons';
     tdButtons.appendChild(aDelBtn);
     const retTr = document.createElement('tr');
     retTr.id = `catalog_tag_group-${newItem.id}`;
-    retTr.classList.add('edit-group');
+    retTr.className = 'edit-group';
     retTr.appendChild(tdName);
     retTr.appendChild(tdDescription);
     retTr.appendChild(tdButtons);

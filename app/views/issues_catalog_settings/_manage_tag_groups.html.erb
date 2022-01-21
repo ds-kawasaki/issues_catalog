@@ -9,8 +9,8 @@
     <tbody>
     <% for catalog_tag_group in catalog_tag_groups %>
       <tr id=<%= "catalog_tag_group-#{catalog_tag_group.id}" %> class="edit-group">
-        <td class="name editable"><%= catalog_tag_group.name %></td>
-        <td class="description editable"><%= catalog_tag_group.description %></td>
+        <td class="name group editable"><%= catalog_tag_group.name %></td>
+        <td class="description group editable"><%= catalog_tag_group.description %></td>
         <td class="buttons">
           <%= delete_link catalog_tag_group_path(catalog_tag_group) %>
         </td>

@@ -11,8 +11,8 @@
     <tbody>
       <% synonyms.each do |s| %>
         <tr class="edit-synonym" data-keyterm="<%= s.term %>">
-          <td class="term editable"><%= s.term %></td>
-          <td class="synonyms multieditable"><%= s.synonyms.join(',') %></td>
+          <td class="term synonym editable"><%= s.term %></td>
+          <td class="synonyms synonym multieditable"><%= s.synonyms.join(',') %></td>
           <td class="buttons">
             <%= delete_link(synonym_path(s)) %>
           </td>

@@ -5,7 +5,6 @@ import { NewDialog } from './newDialog.js';
 export class EditSynonym extends EditTableBase {
   constructor(elemTr) {
     super(elemTr);
-    // this.targetTerm = elemTr.getAttribute('data-keyterm');
   }
 
   static init() {
@@ -13,30 +12,30 @@ export class EditSynonym extends EditTableBase {
       new EditSynonym(edit);
     }
     new NewDialog('dialog-new-synonym', 'add-synonym', 'tab-content-manage_synonyms', this.#callbackNewDialog);
-    EditTableBase.registEdit('term editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('synonyms multieditable', this.#startEditMulti, this.#editedMulti);
+    EditTableBase.registEdit('term synonym editable', this.#startEditItem, this.#editedItem);
+    EditTableBase.registEdit('synonyms synonym multieditable', this.#startEditMulti, this.#editedMulti);
   }
 
   static makeTableRow(newItem) {
     const aDelBtn = document.createElement('a');
-    aDelBtn.classList.add('icon', 'icon-del');
+    aDelBtn.className = 'icon icon-del';
     aDelBtn.setAttribute('data-method', 'delete');
     aDelBtn.setAttribute('data-confirm', 'よろしいですか？');
     aDelBtn.setAttribute('rel', 'nofollow');
     aDelBtn.href = `/synonyms/${encodeURIComponent(newItem.term)}`;
     aDelBtn.appendChild(document.createTextNode('削除'));
     const tdTerm = document.createElement('td');
-    tdTerm.classList.add('term', 'editable');
+    tdTerm.className = 'term synonym editable';
     tdTerm.appendChild(document.createTextNode(newItem.term));
     const tdSynonyms = document.createElement('td');
-    tdSynonyms.classList.add('synonyms', 'multieditable');
+    tdSynonyms.className = 'synonyms synonym multieditable';
     tdSynonyms.appendChild(document.createTextNode(newItem.synonyms.join(',')));
     const tdButtons = document.createElement('td');
-    tdButtons.classList.add('buttons');
+    tdButtons.className = 'buttons';
     tdButtons.appendChild(aDelBtn);
     const retTr = document.createElement('tr');
     retTr.setAttribute('data-keyterm', newItem.term);
-    retTr.classList.add('edit-synonym');
+    retTr.className = 'edit-synonym';
     retTr.appendChild(tdTerm);
     retTr.appendChild(tdSynonyms);
     retTr.appendChild(tdButtons);
