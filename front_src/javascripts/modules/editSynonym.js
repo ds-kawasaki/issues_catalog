@@ -2,14 +2,10 @@ import { EditTableBase } from './editTableBase.js';
 import { NewDialog } from './newDialog.js';
 
 
-export class EditSynonym {
+export class EditSynonym extends EditTableBase {
   constructor(elemTr) {
-    this.targetTerm = elemTr.getAttribute('data-keyterm');
-
-    for (const elem of elemTr.querySelectorAll('.editable')) {
-      this.#setupEditable(elem);
-    }
-    this.#setupMultieditable(elemTr.querySelector('.multieditable'));
+    super(elemTr);
+    // this.targetTerm = elemTr.getAttribute('data-keyterm');
   }
 
   static init() {
@@ -17,8 +13,8 @@ export class EditSynonym {
       new EditSynonym(edit);
     }
     new NewDialog('dialog-new-synonym', 'add-synonym', 'tab-content-manage_synonyms', this.#callbackNewDialog);
-    EditTableBase.registEdit('editable', null, null);
-    EditTableBase.registEdit('multieditable', null, this.#editedMuli);
+    EditTableBase.registEdit('term editable', this.#startEditItem, this.#editedItem);
+    EditTableBase.registEdit('synonyms multieditable', this.#startEditMulti, this.#editedMulti);
   }
 
   static makeTableRow(newItem) {
@@ -96,34 +92,25 @@ export class EditSynonym {
   }
 
 
-  #setupMultieditable(elem) {
-    if (!elem) { return; }
+  //  multieditableの編集開始トリガー 
+  static #startEditMulti(event) {
+    const elem = event.target;
+    const tmp = elem.querySelector('.tmp-edit');
+    if (tmp) { return; }
     elem.setAttribute('data-value', elem.innerText);
-    elem.addEventListener('click', (event) => {
-      const target = event.target;  //this;
-      if (!target.classList.contains('multieditable')) { return; }
-      const tmp = target.querySelector('.tmp-edit');
-      if (tmp) { return; }
-      event.preventDefault();
-      const tmpEdit = this.#makeEdits(target.innerText);
-      target.innerText = '';
-      target.appendChild(tmpEdit);
-      $(tmpEdit).tagit({
-        caseSensitive: false,
-        removeConfirmation: true
-      });
-    });
-  }
-
-  #makeEdits(synonyms) {
     const tmpEdit = document.createElement('input');
     tmpEdit.setAttribute('type', 'text');
-    tmpEdit.setAttribute('value', synonyms);
+    tmpEdit.setAttribute('value', elem.innerText);
     tmpEdit.className = 'tmp-edit';
-    return tmpEdit;
+    elem.innerText = '';
+    elem.appendChild(tmpEdit);
+    $(tmpEdit).tagit({
+      caseSensitive: false,
+      removeConfirmation: true
+    });
   }
-
-  static #editedMuli(elem) {
+  //  multieditableの編集完了トリガー 
+  static #editedMulti(elem) {
     if (!elem) { return; }
     const tmp = elem.querySelector('.tmp-edit');
     if (!tmp) { return; }
@@ -133,98 +120,40 @@ export class EditSynonym {
     const oldValue = elem.getAttribute('data-value');
     if (oldValue === value) { return; }
 
-    const targetTerm = elem.parentElement.getAttribute('data-keyterm');
+    // const targetTerm = elem.parentElement.getAttribute('data-keyterm');
     const column = elem.classList.item(0);
     const params = {};
     params[column] = value.split(',');
-    $.ajax({
-      type: 'PUT',
-      url: `/synonyms/${encodeURIComponent(targetTerm)}.json`,
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      },
-      dataType: 'json',
-      format: 'json',
-      data: { synonym: params }
-    }).done((data, textStatus, jqXHR) => {
-      // console.log(`jqXHR.status: ${jqXHR.status}`);
-      if ((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304) {
-      } else {
-        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-      }
-    }).fail((jqXHR) => {
-      const message = (jqXHR.responseText.startsWith('{')) ?
-        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
-        jqXHR.responseText;
-      alert(`「${elem.innerText}」\n ${message}`);
-      console.log(`「${elem.innerText}」 ${message}`);
-      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-    });
+    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`
+    EditTableBase.updateToServer(elem, oldValue, sendUrl, { synonym: params });
   }
 
 
-  //  シンプルなテキスト入力を有効化 
-  #setupEditable(elem) {
-    if (!elem) { return; }
-    elem.contentEditable = true;
+  //  シンプルなテキスト編集開始トリガー 
+  static #startEditItem(event) {
+    const elem = event.target;
     elem.setAttribute('data-value', elem.innerText);
-    elem.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {  //  改行させない 
-        event.preventDefault();
-      }
-    });
-    elem.addEventListener('focusout', (event) => {
-      this.#editedItem(event);
-    });
-    elem.addEventListener('focusin', (event) => {
-      event.target.setAttribute('data-value', event.target.innerText);
-    });
   }
-
   //  シンプルなテキスト変更トリガー 
-  #editedItem(event) {
-    const target = event.target;
-    // target.innerText = target.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
-    target.innerText = target.innerText.replace(/[\r\n]/g, '');  //  改行削除 
-    const oldValue = target.getAttribute('data-value');
-    if (oldValue === target.innerText) return true;
-    if (target.innerText.length === 0) {
-      target.innerText = oldValue;
+  static #editedItem(elem) {
+    // elem.innerText = elem.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+    elem.innerText = elem.innerText.replace(/[\r\n]/g, '');  //  改行削除 
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === elem.innerText) return true;
+    if (elem.innerText.length === 0) {
+      elem.innerText = oldValue;
       return true;
     }
-    event.preventDefault();
 
-    const column = target.classList.item(0);
-    const value = target.innerText || '__none__';
+    const column = elem.classList.item(0);
+    const value = elem.innerText || '__none__';
     const params = {};
     params[column] = value;
-    $.ajax({
-      type: 'PUT',
-      url: `/synonyms/${encodeURIComponent(this.targetTerm)}.json`,
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      },
-      dataType: 'json',
-      format: 'json',
-      data: { synonym: params }
-    }).done((data, textStatus, jqXHR) => {
-      // console.log(`jqXHR.status: ${jqXHR.status}`);
-      if ((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304) {
-        if (column === 'term') {
-          this.targetTerm = value;
-          target.closest('.edit-synonym')?.setAttribute('data-keyterm', value);
-        }
-      } else {
-        target.innerText = oldValue;  //  更新失敗したので元に戻す 
+    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`
+    EditTableBase.updateToServer(elem, oldValue, sendUrl, { synonym: params }, () => {
+      if (column === 'term') {
+        elem.parentElement.setAttribute('data-keyterm', value);
       }
-    }).fail((jqXHR) => {
-      const message = (jqXHR.responseText.startsWith('{')) ?
-        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
-        jqXHR.responseText;
-      alert(`「${target.innerText}」\n ${message}`);
-      console.log(`「${target.innerText}」 ${message}`);
-      target.innerText = oldValue;  //  更新失敗したので元に戻す 
     });
   }
-
 }
