@@ -1,28 +1,11 @@
+import { EditTableBase } from './editTableBase.js';
 import { NewDialog } from './newDialog.js';
 
 
-export class EditGroup {
+export class EditGroup extends EditTableBase {
   constructor(elemTr) {
-    this.targetId = elemTr.id.slice(18);  // 18='catalog_tag_group-'.length
-    this.columns = new Map();
-
-    for (const edit of elemTr.querySelectorAll('.editable')) {
-      const column = edit.classList.item(0);
-      this.columns.set(column, edit); //this.columns[column] = edit;
-      edit.contentEditable = true;
-      edit.setAttribute('data-value', edit.innerText);
-      edit.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {  //  改行させない 
-          event.preventDefault();
-        }
-      });
-      edit.addEventListener('focusout', (event) => {
-        this.#editedItem(event);
-      });
-      edit.addEventListener('focusin', (event) => {
-        event.target.setAttribute('data-value', event.target.innerText);
-      });
-    }
+    super(elemTr);
+    elemTr.targetId = elemTr.id.slice(18);  // 18='catalog_tag_group-'.length
   }
 
   static init() {
@@ -30,6 +13,8 @@ export class EditGroup {
       new EditGroup(edit);
     }
     new NewDialog('dialog-new-catalog-tag-group', 'add-catalog-tag-group', 'tab-content-manage_tag_groups', this.#callbackNewDialog);
+    EditTableBase.registEdit('name editable', this.#startEditItem, this.#editedItem);
+    EditTableBase.registEdit('description editable', this.#startEditItem, this.#editedItem);
   }
 
   static makeTableRow(newItem) {
@@ -55,7 +40,6 @@ export class EditGroup {
     retTr.appendChild(tdName);
     retTr.appendChild(tdDescription);
     retTr.appendChild(tdButtons);
-    //  TODO: イベントリスナー登録 
     new EditGroup(retTr);
     return retTr;
   }
@@ -99,47 +83,32 @@ export class EditGroup {
     });
   }
 
-  #editedItem(event) {
-    const target = event.target;
-    // target.innerText = target.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
-    target.innerText = target.innerText.replace(/[\r\n]/g, '');  //  改行削除 
-    const oldValue = target.getAttribute('data-value');
-    if (oldValue === target.innerText) return true;
-    if (target.innerText.length === 0) {
-      target.innerText = oldValue;
+
+  //  シンプルなテキスト編集開始トリガー 
+  static #startEditItem(event) {
+    const elem = event.target;
+    elem.setAttribute('data-value', elem.innerText);
+  }
+  //  シンプルなテキスト変更トリガー 
+  static #editedItem(elem) {
+    // elem.innerText = elem.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+    elem.innerText = elem.innerText.replace(/[\r\n]/g, '');  //  改行削除 
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === elem.innerText) return true;
+    if (elem.innerText.length === 0) {
+      elem.innerText = oldValue;
       return true;
     }
-    event.preventDefault();
 
-    const column = target.classList.item(0);
-    const value = target.innerText || '__none__';
+    const column = elem.classList.item(0);
+    const value = elem.innerText || '__none__';
     const params = {};
     params[column] = value;
-    $.ajax({
-      type: 'PUT',
-      url: `/catalog_tag_groups/${this.targetId}.json`,
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      },
-      dataType: 'json',
-      format: 'json',
-      data: { catalog_tag_group: params }
-    }).done((data, textStatus, jqXHR) => {
-      // console.log(`jqXHR.status: ${jqXHR.status}`);
-      if ((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304) {
-        if (column === 'name') {
-          EditGroup.#updateGroupName(oldValue, value);
-        }
-      } else {
-        target.innerText = oldValue;  //  更新失敗したので元に戻す 
+    const sendUrl = `/catalog_tag_groups/${elem.parentElement.targetId}.json`
+    EditTableBase.updateToServer(elem, oldValue, sendUrl, { catalog_tag_group: params }, () => {
+      if (column === 'name') {
+        EditGroup.#updateGroupName(oldValue, value);
       }
-    }).fail((jqXHR) => {
-      const message = (jqXHR.responseText.startsWith('{')) ?
-        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
-        jqXHR.responseText;
-      alert(`「${target.innerText}」\n ${message}`);
-      console.log(`「${target.innerText}」 ${message}`);
-      target.innerText = oldValue;  //  更新失敗したので元に戻す 
     });
   }
 
