@@ -80,6 +80,8 @@ export class EditTableBase {
         this.#callbackBlurNowTarget = callbacks.callbackBlur;
       } else if (this.#isSosenNowTarget(target)) {
         // console.log(`click(sosenNowTarget): ${target.className}`);
+      } else if (this.#isSosenSelect2Open(target)) {  //  Select2のドロップダウン中はbodyの最後になるっぽいので、それは無視する 
+        // console.log(`click(sosenSelect2Open): ${target.className}`);
       } else {
         // console.log(`click(other): ${target.className}`);
         if (this.#callbackBlurNowTarget && this.#nowTarget) {
@@ -109,6 +111,13 @@ export class EditTableBase {
   static #isSosenNowTarget(target) {
     for (let t = target; t; t = t.parentElement) {
       if (t === this.#nowTarget) { return true; }
+    }
+    return false;
+  }
+
+  static #isSosenSelect2Open(target) {
+    for (let t = target; t; t = t.parentElement) {
+      if (t.classList.contains('select2-container--open')) { return true; }
     }
     return false;
   }

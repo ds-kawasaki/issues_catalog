@@ -1,1 +1,979 @@
-(()=>{"use strict";const t=(t,e)=>{$(t).on("click",(function(){if(!$(e).val().length)return;const t=$(this).parents("form");t.find("[name=ids\\[\\]]").remove();let a=!1;$("input[name=ids\\[\\]]:checked").each((function(){$("<input>").attr({type:"hidden",name:"ids[]"}).val($(this).val()).appendTo(t),a=!0})),a&&(t.find("[name=operate]").val($(this).val()),t.submit())}))},e=(t,e,a)=>{const n=document.querySelector(t);if(n){const t=(t,e,a)=>{const o=t.split(",").map((t=>t.trim())),s=document.createElement("select");s.id=a,s.className=e,s.multiple=!0;for(const t of n.options){const e=document.createElement("option");e.value=t.value,e.text=t.text,o.includes(e.text)&&e.setAttribute("selected","selected"),s.appendChild(e)}return s},o=(t,a,n)=>{t.select2({width:"resolve",placeholder:"Multi-select",closeOnSelect:!1,allowClear:!1}),t.select2("open"),t.on("select2:close",(function(t){const o=Array.from(this.options).filter((t=>t.selected)).map((t=>t.text)).join(", ");let s=Array.from(this.options).filter((t=>t.selected)).map((t=>t.value));for(0==s.length&&(s=[""]);a.firstChild;)a.removeChild(a.firstChild);a.innerText=o;const i=a.getAttribute("data-value");i!==o&&(t.preventDefault(),$.ajax({type:"PATCH",url:"/catalog_tags/field_update/",data:{id:n,catalog_tag:{[e]:s}},dataType:"json"}).done((function(t){"SUCCESS"===t.status||(console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${t.status}`),t.message&&(alert(t.message),console.log(t.message)),a.innerText=i)})).fail((function(t,e){console.log(`tag change failed: ${n} : ${s} : ${e}`),a.innerText=i})))}))};for(const e of document.querySelectorAll(a))e.addEventListener("click",(function(e){const a=this;if(a.querySelector(".tmp-select"))return;const n=a.parentNode?.id?.slice(4);a.setAttribute("data-value",a.innerText);const s=t(a.innerText,"tmp-select",`tmp-select-${n}`);a.innerText="",a.appendChild(s),o($(s),a,n)}))}};class a{constructor(t){for(const e of t.querySelectorAll(".editable"))e.contentEditable=!0,e.addEventListener("keydown",(t=>{"Enter"===t.key&&t.preventDefault()}))}static#t=null;static#e=null;static#a=null;static init(){this.#t=null,this.#e=null,this.#a=new Map,document.addEventListener("click",(t=>this.#n(t)))}static registEdit(t,e,a){t&&this.#a.set(t,{callbackFocus:e,callbackBlur:a})}static updateToServer(t,e,a,n,o){t.parentElement.getAttribute("data-keyterm"),$.ajax({type:"PUT",url:a,headers:{"X-Redmine-API-Key":IssuesCatalogSettingParam.user.apiKey},dataType:"json",format:"json",data:n}).done(((a,n,s)=>{s.status>=200&&s.status<300||304===s.status?o&&o():t.innerText=e})).fail((a=>{const n=a.responseText.startsWith("{")?Object.entries(JSON.parse(a.responseText)).map((([t,e])=>`${t} : ${e}`)).join("\n"):a.responseText;alert(`「${t.innerText}」\n ${n}`),console.log(`「${t.innerText}」 ${n}`),t.innerText=e}))}static#n(t){const e=t.target;if(e===this.#t);else{const a=this.#o(e);a?(this.#e&&this.#t&&this.#e(this.#t),a.callbackFocus&&a.callbackFocus(t),this.#t=e,this.#e=a.callbackBlur):this.#s(e)||(this.#e&&this.#t&&this.#e(this.#t),this.#t=null,this.#e=null)}}static#o(t){let e=null,a=this.#a.get(t.className);return void 0!==a?a:(t.classList.forEach((t=>{a=this.#a.get(t),void 0!==a&&(e=a)})),e)}static#s(t){for(let e=t;e;e=e.parentElement)if(e===this.#t)return!0;return!1}}class n{constructor(t,e,a,n){this.dialog=document.getElementById(t),this.trigger=document.getElementById(e),this.backGround=document.getElementById(a),this.submitCallback=n,this.setupShowDialog(),this.setupHideDialog()}setupShowDialog(){this.trigger?.addEventListener("click",(()=>{this.dialog&&(this.dialog.showModal(),this.dialog.style.visibility="visible",this.dialog.classList.remove("is-motioned"),this.dialog.setAttribute("tabIndex","0"),this.dialog.focus())}))}setupHideDialog(){this.dialog&&(this.dialog.querySelector(".dialog-button-submit")?.addEventListener("click",(()=>{this.submitCallback&&this.submitCallback(this.dialog),this.hideProcess("submit")})),this.dialog.querySelector(".dialog-button-cancel")?.addEventListener("click",(()=>{this.hideProcess("cancel")})),this.dialog.addEventListener("cancel",(()=>{this.hideProcess("cancel from escape key")})))}hideProcess(t){this.dialog&&(this.dialog.close(t),this.dialog.classList.add("is-motioned"),this.backGround&&(this.backGround.setAttribute("tabIndex","0"),this.backGround.focus()),setTimeout((()=>{this.dialog.style.visibility="hidden"}),250))}}class o extends a{constructor(t){super(t),t.targetId=t.id.slice(21)}static init(){for(const t of document.querySelectorAll(".edit-category"))new o(t);new n("dialog-new-catalog-tag-category","add-catalog-tag-category","tab-content-manage_tag_categories",this.#i),a.registEdit("name category editable",this.#r,this.#c),a.registEdit("description category editable",this.#r,this.#c)}static makeTableRow(t){const e=document.createElement("a");e.className="icon icon-del",e.setAttribute("data-method","delete"),e.setAttribute("data-confirm","よろしいですか？"),e.setAttribute("rel","nofollow"),e.href=`/catalog_tag_categories/${t.id}`,e.appendChild(document.createTextNode("削除"));const a=document.createElement("td");a.className="name category editable",a.appendChild(document.createTextNode(t.name));const n=document.createElement("td");n.className="description category editable",n.appendChild(document.createTextNode(t.description));const s=document.createElement("td");s.className="buttons",s.appendChild(e);const i=document.createElement("tr");return i.id=`catalog_tag_category-${t.id}`,i.className="edit-category",i.appendChild(a),i.appendChild(n),i.appendChild(s),new o(i),i}static#i(t){if(!t)return;const e=t.querySelector("input[name='catalog_tag_category[name]']").value,a=t.querySelector("input[name='catalog_tag_category[description]']").value;$.ajax({type:"POST",url:`/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_categories.json`,headers:{"X-Redmine-API-Key":IssuesCatalogSettingParam.user.apiKey},dataType:"text",format:"json",data:{catalog_tag_category:{name:e,description:a}}}).done((t=>{if(t.startsWith("{")){const e=document.querySelector("table.catalog-tag-categories")?.querySelector("tbody");if(e){const a=JSON.parse(t),n=o.makeTableRow(a.catalog_tag_category);e.insertBefore(n,e.lastElementChild)}}else console.log(t)})).fail(((t,e)=>{const a=t.responseText.startsWith("{")?Object.entries(JSON.parse(t.responseText)).map((([t,e])=>`${t} : ${e}`)).join("\n"):t.responseText;alert(a),console.log(a)}))}static#r(t){const e=t.target;e.setAttribute("data-value",e.innerText)}static#c(t){t.innerText=t.innerText.replace(/[\r\n]/g,"");const e=t.getAttribute("data-value");if(e===t.innerText)return!0;if(0===t.innerText.length)return t.innerText=e,!0;const n=t.classList.item(0),s=t.innerText||"__none__",i={};i[n]=s;const r=`/catalog_tag_categories/${t.parentElement.targetId}.json`;a.updateToServer(t,e,r,{catalog_tag_category:i},(()=>{"name"===n&&o.#l(e,s)}))}static#l(t,e){for(const a of document.querySelectorAll(".edit2-tag"))a.innerText.includes(t)&&(a.innerText=a.innerText.replace(t,e));const a=document.querySelector("#work-tag-category");for(const n of a?.options)n.text===t&&(n.text=e);const n=document.querySelector("#select-catalog-tag-categories");for(const a of n?.options)a.text===t&&(a.text=e);$(n)?.val(null).trigger("change")}}class s extends a{constructor(t){super(t,"editable-group"),t.targetId=t.id.slice(18)}static init(){for(const t of document.querySelectorAll(".edit-group"))new s(t);new n("dialog-new-catalog-tag-group","add-catalog-tag-group","tab-content-manage_tag_groups",this.#i),a.registEdit("name group editable",this.#r,this.#c),a.registEdit("description group editable",this.#r,this.#c)}static makeTableRow(t){const e=document.createElement("a");e.className="icon icon-del",e.setAttribute("data-method","delete"),e.setAttribute("data-confirm","よろしいですか？"),e.setAttribute("rel","nofollow"),e.href=`/catalog_tag_groups/${t.id}`,e.appendChild(document.createTextNode("削除"));const a=document.createElement("td");a.className="name group editable",a.appendChild(document.createTextNode(t.name));const n=document.createElement("td");n.className="description group editable",n.appendChild(document.createTextNode(t.description));const o=document.createElement("td");o.classname="buttons",o.appendChild(e);const i=document.createElement("tr");return i.id=`catalog_tag_group-${t.id}`,i.className="edit-group",i.appendChild(a),i.appendChild(n),i.appendChild(o),new s(i),i}static#i(t){if(!t)return;const e=t.querySelector("input[name='catalog_tag_group[name]']").value,a=t.querySelector("input[name='catalog_tag_group[description]']").value;$.ajax({type:"POST",url:`/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_groups.json`,headers:{"X-Redmine-API-Key":IssuesCatalogSettingParam.user.apiKey},dataType:"text",format:"json",data:{catalog_tag_group:{name:e,description:a}}}).done((t=>{if(t.startsWith("{")){const e=document.querySelector("table.catalog-tag-groups")?.querySelector("tbody");if(e){const a=JSON.parse(t),n=s.makeTableRow(a.catalog_tag_group);e.appendChild(n)}}else console.log(t)})).fail(((t,e)=>{const a=t.responseText.startsWith("{")?Object.entries(JSON.parse(t.responseText)).map((([t,e])=>`${t} : ${e}`)).join("\n"):t.responseText;alert(a),console.log(a)}))}static#r(t){const e=t.target;e.setAttribute("data-value",e.innerText)}static#c(t){t.innerText=t.innerText.replace(/[\r\n]/g,"");const e=t.getAttribute("data-value");if(e===t.innerText)return!0;if(0===t.innerText.length)return t.innerText=e,!0;const n=t.classList.item(0),o=t.innerText||"__none__",i={};i[n]=o;const r=`/catalog_tag_groups/${t.parentElement.targetId}.json`;a.updateToServer(t,e,r,{catalog_tag_group:i},(()=>{"name"===n&&s.#d(e,o)}))}static#d(t,e){for(const a of document.querySelectorAll(".edit3-tag"))a.innerText.includes(t)&&(a.innerText=a.innerText.replace(t,e));const a=document.querySelector("#work-tag-group");for(const n of a?.options)n.text===t&&(n.text=e);const n=document.querySelector("#select-catalog-tag-groups");for(const a of n?.options)a.text===t&&(a.text=e);$(n)?.val(null).trigger("change")}}class i extends a{constructor(t){super(t)}static init(){for(const t of document.querySelectorAll(".edit-synonym"))new i(t);new n("dialog-new-synonym","add-synonym","tab-content-manage_synonyms",this.#i),a.registEdit("term synonym editable",this.#r,this.#c),a.registEdit("synonyms synonym multieditable",this.#u,this.#g)}static makeTableRow(t){const e=document.createElement("a");e.className="icon icon-del",e.setAttribute("data-method","delete"),e.setAttribute("data-confirm","よろしいですか？"),e.setAttribute("rel","nofollow"),e.href=`/synonyms/${encodeURIComponent(t.term)}`,e.appendChild(document.createTextNode("削除"));const a=document.createElement("td");a.className="term synonym editable",a.appendChild(document.createTextNode(t.term));const n=document.createElement("td");n.className="synonyms synonym multieditable",n.appendChild(document.createTextNode(t.synonyms.join(",")));const o=document.createElement("td");o.className="buttons",o.appendChild(e);const s=document.createElement("tr");return s.setAttribute("data-keyterm",t.term),s.className="edit-synonym",s.appendChild(a),s.appendChild(n),s.appendChild(o),new i(s),s}static#i(t){if(!t)return;const e=t.querySelector("input[name='synonym[term]']").value,a=t.querySelector("input[name='synonym[synonyms][]']").value.split(",");$.ajax({type:"POST",url:"/synonyms.json",headers:{"X-Redmine-API-Key":IssuesCatalogSettingParam.user.apiKey},dataType:"text",format:"json",data:{synonym:{term:e,synonyms:a}}}).done((e=>{if(e.startsWith("{")){const a=document.querySelector("table.synonyms")?.querySelector("tbody");if(a){const n=JSON.parse(e),o=i.makeTableRow(n.synonym);a.appendChild(o),i.clearDialog(t)}}else console.log(e)})).fail(((t,e)=>{const a=t.responseText.startsWith("{")?Object.entries(JSON.parse(t.responseText)).map((([t,e])=>`${t} : ${e}`)).join("\n"):t.responseText;alert(a),console.log(a)}))}static clearDialog(t){t.querySelector("input[name='synonym[term]']").value="";const e=t.querySelector("input[name='synonym[synonyms][]']");e.value="",$(e).tagit("removeAll")}static#u(t){const e=t.target;if(e.querySelector(".tmp-edit"))return;e.setAttribute("data-value",e.innerText);const a=document.createElement("input");a.setAttribute("type","text"),a.setAttribute("value",e.innerText),a.className="tmp-edit",e.innerText="",e.appendChild(a),$(a).tagit({caseSensitive:!1,removeConfirmation:!0})}static#g(t){if(!t)return;const e=t.querySelector(".tmp-edit");if(!e)return;const n=e.value;for(;t.firstChild;)t.removeChild(t.firstChild);t.innerText=n;const o=t.getAttribute("data-value");if(o===n)return;const s={};s[t.classList.item(0)]=n.split(",");const i=`/synonyms/${encodeURIComponent(t.parentElement.getAttribute("data-keyterm"))}.json`;a.updateToServer(t,o,i,{synonym:s})}static#r(t){const e=t.target;e.setAttribute("data-value",e.innerText)}static#c(t){t.innerText=t.innerText.replace(/[\r\n]/g,"");const e=t.getAttribute("data-value");if(e===t.innerText)return!0;if(0===t.innerText.length)return t.innerText=e,!0;const n=t.classList.item(0),o=t.innerText||"__none__",s={};s[n]=o;const i=`/synonyms/${encodeURIComponent(t.parentElement.getAttribute("data-keyterm"))}.json`;a.updateToServer(t,e,i,{synonym:s},(()=>{"term"===n&&t.parentElement.setAttribute("data-keyterm",o)}))}}$((function(){t("#form-bulk-edit-tag-categories button","#select-catalog-tag-categories"),t("#form-bulk-edit-tag-groups button","#select-catalog-tag-groups"),$("input[type=checkbox].toggle-selection").on("change",(function(){const t=$(this).prop("checked");$(this).parents("table").find("input[name=ids\\[\\]]").prop("checked",t)})),a.init(),o.init(),s.init(),i.init(),((t,e,a,n,o)=>{const s=t=>{const e=t.target;e.innerText=e.innerText.replace(/[\r\n]/g,"");const a=e.getAttribute("data-value");if(a===e.innerText)return!0;if(0===e.innerText.length)return e.innerText=a,!0;t.preventDefault();const n=e.parentNode?.id?.slice(4),o=e.classList.item(0),s=e.innerText||"__none__";return $.ajax({type:"PATCH",url:"/catalog_tags/field_update/",data:`id=${n}&catalog_tag[${o}]=${s}`}).done((function(t){"SUCCESS"!==t.status&&(console.log(`catalog_tag changed: ${n} : ${o} : ${s} : status ${t.status}`),t.message&&(alert(t.message),console.log(t.message)),e.innerText=a)})).fail((function(t,i){console.log(`catalog_tag change failed: ${n} : ${o} : ${s} : ${i}`),e.innerText=a})),!1};for(const t of document.querySelectorAll(".edit-tag"))t.contentEditable=!0,t.setAttribute("data-value",t.innerText),t.addEventListener("keydown",(function(t){"Enter"===t.key&&t.preventDefault()})),t.addEventListener("focusout",(function(t){s(t)})),t.addEventListener("focusin",(function(t){t.target.setAttribute("data-value",t.target.innerText)}))})(),e("#work-tag-category","catalog_tag_category_ids",".edit2-tag"),e("#work-tag-group","catalog_tag_group_ids",".edit3-tag")}))})();
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./front_src/javascripts/modules/bulkFormButton.js":
+/*!*********************************************************!*\
+  !*** ./front_src/javascripts/modules/bulkFormButton.js ***!
+  \*********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "setupBulkFormButton": () => (/* binding */ setupBulkFormButton)
+/* harmony export */ });
+  //  一括タグカテゴリの「一括追加」「一括削除」ボタン押下時
+const setupBulkFormButton = (buttonQuery, selectQuery) => {
+  $(buttonQuery).on('click', function () {
+    const selects = $(selectQuery).val();
+    if (!selects.length) { return; }
+    // console.log(selects);
+    const form = $(this).parents('form');
+    form.find('[name=ids\\[\\]]').remove();
+    let checkIdes = false;
+    $('input[name=ids\\[\\]]:checked').each(function () {
+      $('<input>').attr({ 'type': 'hidden', 'name': 'ids[]' }).val($(this).val()).appendTo(form);
+      checkIdes = true;
+    });
+    if (checkIdes) {
+      form.find('[name=operate]').val($(this).val());
+      form.submit();
+    }
+  });
+};
+
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/editCategory.js":
+/*!*******************************************************!*\
+  !*** ./front_src/javascripts/modules/editCategory.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "EditCategory": () => (/* binding */ EditCategory)
+/* harmony export */ });
+/* harmony import */ var _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editTableBase.js */ "./front_src/javascripts/modules/editTableBase.js");
+/* harmony import */ var _newDialog_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./newDialog.js */ "./front_src/javascripts/modules/newDialog.js");
+
+
+
+
+class EditCategory extends _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase {
+  constructor(elemTr) {
+    super(elemTr);
+    elemTr.targetId = elemTr.id.slice(21);  //  21='catalog_tag_category-'.length
+  }
+
+  static init() {
+    for (const edit of document.querySelectorAll('.edit-category')) {
+      new EditCategory(edit);
+    }
+    new _newDialog_js__WEBPACK_IMPORTED_MODULE_1__.NewDialog('dialog-new-catalog-tag-category', 'add-catalog-tag-category', 'tab-content-manage_tag_categories', this.#callbackNewDialog);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('name category editable', this.#startEditItem, this.#editedItem);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('description category editable', this.#startEditItem, this.#editedItem);
+  }
+
+  static makeTableRow(newItem) {
+    const aDelBtn = document.createElement('a');
+    aDelBtn.className = 'icon icon-del';
+    aDelBtn.setAttribute('data-method', 'delete');
+    aDelBtn.setAttribute('data-confirm', 'よろしいですか？');
+    aDelBtn.setAttribute('rel', 'nofollow');
+    aDelBtn.href = `/catalog_tag_categories/${newItem.id}`;
+    aDelBtn.appendChild(document.createTextNode('削除'));
+    const tdName = document.createElement('td');
+    tdName.className = 'name category editable';
+    tdName.appendChild(document.createTextNode(newItem.name));
+    const tdDescription = document.createElement('td');
+    tdDescription.className = 'description category editable';
+    tdDescription.appendChild(document.createTextNode(newItem.description));
+    const tdButtons = document.createElement('td');
+    tdButtons.className = 'buttons';
+    tdButtons.appendChild(aDelBtn);
+    const retTr = document.createElement('tr');
+    retTr.id = `catalog_tag_category-${newItem.id}`;
+    retTr.className =  'edit-category';
+    retTr.appendChild(tdName);
+    retTr.appendChild(tdDescription);
+    retTr.appendChild(tdButtons);
+    //  TODO: イベントリスナー登録 
+    new EditCategory(retTr);
+    return retTr;
+  }
+
+
+  static #callbackNewDialog(dialog) {
+    if (!dialog) { return; }
+    const datName = dialog.querySelector('input[name=\'catalog_tag_category[name]\']').value;
+    const datDescription = dialog.querySelector('input[name=\'catalog_tag_category[description]\']').value;
+    $.ajax({
+      type: 'POST',
+      url: `/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_categories.json`,
+      headers: {
+        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+      },
+      dataType: 'text',
+      format: 'json',
+      data: {
+        catalog_tag_category: {
+          name: datName,
+          description: datDescription
+        }
+      }
+    }).done((data) => {
+      if (data.startsWith('{')) {
+        const tableBody = document.querySelector('table.catalog-tag-categories')?.querySelector('tbody');
+        if (tableBody) {
+          const retData = JSON.parse(data);
+          const addTr = EditCategory.makeTableRow(retData.catalog_tag_category);
+          tableBody.insertBefore(addTr, tableBody.lastElementChild);  //  最後（常時表示）の手前に挿入
+        }
+      } else {
+        console.log(data);
+      }
+    }).fail((jqXHR, textStatus) => {
+      const message = (jqXHR.responseText.startsWith('{')) ?
+        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
+        jqXHR.responseText;
+      alert(message);
+      console.log(message);
+    });
+  }
+
+
+  //  シンプルなテキスト編集開始トリガー 
+  static #startEditItem(event) {
+    const elem = event.target;
+    elem.setAttribute('data-value', elem.innerText);
+  }
+  //  シンプルなテキスト変更トリガー 
+  static #editedItem(elem) {
+    // elem.innerText = elem.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+    elem.innerText = elem.innerText.replace(/[\r\n]/g, '');  //  改行削除 
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === elem.innerText) return true;
+    if (elem.innerText.length === 0) {
+      elem.innerText = oldValue;
+      return true;
+    }
+
+    const column = elem.classList.item(0);
+    const value = elem.innerText || '__none__';
+    const params = {};
+    params[column] = value;
+    const sendUrl = `/catalog_tag_categories/${elem.parentElement.targetId}.json`
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.updateToServer(elem, oldValue, sendUrl, { catalog_tag_category: params }, () => {
+      if (column === 'name') {
+        EditCategory.#updateCategoryName(oldValue, value);
+      }
+    });
+  }
+
+  // タグカテゴリ名称変更を各所の表示反映
+  static #updateCategoryName(oldName, newName) {
+    for (const edit of document.querySelectorAll('.edit2-tag')) {
+      if (edit.innerText.includes(oldName)) {
+        edit.innerText = edit.innerText.replace(oldName, newName);
+      }
+    }
+    const orgCategorySelect = document.querySelector('#work-tag-category');
+    for (const option of orgCategorySelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    const bulkSelect = document.querySelector('#select-catalog-tag-categories');
+    for (const option of bulkSelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
+  };
+
+}
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/editGroup.js":
+/*!****************************************************!*\
+  !*** ./front_src/javascripts/modules/editGroup.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "EditGroup": () => (/* binding */ EditGroup)
+/* harmony export */ });
+/* harmony import */ var _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editTableBase.js */ "./front_src/javascripts/modules/editTableBase.js");
+/* harmony import */ var _newDialog_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./newDialog.js */ "./front_src/javascripts/modules/newDialog.js");
+
+
+
+
+class EditGroup extends _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase {
+  constructor(elemTr) {
+    super(elemTr, 'editable-group');
+    elemTr.targetId = elemTr.id.slice(18);  // 18='catalog_tag_group-'.length
+  }
+
+  static init() {
+    for (const edit of document.querySelectorAll('.edit-group')) {
+      new EditGroup(edit);
+    }
+    new _newDialog_js__WEBPACK_IMPORTED_MODULE_1__.NewDialog('dialog-new-catalog-tag-group', 'add-catalog-tag-group', 'tab-content-manage_tag_groups', this.#callbackNewDialog);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('name group editable', this.#startEditItem, this.#editedItem);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('description group editable', this.#startEditItem, this.#editedItem);
+  }
+
+  static makeTableRow(newItem) {
+    const aDelBtn = document.createElement('a');
+    aDelBtn.className = 'icon icon-del';
+    aDelBtn.setAttribute('data-method', 'delete');
+    aDelBtn.setAttribute('data-confirm', 'よろしいですか？');
+    aDelBtn.setAttribute('rel', 'nofollow');
+    aDelBtn.href = `/catalog_tag_groups/${newItem.id}`;
+    aDelBtn.appendChild(document.createTextNode('削除'));
+    const tdName = document.createElement('td');
+    tdName.className = 'name group editable';
+    tdName.appendChild(document.createTextNode(newItem.name));
+    const tdDescription = document.createElement('td');
+    tdDescription.className = 'description group editable';
+    tdDescription.appendChild(document.createTextNode(newItem.description));
+    const tdButtons = document.createElement('td');
+    tdButtons.classname = 'buttons';
+    tdButtons.appendChild(aDelBtn);
+    const retTr = document.createElement('tr');
+    retTr.id = `catalog_tag_group-${newItem.id}`;
+    retTr.className = 'edit-group';
+    retTr.appendChild(tdName);
+    retTr.appendChild(tdDescription);
+    retTr.appendChild(tdButtons);
+    new EditGroup(retTr);
+    return retTr;
+  }
+
+
+  static #callbackNewDialog(dialog) {
+    if (!dialog) { return; }
+    const datName = dialog.querySelector('input[name=\'catalog_tag_group[name]\']').value;
+    const datDescription = dialog.querySelector('input[name=\'catalog_tag_group[description]\']').value;
+    $.ajax({
+      type: 'POST',
+      url: `/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_groups.json`,
+      headers: {
+        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+      },
+      dataType: 'text',
+      format: 'json',
+      data: {
+        catalog_tag_group: {
+          name: datName,
+          description: datDescription
+        }
+      }
+    }).done((data) => {
+      if (data.startsWith('{')) {
+        const tableBody = document.querySelector('table.catalog-tag-groups')?.querySelector('tbody');
+        if (tableBody) {
+          const retData = JSON.parse(data);
+          const addTr = EditGroup.makeTableRow(retData.catalog_tag_group);
+          tableBody.appendChild(addTr);
+        }
+      } else {
+        console.log(data);
+      }
+    }).fail((jqXHR, textStatus) => {
+      const message = (jqXHR.responseText.startsWith('{')) ?
+        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
+        jqXHR.responseText;
+      alert(message);
+      console.log(message);
+    });
+  }
+
+
+  //  シンプルなテキスト編集開始トリガー 
+  static #startEditItem(event) {
+    const elem = event.target;
+    elem.setAttribute('data-value', elem.innerText);
+  }
+  //  シンプルなテキスト変更トリガー 
+  static #editedItem(elem) {
+    // elem.innerText = elem.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+    elem.innerText = elem.innerText.replace(/[\r\n]/g, '');  //  改行削除 
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === elem.innerText) return true;
+    if (elem.innerText.length === 0) {
+      elem.innerText = oldValue;
+      return true;
+    }
+
+    const column = elem.classList.item(0);
+    const value = elem.innerText || '__none__';
+    const params = {};
+    params[column] = value;
+    const sendUrl = `/catalog_tag_groups/${elem.parentElement.targetId}.json`
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.updateToServer(elem, oldValue, sendUrl, { catalog_tag_group: params }, () => {
+      if (column === 'name') {
+        EditGroup.#updateGroupName(oldValue, value);
+      }
+    });
+  }
+
+  // タググループ名称変更を各所の表示反映
+  static #updateGroupName(oldName, newName) {
+    for (const edit of document.querySelectorAll('.edit3-tag')) {
+      if (edit.innerText.includes(oldName)) {
+        edit.innerText = edit.innerText.replace(oldName, newName);
+      }
+    }
+    const orgGroupSelect = document.querySelector('#work-tag-group');
+    for (const option of orgGroupSelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    const bulkSelect = document.querySelector('#select-catalog-tag-groups');
+    for (const option of bulkSelect?.options) {
+      if (option.text === oldName) { option.text = newName; }
+    }
+    $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
+  };
+
+}
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/editSynonym.js":
+/*!******************************************************!*\
+  !*** ./front_src/javascripts/modules/editSynonym.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "EditSynonym": () => (/* binding */ EditSynonym)
+/* harmony export */ });
+/* harmony import */ var _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editTableBase.js */ "./front_src/javascripts/modules/editTableBase.js");
+/* harmony import */ var _newDialog_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./newDialog.js */ "./front_src/javascripts/modules/newDialog.js");
+
+
+
+
+class EditSynonym extends _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase {
+  constructor(elemTr) {
+    super(elemTr);
+  }
+
+  static init() {
+    for (const edit of document.querySelectorAll('.edit-synonym')) {
+      new EditSynonym(edit);
+    }
+    new _newDialog_js__WEBPACK_IMPORTED_MODULE_1__.NewDialog('dialog-new-synonym', 'add-synonym', 'tab-content-manage_synonyms', this.#callbackNewDialog);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('term synonym editable', this.#startEditItem, this.#editedItem);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('synonyms synonym multieditable', this.#startEditMulti, this.#editedMulti);
+  }
+
+  static makeTableRow(newItem) {
+    const aDelBtn = document.createElement('a');
+    aDelBtn.className = 'icon icon-del';
+    aDelBtn.setAttribute('data-method', 'delete');
+    aDelBtn.setAttribute('data-confirm', 'よろしいですか？');
+    aDelBtn.setAttribute('rel', 'nofollow');
+    aDelBtn.href = `/synonyms/${encodeURIComponent(newItem.term)}`;
+    aDelBtn.appendChild(document.createTextNode('削除'));
+    const tdTerm = document.createElement('td');
+    tdTerm.className = 'term synonym editable';
+    tdTerm.appendChild(document.createTextNode(newItem.term));
+    const tdSynonyms = document.createElement('td');
+    tdSynonyms.className = 'synonyms synonym multieditable';
+    tdSynonyms.appendChild(document.createTextNode(newItem.synonyms.join(',')));
+    const tdButtons = document.createElement('td');
+    tdButtons.className = 'buttons';
+    tdButtons.appendChild(aDelBtn);
+    const retTr = document.createElement('tr');
+    retTr.setAttribute('data-keyterm', newItem.term);
+    retTr.className = 'edit-synonym';
+    retTr.appendChild(tdTerm);
+    retTr.appendChild(tdSynonyms);
+    retTr.appendChild(tdButtons);
+    new EditSynonym(retTr);
+    return retTr;
+  }
+
+
+  static #callbackNewDialog(dialog) {
+    if (!dialog) { return; }
+    const datTerm = dialog.querySelector('input[name=\'synonym[term]\']').value;
+    const datSynonyms = dialog.querySelector('input[name=\'synonym[synonyms][]\']').value.split(',');
+    $.ajax({
+      type: 'POST',
+      url: `/synonyms.json`,
+      headers: {
+        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+      },
+      dataType: 'text',
+      format: 'json',
+      data: {
+        synonym: {
+          term: datTerm,
+          synonyms: datSynonyms
+        }
+      }
+    }).done((data) => {
+      if (data.startsWith('{')) {
+        const tableBody = document.querySelector('table.synonyms')?.querySelector('tbody');
+        if (tableBody) {
+          const retData = JSON.parse(data);
+          const addTr = EditSynonym.makeTableRow(retData.synonym);
+          tableBody.appendChild(addTr);
+          EditSynonym.clearDialog(dialog);  //  次の追加に備えてダイアログクリア
+        }
+      } else {
+        console.log(data);
+      }
+    }).fail((jqXHR, textStatus) => {
+      const message = (jqXHR.responseText.startsWith('{')) ?
+        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
+        jqXHR.responseText;
+      alert(message);
+      console.log(message);
+    });
+  }
+
+  static clearDialog(dialog) {
+    dialog.querySelector('input[name=\'synonym[term]\']').value = '';
+    const inputSynonyms = dialog.querySelector('input[name=\'synonym[synonyms][]\']');
+    inputSynonyms.value = '';
+    $(inputSynonyms).tagit('removeAll');
+  }
+
+
+  //  multieditableの編集開始トリガー 
+  static #startEditMulti(event) {
+    const elem = event.target;
+    const tmp = elem.querySelector('.tmp-edit');
+    if (tmp) { return; }
+    elem.setAttribute('data-value', elem.innerText);
+    const tmpEdit = document.createElement('input');
+    tmpEdit.setAttribute('type', 'text');
+    tmpEdit.setAttribute('value', elem.innerText);
+    tmpEdit.className = 'tmp-edit';
+    elem.innerText = '';
+    elem.appendChild(tmpEdit);
+    $(tmpEdit).tagit({
+      caseSensitive: false,
+      removeConfirmation: true
+    });
+  }
+  //  multieditableの編集完了トリガー 
+  static #editedMulti(elem) {
+    if (!elem) { return; }
+    const tmp = elem.querySelector('.tmp-edit');
+    if (!tmp) { return; }
+    const value = tmp.value;
+    while (elem.firstChild) { elem.removeChild(elem.firstChild); }
+    elem.innerText = value;
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === value) { return; }
+
+    // const targetTerm = elem.parentElement.getAttribute('data-keyterm');
+    const column = elem.classList.item(0);
+    const params = {};
+    params[column] = value.split(',');
+    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.updateToServer(elem, oldValue, sendUrl, { synonym: params });
+  }
+
+
+  //  シンプルなテキスト編集開始トリガー 
+  static #startEditItem(event) {
+    const elem = event.target;
+    elem.setAttribute('data-value', elem.innerText);
+  }
+  //  シンプルなテキスト変更トリガー 
+  static #editedItem(elem) {
+    // elem.innerText = elem.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+    elem.innerText = elem.innerText.replace(/[\r\n]/g, '');  //  改行削除 
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === elem.innerText) return true;
+    if (elem.innerText.length === 0) {
+      elem.innerText = oldValue;
+      return true;
+    }
+
+    const column = elem.classList.item(0);
+    const value = elem.innerText || '__none__';
+    const params = {};
+    params[column] = value;
+    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.updateToServer(elem, oldValue, sendUrl, { synonym: params }, () => {
+      if (column === 'term') {
+        elem.parentElement.setAttribute('data-keyterm', value);
+      }
+    });
+  }
+}
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/editTableBase.js":
+/*!********************************************************!*\
+  !*** ./front_src/javascripts/modules/editTableBase.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "EditTableBase": () => (/* binding */ EditTableBase)
+/* harmony export */ });
+class EditTableBase {
+  constructor(elemTr) {
+    for (const elem of elemTr.querySelectorAll('.editable')) {
+      elem.contentEditable = true;
+      elem.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {  //  改行させない 
+          event.preventDefault();
+        }
+      });
+    }
+  }
+
+  static #nowTarget = null;
+  static #callbackBlurNowTarget = null;
+  static #editTypes = null;
+
+  static init() {
+    this.#nowTarget = null;
+    this.#callbackBlurNowTarget = null;
+    this.#editTypes = new Map();
+
+    document.addEventListener('click', (event) => this.#clicked(event));
+  }
+
+  static registEdit(className, callbackFocus, callbackBlur) {
+    if (!className) { return; }
+    this.#editTypes.set(className, {
+      callbackFocus: callbackFocus,
+      callbackBlur: callbackBlur
+    });
+  }
+
+  static updateToServer(elem, oldValue, sendUrl, sendData, callbackOk) {
+    const targetTerm = elem.parentElement.getAttribute('data-keyterm');
+    $.ajax({
+      type: 'PUT',
+      url: sendUrl,
+      headers: {
+        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+      },
+      dataType: 'json',
+      format: 'json',
+      data: sendData
+    }).done((data, textStatus, jqXHR) => {
+      // console.log(`jqXHR.status: ${jqXHR.status}`);
+      if ((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304) {
+        if (callbackOk) {
+          callbackOk();
+        }
+      } else {
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      }
+    }).fail((jqXHR) => {
+      const message = (jqXHR.responseText.startsWith('{')) ?
+        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
+        jqXHR.responseText;
+      alert(`「${elem.innerText}」\n ${message}`);
+      console.log(`「${elem.innerText}」 ${message}`);
+      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
+  }
+
+
+
+  static #clicked(event) {
+    const target = event.target;
+    if (target === this.#nowTarget) {
+      // console.log(`click(same): ${target.className}`);
+    } else {
+      const callbacks = this.#canEdit(target);
+      if (callbacks) {
+        if (this.#callbackBlurNowTarget && this.#nowTarget) {
+          this.#callbackBlurNowTarget(this.#nowTarget);
+        }
+        // console.log(`click(newTarget): ${target.className}`);
+        if (callbacks.callbackFocus) {
+          callbacks.callbackFocus(event);
+        }
+        this.#nowTarget = target;
+        this.#callbackBlurNowTarget = callbacks.callbackBlur;
+      } else if (this.#isSosenNowTarget(target)) {
+        // console.log(`click(sosenNowTarget): ${target.className}`);
+      } else if (this.#isSosenSelect2Open(target)) {  //  Select2のドロップダウン中はbodyの最後になるっぽいので、それは無視する 
+        // console.log(`click(sosenSelect2Open): ${target.className}`);
+      } else {
+        // console.log(`click(other): ${target.className}`);
+        if (this.#callbackBlurNowTarget && this.#nowTarget) {
+          this.#callbackBlurNowTarget(this.#nowTarget);
+        }
+        this.#nowTarget = null;
+        this.#callbackBlurNowTarget = null;
+      }
+    }
+  }
+
+  static #canEdit(target) {
+    let ret = null;
+    let callbacks = this.#editTypes.get(target.className);
+    if (callbacks !== undefined) {
+      return callbacks;
+    }
+    target.classList.forEach((c) => {
+      callbacks = this.#editTypes.get(c);
+      if (callbacks !== undefined) {
+        ret = callbacks;
+      }
+    });
+    return ret;
+  }
+
+  static #isSosenNowTarget(target) {
+    for (let t = target; t; t = t.parentElement) {
+      if (t === this.#nowTarget) { return true; }
+    }
+    return false;
+  }
+
+  static #isSosenSelect2Open(target) {
+    for (let t = target; t; t = t.parentElement) {
+      if (t.classList.contains('select2-container--open')) { return true; }
+    }
+    return false;
+  }
+}
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/editTag.js":
+/*!**************************************************!*\
+  !*** ./front_src/javascripts/modules/editTag.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "EditTag": () => (/* binding */ EditTag)
+/* harmony export */ });
+/* harmony import */ var _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editTableBase.js */ "./front_src/javascripts/modules/editTableBase.js");
+/* harmony import */ var _newDialog_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./newDialog.js */ "./front_src/javascripts/modules/newDialog.js");
+
+
+
+
+class EditTag extends _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase {
+  constructor(elemTr) {
+    super(elemTr);
+    elemTr.targetId = elemTr.id.slice(4); // 4='tag-'.length
+  }
+
+  static init() {
+    for (const edit of document.querySelectorAll('.edit-tag')) {
+      new EditTag(edit);
+    }
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('name tag editable', this.#startEditItem, this.#editedItem);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('description tag editable', this.#startEditItem, this.#editedItem);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('category tag multiselect', this.#startSelectCategory, this.#selectedCategory);
+    _editTableBase_js__WEBPACK_IMPORTED_MODULE_0__.EditTableBase.registEdit('group tag multiselect', this.#startSelectGroup, this.#selectedGroup);
+  }
+
+
+  //  シンプルなテキスト編集開始トリガー 
+  static #startEditItem(event) {
+    const elem = event.target;
+    elem.setAttribute('data-value', elem.innerText);
+  }
+  //  シンプルなテキスト変更トリガー 
+  static #editedItem(elem) {
+    // elem.innerText = elem.innerText.replace(/[\r\n]/g, '').trim();  //  改行・冒頭末尾余白削除 
+    elem.innerText = elem.innerText.replace(/[\r\n]/g, '');  //  改行削除 
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === elem.innerText) return true;
+    if (elem.innerText.length === 0) {
+      elem.innerText = oldValue;
+      return true;
+    }
+
+    const targetId = elem.parentElement.targetId;
+    const column = elem.classList.item(0);
+    const value = elem.innerText || '__none__';
+    $.ajax({
+      type: 'PATCH',
+      url: '/catalog_tags/field_update/',
+      data: `id=${targetId}&catalog_tag[${column}]=${value}`,
+    }).done(function (data) {
+      if (data.status === 'SUCCESS') {
+      } else {
+        console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
+        if (data.message) {
+          alert(data.message);
+          console.log(data.message);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      }
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`${paramName} change failed: ${targetId} : ${column} : ${value} : ${textStatus}`);
+      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
+  }
+
+
+  //  categoryの編集開始トリガー 
+  static #startSelectCategory(event) {
+    EditTag.#startSelectMulti(event, '#work-tag-category');
+  }
+  //  categoryの編集完了トリガー 
+  static #selectedCategory(elem) {
+    EditTag.#selectedMulti(elem, 'catalog_tag_category_ids');
+  }
+
+  //  categoryの編集開始トリガー 
+  static #startSelectGroup(event) {
+    EditTag.#startSelectMulti(event, '#work-tag-group');
+  }
+  //  categoryの編集完了トリガー 
+  static #selectedGroup(elem) {
+    EditTag.#selectedMulti(elem, 'catalog_tag_group_ids');
+  }
+
+  static #startSelectMulti(event, work_id) {
+    const elem = event.target;
+    const tmp = elem.querySelector('.tmp-select');
+    if (tmp) { return; }
+    elem.setAttribute('data-value', elem.innerText);
+    const newSelect = EditTag.#makeSelect(elem.innerText, 'tmp-select', `tmp-select-${elem.parentElement.targetId}`, work_id);
+    elem.innerText = '';
+    elem.appendChild(newSelect);
+    EditTag.#setupSelect2($(newSelect));
+  }
+  static #selectedMulti(elem, param_ids) {
+    if (!elem) { return; }
+    const tmp = elem.querySelector('.tmp-select');
+    if (!tmp) { return; }
+    $(tmp).select2('close');
+    const values = Array.from(tmp.options).filter(x => x.selected).map(x => x.text).join(', ');
+    let sendValues = Array.from(tmp.options).filter(x => x.selected).map(x => x.value);
+    if (sendValues.length == 0) { sendValues = ['']; }
+    while (elem.firstChild) { elem.removeChild(elem.firstChild); }
+    elem.innerText = values;
+    const oldValue = elem.getAttribute('data-value');
+    if (oldValue === values) { return; }
+
+    $.ajax({
+      type: 'PATCH',
+      url: '/catalog_tags/field_update/',
+      data: { 'id': elem.parentElement.targetId, 'catalog_tag': { [param_ids]: sendValues } },
+      dataType: 'json',
+      headers: {
+        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+      }
+    }).done(function (data) {
+      if (data.status === 'SUCCESS') {
+        // console.log(`tag changed ${elem.parentElement.targetId} : ${sendValues}`);
+      } else {
+        console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
+        if (data.message) {
+          alert(data.message);
+          console.log(data.message);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      }
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`tag change failed: ${elem.parentElement.targetId} : ${sendValues} : ${textStatus}`);
+      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
+  }
+
+  static #makeSelect(orgText, tmpSelect_class, tmpSelect_id, work_id) {
+    const orgSelect = document.querySelector(work_id);
+    const orgValues = orgText.split(',').map(x => x.trim());
+    const newSelect = document.createElement('select');
+    newSelect.id = tmpSelect_id;
+    newSelect.className = tmpSelect_class;
+    newSelect.multiple = true;
+    for (const option of orgSelect.options) {
+      const op = document.createElement('option');
+      op.value = option.value;
+      op.text = option.text;
+      if (orgValues.includes(op.text)) { op.setAttribute('selected', 'selected'); }
+      newSelect.appendChild(op);
+    }
+    return newSelect;
+  };
+  static #setupSelect2($newSelect) {
+    $newSelect.select2({
+      width: 'resolve',
+      placeholder: 'Multi-select',
+      closeOnSelect: false,
+      allowClear: false
+    });
+    //$newSelect.select2('open');
+  }
+}
+
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/newDialog.js":
+/*!****************************************************!*\
+  !*** ./front_src/javascripts/modules/newDialog.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "NewDialog": () => (/* binding */ NewDialog)
+/* harmony export */ });
+//  タグカテゴリ・タググループの追加ボタン時のダイアログ
+class NewDialog {
+  constructor(dialog_id, trigger_id, bg_id, submitCallback) {
+    this.dialog = document.getElementById(dialog_id);
+    this.trigger = document.getElementById(trigger_id);
+    this.backGround = document.getElementById(bg_id);
+    this.submitCallback = submitCallback;
+    this.setupShowDialog();
+    this.setupHideDialog();
+  }
+  setupShowDialog() {
+    this.trigger?.addEventListener('click', () => {
+      if (!this.dialog) { return; }
+      this.dialog.showModal();
+      this.dialog.style.visibility = 'visible';
+      this.dialog.classList.remove('is-motioned');
+      this.dialog.setAttribute('tabIndex', '0');
+      this.dialog.focus();
+    });
+  }
+  setupHideDialog() {
+    if (!this.dialog) { return; }
+    this.dialog.querySelector('.dialog-button-submit')?.addEventListener('click', () => {
+      if (this.submitCallback) {
+        this.submitCallback(this.dialog);
+      }
+      this.hideProcess('submit');
+    });
+    this.dialog.querySelector('.dialog-button-cancel')?.addEventListener('click', () => {
+      this.hideProcess('cancel');
+    });
+    this.dialog.addEventListener('cancel', () => {
+      this.hideProcess('cancel from escape key');
+    });
+  }
+  hideProcess(resText) {
+    if (!this.dialog) { return; }
+    this.dialog.close(resText);
+    this.dialog.classList.add('is-motioned');
+    if (this.backGround) {
+      this.backGround.setAttribute('tabIndex', '0');
+      this.backGround.focus();
+    }
+    setTimeout(() => {
+      this.dialog.style.visibility = 'hidden';
+    }, 250);
+  }
+}
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+/*!*******************************************!*\
+  !*** ./front_src/javascripts/settings.js ***!
+  \*******************************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _modules_bulkFormButton_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/bulkFormButton.js */ "./front_src/javascripts/modules/bulkFormButton.js");
+/* harmony import */ var _modules_editTableBase_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/editTableBase.js */ "./front_src/javascripts/modules/editTableBase.js");
+/* harmony import */ var _modules_editTag_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/editTag.js */ "./front_src/javascripts/modules/editTag.js");
+/* harmony import */ var _modules_editCategory_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/editCategory.js */ "./front_src/javascripts/modules/editCategory.js");
+/* harmony import */ var _modules_editGroup_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/editGroup.js */ "./front_src/javascripts/modules/editGroup.js");
+/* harmony import */ var _modules_editSynonym_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/editSynonym.js */ "./front_src/javascripts/modules/editSynonym.js");
+
+
+
+
+
+
+
+
+
+
+// jQuery用DOM準備完了時 document ready
+$(function () {
+  //  一括タグカテゴリの「一括追加」「一括削除」ボタン押下時
+  (0,_modules_bulkFormButton_js__WEBPACK_IMPORTED_MODULE_0__.setupBulkFormButton)('#form-bulk-edit-tag-categories button', '#select-catalog-tag-categories');
+  //  一括タググループの「一括追加」「一括削除」ボタン押下時
+  (0,_modules_bulkFormButton_js__WEBPACK_IMPORTED_MODULE_0__.setupBulkFormButton)('#form-bulk-edit-tag-groups button', '#select-catalog-tag-groups');
+
+  //  すべてにチェックつける・はずす
+  $('input[type=checkbox].toggle-selection').on('change', function () {
+    const checked = $(this).prop('checked');
+    $(this).parents('table').find('input[name=ids\\[\\]]').prop('checked', checked);
+  });
+
+
+  _modules_editTableBase_js__WEBPACK_IMPORTED_MODULE_1__.EditTableBase.init();
+  _modules_editTag_js__WEBPACK_IMPORTED_MODULE_2__.EditTag.init();
+  _modules_editCategory_js__WEBPACK_IMPORTED_MODULE_3__.EditCategory.init();
+  _modules_editGroup_js__WEBPACK_IMPORTED_MODULE_4__.EditGroup.init();
+  _modules_editSynonym_js__WEBPACK_IMPORTED_MODULE_5__.EditSynonym.init();
+});
+})();
+
+/******/ })()
+;
+//# sourceMappingURL=settings.js.map

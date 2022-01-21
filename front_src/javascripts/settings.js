@@ -1,9 +1,8 @@
 'use strict';
 
 import { setupBulkFormButton } from './modules/bulkFormButton.js';
-import { setupEdit } from './modules/setupEdit.js';
-import { setupTagsMultiSelect } from './modules/setupTagsMultiSelect.js';
 import { EditTableBase } from './modules/editTableBase.js';
+import { EditTag } from './modules/editTag.js';
 import { EditCategory } from './modules/editCategory.js';
 import { EditGroup } from './modules/editGroup.js';
 import { EditSynonym } from './modules/editSynonym.js';
@@ -24,12 +23,8 @@ $(function () {
 
 
   EditTableBase.init();
+  EditTag.init();
   EditCategory.init();
   EditGroup.init();
   EditSynonym.init();
-
-
-  setupEdit('.edit-tag', 4, '/catalog_tags/field_update/', 'catalog_tag', null); // 4='tag-'.length
-  setupTagsMultiSelect('#work-tag-category', 'catalog_tag_category_ids', '.edit2-tag');
-  setupTagsMultiSelect('#work-tag-group', 'catalog_tag_group_ids', '.edit3-tag');
 });

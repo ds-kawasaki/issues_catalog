@@ -1,1 +1,713 @@
-(()=>{"use strict";class t{static#t="catalog-category-tabs-state";static#e="catalog-history";static#a(t){let e;try{e=window[t];const a="__storage_test__";return e.setItem(a,a),e.removeItem(a),!0}catch(t){return t instanceof DOMException&&(22===t.code||1014===t.code||"QuotaExceededError"===t.name||"NS_ERROR_DOM_QUOTA_REACHED"===t.name)&&e&&0!==e.length}}static setupFromStorageOnLoad(){if(!t.#a("localStorage"))return!1;const e=$("body").attr("class");if(e)try{const a="-"+e.split(/\s+/).filter((function(t){return t.match(/project-.*/)})).sort().join("-");t.#t+=a,t.#e+=a}catch(t){}return!0}static getHistorys(){const e=localStorage.getItem(t.#e);return e?JSON.parse(e):[]}static setHistorys(e){e&&localStorage.setItem(t.#e,JSON.stringify(e))}static getCategoryTab(){return localStorage.getItem(t.#t)}static setCategoryTab(e){e&&localStorage.setItem(t.#t,e)}}const e=e=>{const a=t.getHistorys(),o=a.indexOf(e);o>=0&&a.splice(o,1),a.unshift(e),a.length>20&&a.pop(),t.setHistorys(a)};$((function(){const a=(t,e,a)=>{const o=document.createElement(t);return e&&(o.className=e),a&&o.appendChild(document.createTextNode(a)),o};if(IssuesCatalogParam.selected_tags.length>0){const t=new Map;for(const e of IssuesCatalogParam.tags)t[e.id]=e;for(const e of IssuesCatalogParam.selected_tags)t[e.id]&&(t[e.id].select_count=e.select_count)}const o=new Map;for(const t of IssuesCatalogParam.tags)o[t.name]={allCount:t.count,selectCount:t.select_count,description:t.description,groups:t.groups};const s=()=>{const t=IssuesCatalogParam.select_filters.find((t=>"tags"==t[0]));return t&&t.length>=2?t[2]:[]},n=()=>{for(const t of document.querySelectorAll(".radio-select-mode"))if(t.checked)return t.value;return IssuesCatalogParam.select_mode};function c(t,e,s=!1){const c=n();return function(t,e){return((t,e,s,n=!1)=>{const c=document.createElement("a");if(c.href="#",n){const t=a("span","icon-only",IssuesCatalogParam.label_clear);t.classList.add("catalog-icon-clear-selected"),c.appendChild(t)}c.appendChild(document.createTextNode(t));const l=a("span","catalog-tag-label","");l.appendChild(c);const r=o[t];if(r){const t="and"===e?r.selectCount:r.allCount,o=a("span","tag-count",`(${t})`);if(o.dataset.allcount=r.allCount,o.dataset.selectedcount=r.selectCount,l.appendChild(o),0===t&&l.classList.add("catalog-count-zero"),r.description){const t=a("div","tag-tooltip","");t.appendChild(a("div","tag-description",r.description)),l.appendChild(t)}}if(n)return l;{const t=a(s,"tags","");return t.appendChild(l),t}})(t,c,e,s)}}const l=()=>{const e=$(".category-tab");e.on("click",(function(){$(".active-tab").removeClass("active-tab"),$(this).addClass("active-tab");const a=e.index(this);$(".category-content").removeClass("show-content").eq(a).addClass("show-content"),t.setCategoryTab($(this).attr("id"))}))};if($("#catalog-btn-thumbnails").on("click",(function(){$(this).toggleClass("only-thumbnails"),$("table.catalog-issues td.id").toggle(),$("table.catalog-issues td.subject").toggle(),$("table.catalog-issues td.tags").toggle(),$(".pagination.top").toggle()})),(()=>{for(const t of document.querySelectorAll(".catalog-tag-label")){const e=t.querySelector("a")?.innerText;if(e){const s=o[e];if(s&&s.description){const e=a("div","tag-tooltip","");e.appendChild(a("div","tag-description",s.description)),t.appendChild(e)}}}})(),(()=>{const t=(t,o,s)=>{const n=a("input","radio-select-mode","");n.type="radio",n.name="select-mode",n.id=`radio-select-mode-${o}`,n.value=o,n.checked=e===o,t.appendChild(n);const c=a("label","label-select-mode",s);c.htmlFor=`radio-select-mode-${o}`,t.appendChild(c)},e=n(),l=c(),r=document.querySelector("#catalog_tags_selected"),i=s();if(r&&i.length>0){const e=a("div","selected-tags",""),s=[];for(let t=0;t<i.length;++t){t>0&&e.appendChild(a("span","","and"===IssuesCatalogParam.select_mode?" and ":" or ")),e.appendChild(l(i[t],"span",!0));const n=o[i[t]];if(n&&n.groups&&n.groups.length>0)for(const t of n.groups)s.includes(t)||s.push(t)}e.appendChild(a("span",""," : "));const n=a("a","",IssuesCatalogParam.label_clear_select);n.href=`${document.location.protocol}//${document.location.host}${document.location.pathname}`;const c=document.createElement("span");c.appendChild(n),e.appendChild(c),r.appendChild(e);const d=a("div","catalog-select-mode-operation","");if(t(d,"one",IssuesCatalogParam.label_operator_one),t(d,"and",IssuesCatalogParam.label_operator_and),t(d,"or",IssuesCatalogParam.label_operator_or),r.appendChild(d),s.length>0){r.appendChild(a("hr","catalog-separator",""));const t=a("div","catalog-selected-tag-groups","");t.appendChild(a("div","catalog-lavel-selected-tag-group",IssuesCatalogParam.label_selected_tag_group));for(const e of IssuesCatalogParam.tag_groups)for(const o of s){if(o!=e.id)continue;const s=a("fieldset","catalog-tag-group",""),n=document.createElement("legend");n.appendChild(document.createTextNode(e.name)),s.appendChild(n),s.appendChild(a("div","",e.description));for(const t of IssuesCatalogParam.tags)t.groups.includes(o)&&s.appendChild(l(t.name,"span"));t.appendChild(s)}r.appendChild(t)}}const d=document.querySelector("div.catalog-always-selector");if(d)for(const t of IssuesCatalogParam.tags)t.categories.includes(IssuesCatalogParam.tag_categories[0].id)&&d.appendChild(l(t.name,"span"))})(),(()=>{const t=IssuesCatalogParam.tag_categories.length,e=c(),o=document.querySelector("ul.tabs-area");if(o)if(1===t){const t=a("li","category-tab",IssuesCatalogParam.label_tag_category_none);t.id="category-tab-none",t.classList.add("active-tab"),o.prepend(t)}else for(let e=t-1;e>0;--e){const t=a("li","category-tab",IssuesCatalogParam.tag_categories[e].name);t.id="category-tab-id"+(e-1),1===e&&t.classList.add("active-tab"),o.prepend(t)}const s=document.querySelector("div.contents-area");if(s)if(1===t){const t=a("ul","tags","");for(const a of IssuesCatalogParam.tags)t.appendChild(e(a.name,"ul"));const o=a("div","category-content","");o.appendChild(t),1===i&&o.classList.add("show-content"),s.prepend(o)}else for(let o=t-1;o>0;--o){const t=a("ul","category-tags",""),n=IssuesCatalogParam.tag_categories[o].id;for(const a of IssuesCatalogParam.tags)a.categories.includes(n)&&t.appendChild(e(a.name,"ul"));const c=a("div","category-content","");c.appendChild(a("p","",IssuesCatalogParam.tag_categories[o].description)),c.appendChild(t),1===o&&c.classList.add("show-content"),s.prepend(c)}if(t>1){const t=document.querySelector("div.catalog-selector");if(t){t.appendChild(a("hr","catalog-separator",""));const o=a("div","other-tags","");for(const t of IssuesCatalogParam.tags)0==t.categories.length&&o.appendChild(e(t.name,"span"));t.appendChild(o)}}})(),t.setupFromStorageOnLoad()){const e=c();(()=>{const e=t.getCategoryTab();if(!e)return;const a=$("#"+e);if(!a.length)return;$(".active-tab").removeClass("active-tab"),a.addClass("active-tab");const o=$(".category-tab").index(a);$(".category-content").removeClass("show-content").eq(o).addClass("show-content")})(),(e=>{const a=document.querySelector("#catalog-category-history");if(!a)return;const o=t.getHistorys();for(const t of o)a.appendChild(e(t,"ul"))})(e),l()}(()=>{const t=(t,e)=>{const a=document.createElement("input");return a.type="hidden",a.name=t,a.value=e,a};let a="";const o=$("body").attr("class").match(/project-([\w-]+)/);o&&(a=o[1]);const c=$("#catalog-input-search-tag");c.blur(),c.autocomplete({source:function(t,e){$.ajax({url:"/issue_tags/auto_complete/"+a,type:"GET",dataType:"json",data:{q:t.term},success:function(t){e(t)},error:function(t,a,o){e([""])}})},select:function(a,o){if(o.item&&o.item.value){const a=o.item.value,c=n(),l=s();l.includes(a)||l.push(a),e(a);const r=document.querySelector("#form-search-tag");if(r){switch(r.appendChild(t("sm",c)),r.appendChild(t("f[]","tags")),c){default:case"one":r.appendChild(t("op[tags]","=")),r.appendChild(t("v[tags][]",a));break;case"and":r.appendChild(t("op[tags]","and")),l.forEach((e=>r.appendChild(t("v[tags][]",e))));break;case"or":r.appendChild(t("op[tags]","=")),l.forEach((e=>r.appendChild(t("v[tags][]",e))))}r.submit()}}},minLength:1})})(),(()=>{const t=document.querySelector("#btn-scroll-to-top");t&&(t.addEventListener("click",(function(){window.scroll({top:0,behavior:"smooth"})})),window.addEventListener("scroll",(function(){window.pageYOffset>300?t.style.opacity="1":window.pageYOffset<300&&(t.style.opacity="0")})))})(),(()=>{const t=t=>{const e=[["set_filter","1"],["sort","priority:desc"],["sm",t],["f[]","tags"]];return IssuesCatalogParam.issues_open_only&&(e.push(["f[]","status_id"]),e.push(["op[status_id]","o"]),e.push(["v[status_id][]",""])),e};for(const t of document.querySelectorAll(".radio-select-mode"))t.addEventListener("click",(function(t){const e=this.value;for(const t of document.querySelectorAll(".catalog-tag-label .tag-count")){const a="and"===e?t.dataset.selectedcount:t.dataset.allcount;t.innerText=`(${a})`,"0"===a?t.parentElement.classList.add("catalog-count-zero"):t.parentElement.classList.remove("catalog-count-zero")}for(const t of document.querySelectorAll(".pagination a")){const a=(t.search?t.search.slice(1).split("&"):[]).map((t=>{const[a,o]=t.split("="),s=decodeURIComponent(a);let n=decodeURIComponent(o);return"sm"===s?n=e:"op[tags]"===s&&(n="and"===e?"and":"="),[s,n]}));t.search="?"+a.map((t=>`${encodeURIComponent(t[0])}=${encodeURIComponent(t[1])}`)).join("&")}}));for(const a of document.querySelectorAll(".tags a"))a.addEventListener("click",(function(a){const o=n(),c=this.innerText,l=t(o),r=s();switch(r.includes(c)||r.push(c),e(c),o){default:case"one":l.push(["op[tags]","="]),l.push(["v[tags][]",c]);break;case"and":l.push(["op[tags]","and"]),r.forEach((t=>l.push(["v[tags][]",t])));break;case"or":l.push(["op[tags]","="]),r.forEach((t=>l.push(["v[tags][]",t])))}this.search="?"+l.map((t=>`${encodeURIComponent(t[0])}=${encodeURIComponent(t[1])}`)).join("&")}));for(const e of document.querySelectorAll(".selected-tags .catalog-tag-label a"))e.addEventListener("click",(function(e){const a=n();let o=this.innerText;o.startsWith(IssuesCatalogParam.label_clear)&&(o=o.slice(IssuesCatalogParam.label_clear.length));const c=s().filter((t=>t!==o));if(0===c.length)this.search="",this.href.endsWith("#")&&(this.href=this.href.slice(0,-1));else{const e=t(a);e.push(["op[tags]","and"===a?"and":"="]),c.forEach((t=>e.push(["v[tags][]",t]))),this.search="?"+e.map((t=>`${encodeURIComponent(t[0])}=${encodeURIComponent(t[1])}`)).join("&")}}))})();const r=document.querySelector("#quick-search form");r&&(r.style.display="none")}))})();
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./front_src/javascripts/modules/history.js":
+/*!**************************************************!*\
+  !*** ./front_src/javascripts/modules/history.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "setHistoryOnLoad": () => (/* binding */ setHistoryOnLoad),
+/* harmony export */   "addHistory": () => (/* binding */ addHistory)
+/* harmony export */ });
+/* harmony import */ var _localStorage_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./localStorage.js */ "./front_src/javascripts/modules/localStorage.js");
+
+
+const MAX_HISTORY = 20;
+
+// ヒストリータブ内容セット
+const setHistoryOnLoad = (funcMakeTagElementNowMode) => {
+  const divHistory = document.querySelector('#catalog-category-history');
+  if (!divHistory) { return; }
+  const historys = _localStorage_js__WEBPACK_IMPORTED_MODULE_0__.wrapLocalStorage.getHistorys();
+  for (const history of historys) {
+    divHistory.appendChild(funcMakeTagElementNowMode(history, 'ul'));
+  }
+};
+
+//  ヒストリー更新
+const addHistory = (tagText) => {
+  const historys = _localStorage_js__WEBPACK_IMPORTED_MODULE_0__.wrapLocalStorage.getHistorys();
+  const idx = historys.indexOf(tagText);
+  if (idx >= 0) {
+    historys.splice(idx, 1);
+  }
+  historys.unshift(tagText);
+  if (historys.length > MAX_HISTORY) {
+    historys.pop();
+  }
+  _localStorage_js__WEBPACK_IMPORTED_MODULE_0__.wrapLocalStorage.setHistorys(historys);
+};
+
+
+/***/ }),
+
+/***/ "./front_src/javascripts/modules/localStorage.js":
+/*!*******************************************************!*\
+  !*** ./front_src/javascripts/modules/localStorage.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "wrapLocalStorage": () => (/* binding */ wrapLocalStorage)
+/* harmony export */ });
+class wrapLocalStorage {
+  static #localStorageKeyCategoryTab = 'catalog-category-tabs-state';
+  static #localStorageKeyHistory = 'catalog-history';
+
+  static #storageAvailable(type) {
+    let storage;
+    try {
+      storage = window[type];
+      const testValue = '__storage_test__';
+      storage.setItem(testValue, testValue);
+      storage.removeItem(testValue);
+      return true;
+    } catch (e) {
+      return e instanceof DOMException && (
+        // everything except Firefox
+        e.code === 22 ||
+        // Firefox
+        e.code === 1014 ||
+        // test name field too, because code might not be present
+        // everything except Firefox
+        e.name === 'QuotaExceededError' ||
+        // Firefox
+        e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+        // acknowledge QuotaExceededError only if there's something already stored
+        (storage && storage.length !== 0);
+    }
+  };
+
+  static setupFromStorageOnLoad() {
+    if (!wrapLocalStorage.#storageAvailable('localStorage')) { return false; }
+  
+    const $bodyClass = $('body').attr('class');
+    if ($bodyClass) {
+      try {
+        const postfixProject = '-' + $bodyClass.split(/\s+/).filter(function (s) {
+          return s.match(/project-.*/);
+        }).sort().join('-');
+        wrapLocalStorage.#localStorageKeyCategoryTab += postfixProject;
+        wrapLocalStorage.#localStorageKeyHistory += postfixProject;
+      } catch (e) {
+        // in case of error (probably IE8), continue with the unmodified key
+      }
+    }
+    return true;
+  };
+
+
+  static getHistorys() {
+    const rawValue = localStorage.getItem(wrapLocalStorage.#localStorageKeyHistory);
+    return rawValue ? JSON.parse(rawValue) : [];
+  }
+  static setHistorys(historys) {
+    if (historys) {
+      localStorage.setItem(wrapLocalStorage.#localStorageKeyHistory, JSON.stringify(historys));
+    }
+  }
+
+
+  static getCategoryTab() {
+    return localStorage.getItem(wrapLocalStorage.#localStorageKeyCategoryTab);
+  }
+  static setCategoryTab(tab) {
+    if (tab) {
+      localStorage.setItem(wrapLocalStorage.#localStorageKeyCategoryTab, tab);
+    }
+  }
+}
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+/*!***************************************!*\
+  !*** ./front_src/javascripts/main.js ***!
+  \***************************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _modules_localStorage_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/localStorage.js */ "./front_src/javascripts/modules/localStorage.js");
+/* harmony import */ var _modules_history_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/history.js */ "./front_src/javascripts/modules/history.js");
+
+
+
+
+
+
+// jQuery用DOM準備完了時 document ready
+$(function () {
+
+  //  エレメント作成ヘルパー 
+  const createElementWithClassText = (elem, className, text) => {
+    const element = document.createElement(elem);
+    if (className) {
+      element.className = className;
+    }
+    if (text) {
+      element.appendChild(document.createTextNode(text));
+    }
+    return element;
+  };
+
+
+  // railsから受け取るもの
+  // console.dir(IssuesCatalogParam);
+  //  and検索時のタグ数の初期化 
+  if (IssuesCatalogParam.selected_tags.length > 0) {
+    const tmpMaps = new Map();
+    for (const tag of IssuesCatalogParam.tags) {
+      tmpMaps[tag.id] = tag;
+    }
+    for (const selectTag of IssuesCatalogParam.selected_tags) {
+      if (tmpMaps[selectTag.id]) {
+        tmpMaps[selectTag.id].select_count = selectTag.select_count;
+      }
+    }
+  }
+  //  タグ名からアクセスするパラメーター 
+  const mapAllTags = new Map();
+  for (const tag of IssuesCatalogParam.tags) {
+    mapAllTags[tag.name] = {
+      'allCount': tag.count,
+      'selectCount': tag.select_count,
+      'description': tag.description,
+      'groups': tag.groups,
+    };
+  }
+
+  // railsから受け取った選択しているタグ配列
+  const getFilterTags = () => {
+    const tags = IssuesCatalogParam.select_filters.find(x => x[0] == 'tags');
+    return (tags && tags.length >= 2) ? tags[2] : [];
+  };
+  // タグ選択モードラジオボタンの現状 
+  const getNowSelectMode = () => {
+    for (const radio of document.querySelectorAll('.radio-select-mode')) {
+      if (radio.checked) { return radio.value; }
+    }
+    return IssuesCatalogParam.select_mode;
+  };
+
+  //  タグのエレメント作成 
+  const makeTagElement = (tagText, nowMode, elmName, addClearBtn = false) => {
+    const a = document.createElement('a');
+    a.href = '#';
+    if (addClearBtn) {
+      const spanClear = createElementWithClassText('span', 'icon-only', IssuesCatalogParam.label_clear);
+      spanClear.classList.add('catalog-icon-clear-selected');
+      a.appendChild(spanClear);
+    }
+    a.appendChild(document.createTextNode(tagText));
+    const sLabel = createElementWithClassText('span', 'catalog-tag-label', '');
+    sLabel.appendChild(a);
+    const mapTag = mapAllTags[tagText];
+    // console.log(`makeTag: ${tagText} : ${mapTag.allCount} : ${mapTag.selectCount} : ${mapTag.desciption}`);
+    if (mapTag) {
+      const cnt = (nowMode === 'and') ? mapTag.selectCount : mapTag.allCount;
+      const sCount = createElementWithClassText('span', 'tag-count', `(${cnt})`);
+      sCount.dataset.allcount = mapTag.allCount;
+      sCount.dataset.selectedcount = mapTag.selectCount;
+      sLabel.appendChild(sCount);
+      if (cnt === 0) {
+        sLabel.classList.add('catalog-count-zero');
+      }
+      if (mapTag.description) {
+        const divTooltip = createElementWithClassText('div', 'tag-tooltip', '');
+        divTooltip.appendChild(createElementWithClassText('div', 'tag-description', mapTag.description));
+        sLabel.appendChild(divTooltip);
+      }
+    }
+    if (addClearBtn) {
+      return sLabel;
+    } else {
+      const elm = createElementWithClassText(elmName, 'tags', '');
+      elm.appendChild(sLabel);
+      return elm;
+    }
+  };
+  function makeTagElementNowMode(tagText, elmName, addClearBtn = false) {
+    const nowMode = getNowSelectMode();
+    function tmp(tagText, elmName) {
+      return makeTagElement(tagText, nowMode, elmName, addClearBtn);
+    }
+    return tmp;
+  }
+
+
+  //  ページ読み込み時にタグにツールチップ追加
+  const setTagTooltipOnLoad = () => {
+    for (const tag of document.querySelectorAll('.catalog-tag-label')) {
+      const tagText = tag.querySelector('a')?.innerText;
+      if (tagText) {
+        const mapTag = mapAllTags[tagText];
+        if (mapTag && mapTag.description) {
+          const divTooltip = createElementWithClassText('div', 'tag-tooltip', '');
+          divTooltip.appendChild(createElementWithClassText('div', 'tag-description', mapTag.description));
+          tag.appendChild(divTooltip);
+        }
+      }
+    }
+  };
+  //  ページ読み込み時にサイドバータグ展開
+  const setSidebarTagsOnLoad = () => {
+    const cateNum = IssuesCatalogParam.tag_categories.length;
+    // const nowMode = getNowSelectMode();
+    const funcMakeTagElementNowMode = makeTagElementNowMode();
+    const sidebarCategoryTabs = document.querySelector('ul.tabs-area');
+    if (sidebarCategoryTabs) {
+      if (cateNum === 1) {
+        const li = createElementWithClassText('li', 'category-tab', IssuesCatalogParam.label_tag_category_none);
+        li.id = `category-tab-none`;
+        li.classList.add('active-tab');
+        sidebarCategoryTabs.prepend(li);
+      } else {
+        for (let i = cateNum - 1; i > 0; --i) {  //  子の先頭にいれるので逆順 
+          const li = createElementWithClassText('li', 'category-tab', IssuesCatalogParam.tag_categories[i].name);
+          li.id = `category-tab-id${i - 1}`;
+          if (i === 1) { li.classList.add('active-tab'); }
+          sidebarCategoryTabs.prepend(li);
+        }
+      }
+    }
+    const sidebarCategoryContents = document.querySelector('div.contents-area');
+    if (sidebarCategoryContents) {
+      if (cateNum === 1) {
+        const ulTags = createElementWithClassText('ul', 'tags', '');
+        for (const tag of IssuesCatalogParam.tags) {
+          ulTags.appendChild(funcMakeTagElementNowMode(tag.name, 'ul'));
+        }
+        const divContent = createElementWithClassText('div', 'category-content', '');
+        divContent.appendChild(ulTags);
+        if (i === 1) { divContent.classList.add('show-content'); }
+        sidebarCategoryContents.prepend(divContent);
+      } else {
+        for (let i = cateNum - 1; i > 0; --i) {  //  子の先頭にいれるので逆順 
+          const ulTags = createElementWithClassText('ul', 'category-tags', '');
+          const categoryId = IssuesCatalogParam.tag_categories[i].id;
+          for (const tag of IssuesCatalogParam.tags) {
+            if (tag.categories.includes(categoryId)) {
+              ulTags.appendChild(funcMakeTagElementNowMode(tag.name, 'ul'));
+            }
+          }
+          const divContent = createElementWithClassText('div', 'category-content', '');
+          divContent.appendChild(createElementWithClassText('p', '', IssuesCatalogParam.tag_categories[i].description));
+          divContent.appendChild(ulTags);
+          if (i === 1) { divContent.classList.add('show-content'); }
+          sidebarCategoryContents.prepend(divContent);
+        }
+      }
+    }
+    if (cateNum > 1) {
+      const sidebarCatalogSelector = document.querySelector('div.catalog-selector');
+      if (sidebarCatalogSelector) {
+        sidebarCatalogSelector.appendChild(createElementWithClassText('hr', 'catalog-separator', ''));
+        const divOtherTags = createElementWithClassText('div', 'other-tags', '');
+        for (const tag of IssuesCatalogParam.tags) {
+          if (tag.categories.length == 0) {
+            divOtherTags.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
+          }
+        }
+        sidebarCatalogSelector.appendChild(divOtherTags);
+      }
+    }
+  };
+  //  ページ読み込み時に選択タグ（常時表示）展開
+  const setSelectedTagsOnLoad = () => {
+    const makeRadioLabel = (parent, mode, labelText) => {
+      const radio = createElementWithClassText('input', 'radio-select-mode', '');
+      radio.type = 'radio';
+      radio.name = 'select-mode';
+      radio.id = `radio-select-mode-${mode}`;
+      radio.value = mode;
+      radio.checked = (nowMode === mode);
+      parent.appendChild(radio);
+      const label = createElementWithClassText('label', 'label-select-mode', labelText);
+      label.htmlFor = `radio-select-mode-${mode}`;
+      parent.appendChild(label);
+    };
+    const nowMode = getNowSelectMode();
+    const funcMakeTagElementNowMode = makeTagElementNowMode();
+    const tagsSelected = document.querySelector('#catalog_tags_selected');
+    const filterTags = getFilterTags();
+    if (tagsSelected && filterTags.length > 0) {
+      const divSelectedTags = createElementWithClassText('div', 'selected-tags', '');
+      const selectedGroups = [];
+      for (let i = 0; i < filterTags.length; ++i) {
+        if (i > 0) {
+          divSelectedTags.appendChild(createElementWithClassText('span', '', (IssuesCatalogParam.select_mode === 'and') ? ' and ' : ' or '));
+        }
+        divSelectedTags.appendChild(funcMakeTagElementNowMode(filterTags[i], 'span', true));
+        const mapTag = mapAllTags[filterTags[i]];
+        if (mapTag && mapTag.groups && mapTag.groups.length > 0) {
+          for (const grp of mapTag.groups) {
+            if (!selectedGroups.includes(grp)) {
+              selectedGroups.push(grp);
+            }
+          }
+        }
+      }
+      divSelectedTags.appendChild(createElementWithClassText('span', '', ' : '));
+      const aClearAll = createElementWithClassText('a', '', IssuesCatalogParam.label_clear_select);
+      aClearAll.href = `${document.location.protocol}//${document.location.host}${document.location.pathname}`;
+      const span = document.createElement('span');
+      span.appendChild(aClearAll);
+      divSelectedTags.appendChild(span);
+      tagsSelected.appendChild(divSelectedTags);
+      const divModeOperation = createElementWithClassText('div', 'catalog-select-mode-operation', '');
+      makeRadioLabel(divModeOperation, 'one', IssuesCatalogParam.label_operator_one);
+      makeRadioLabel(divModeOperation, 'and', IssuesCatalogParam.label_operator_and);
+      makeRadioLabel(divModeOperation, 'or', IssuesCatalogParam.label_operator_or);
+      tagsSelected.appendChild(divModeOperation);
+      if (selectedGroups.length > 0) {
+        tagsSelected.appendChild(createElementWithClassText('hr', 'catalog-separator', ''));
+        const divGroup = createElementWithClassText('div', 'catalog-selected-tag-groups', '');
+        divGroup.appendChild(createElementWithClassText('div', 'catalog-lavel-selected-tag-group', IssuesCatalogParam.label_selected_tag_group));
+        for (const grp of IssuesCatalogParam.tag_groups) {
+          for (const selectedGroup of selectedGroups) {
+            if (selectedGroup != grp.id) { continue; }
+            const fieldsetGroup = createElementWithClassText('fieldset', 'catalog-tag-group', '');
+            const legend = document.createElement('legend');
+            legend.appendChild(document.createTextNode(grp.name));
+            fieldsetGroup.appendChild(legend);
+            fieldsetGroup.appendChild(createElementWithClassText('div', '', grp.description));
+            for (const tag of IssuesCatalogParam.tags) {
+              if (tag.groups.includes(selectedGroup)) {
+                fieldsetGroup.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
+              }
+            }
+            divGroup.appendChild(fieldsetGroup);
+          }
+        }
+        tagsSelected.appendChild(divGroup);
+      }
+    }
+    const alwaysSelector = document.querySelector('div.catalog-always-selector');
+    if (alwaysSelector) {
+      for (const tag of IssuesCatalogParam.tags) {
+        if (tag.categories.includes(IssuesCatalogParam.tag_categories[0].id)) {
+          alwaysSelector.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
+        }
+      }
+    }
+  };
+
+
+  // メインカテゴリタブ切替クリック時 
+  const setSidebarTagsClickOnLoad = () => {
+    const $tags = $('.category-tab');
+    $tags.on('click', function () {
+      $('.active-tab').removeClass('active-tab');
+      $(this).addClass('active-tab');
+      const index = $tags.index(this);
+      $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
+      _modules_localStorage_js__WEBPACK_IMPORTED_MODULE_0__.wrapLocalStorage.setCategoryTab($(this).attr('id'));
+    });
+  };
+
+  // メインカテゴリタブ切替読み込み時
+  const setCatalogTabOnLoad = () => {
+    const cateTab = _modules_localStorage_js__WEBPACK_IMPORTED_MODULE_0__.wrapLocalStorage.getCategoryTab();
+    if (!cateTab) { return; }
+    const activeTab = $('#' + cateTab);
+    if (!activeTab.length) { return; }
+
+    $('.active-tab').removeClass('active-tab');
+    activeTab.addClass('active-tab');
+    const index = $('.category-tab').index(activeTab);
+    $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
+  };
+
+
+
+
+  // サムネイルオンリーボタン 
+  $('#catalog-btn-thumbnails').on('click', function () {
+    $(this).toggleClass('only-thumbnails');
+    // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
+    $('table.catalog-issues td.id').toggle();
+    $('table.catalog-issues td.subject').toggle();
+    $('table.catalog-issues td.tags').toggle();
+    $('.pagination.top').toggle();
+  });
+
+
+  // タグ検索関連
+  const setupSearchTag = () => {
+    const makeHidden = (name, value) => {
+      const ret = document.createElement('input');
+      ret.type = 'hidden';
+      ret.name = name;
+      ret.value = value;
+      return ret;
+    };
+    let projectName = '';
+    const tmpProjectName = $('body').attr('class').match(/project-([\w-]+)/);
+    if (tmpProjectName) {
+      projectName = tmpProjectName[1];
+    }
+    const searthTag = $('#catalog-input-search-tag');
+    searthTag.blur(); // 検索テキストボックスから初期フォーカスを外す
+    searthTag.autocomplete({
+      source: function (request, response) {
+        $.ajax({
+          url: '/issue_tags/auto_complete/' + projectName,
+          type: 'GET',
+          dataType: 'json',
+          data: { q: request.term },
+          success: function (choices) {
+            response(choices);
+          },
+          error: function (xhr, ts, err) {
+            response(['']);
+          }
+        });
+      },
+      select: function (event, ui) {
+        if (ui.item && ui.item.value) {
+          // console.log(ui.item.value);
+          const tagText = ui.item.value;
+          const nowMode = getNowSelectMode();
+          const selectTags = getFilterTags();
+          if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
+          (0,_modules_history_js__WEBPACK_IMPORTED_MODULE_1__.addHistory)(tagText);
+          const form = document.querySelector('#form-search-tag');
+          if (form) {
+            form.appendChild(makeHidden('sm', nowMode));
+            form.appendChild(makeHidden('f[]', 'tags'));
+            switch (nowMode) {
+              default:
+              case 'one':
+                form.appendChild(makeHidden('op[tags]', '='));
+                form.appendChild(makeHidden('v[tags][]', tagText));
+                break;
+              case 'and':
+                form.appendChild(makeHidden('op[tags]', 'and'));
+                selectTags.forEach(t => form.appendChild(makeHidden('v[tags][]', t)));
+                break;
+              case 'or':
+                form.appendChild(makeHidden('op[tags]', '='));
+                selectTags.forEach(t => form.appendChild(makeHidden('v[tags][]', t)));
+                break;
+            }
+            form.submit();
+          }
+        }
+      },
+      minLength: 1,
+    });
+  };
+
+  //  ページの最上部にスクロールするボタン 
+  const setupBtnScrollToTop = () => {
+    const btn = document.querySelector('#btn-scroll-to-top');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        window.scroll({ top: 0, behavior: 'smooth' });
+      });
+      window.addEventListener('scroll', function () {
+        if (window.pageYOffset > 300) {
+          btn.style.opacity = '1';
+        } else if (window.pageYOffset < 300) {
+          btn.style.opacity = '0';
+        }
+      });
+    }
+  };
+
+
+  //  タグクリック処理
+  const setupTagLink = () => {
+    const makeBaseParams = (nowMode) => {
+      const params = [
+        ['set_filter', '1'],
+        ['sort', 'priority:desc'],
+        ['sm', nowMode],
+        ['f[]', 'tags']
+      ];
+      if (IssuesCatalogParam.issues_open_only) {
+        params.push(['f[]', 'status_id']);
+        params.push(['op[status_id]', 'o']);
+        params.push(['v[status_id][]', '']);
+      }
+      return params;
+    };
+    //  選択モードクリック
+    for (const radio of document.querySelectorAll('.radio-select-mode')) {
+      radio.addEventListener('click', function (event) {
+        const selectMode = this.value;
+        //  タグの後ろの数を変更 
+        for (const tagCount of document.querySelectorAll('.catalog-tag-label .tag-count')) {
+          const count = (selectMode === 'and') ? tagCount.dataset.selectedcount : tagCount.dataset.allcount;
+          tagCount.innerText = `(${count})`;
+          if (count === '0') {
+            tagCount.parentElement.classList.add('catalog-count-zero');
+          } else {
+            tagCount.parentElement.classList.remove('catalog-count-zero');
+          }
+        }
+        //  ページ切替URL差し替え 
+        for (const pageLink of document.querySelectorAll('.pagination a')) {
+          const queries = pageLink.search ? pageLink.search.slice(1).split('&') : [];
+          const params = queries.map((x) => {
+            const [key, value] = x.split('=');
+            const decKey = decodeURIComponent(key);
+            let decValue = decodeURIComponent(value);
+            if (decKey === 'sm') {
+              decValue = selectMode;
+            }
+            else if (decKey === 'op[tags]') {
+              decValue = (selectMode === 'and') ? 'and' : '=';
+            }
+            return [decKey, decValue];
+          });
+          // console.log(`page: ${params}`);
+          pageLink.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
+        }
+      });
+    }
+    // タグリンククリック
+    for (const tag of document.querySelectorAll('.tags a')) {
+      tag.addEventListener('click', function (event) {
+        const nowMode = getNowSelectMode();
+        const tagText = this.innerText;
+        const params = makeBaseParams(nowMode);
+        const selectTags = getFilterTags();
+        if (!selectTags.includes(tagText)) { selectTags.push(tagText); }
+        (0,_modules_history_js__WEBPACK_IMPORTED_MODULE_1__.addHistory)(tagText);
+        switch (nowMode) {
+          default:
+          case 'one':
+            params.push(['op[tags]', '=']);
+            params.push(['v[tags][]', tagText]);
+            break;
+          case 'and':
+            params.push(['op[tags]', 'and']);
+            selectTags.forEach(t => params.push(['v[tags][]', t]));
+            break;
+          case 'or':
+            params.push(['op[tags]', '=']);
+            selectTags.forEach(t => params.push(['v[tags][]', t]));
+            break;
+        }
+        // console.log(`tag: ${params}`);
+        this.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
+      });
+    }
+    // 選択タグリンククリック（選択解除）
+    for (const selectTag of document.querySelectorAll('.selected-tags .catalog-tag-label a')) {
+      selectTag.addEventListener('click', function (event) {
+        const nowMode = getNowSelectMode();
+        let tagText = this.innerText;
+        if (tagText.startsWith(IssuesCatalogParam.label_clear)) {
+          tagText = tagText.slice(IssuesCatalogParam.label_clear.length);
+        }
+        // console.log(`selected-tag: ${tagText}`);
+        const selectTags = getFilterTags().filter(x => x !== tagText);
+        if (selectTags.length === 0) {
+          this.search = '';
+          if (this.href.endsWith('#')) {
+            this.href = this.href.slice(0, -1);
+          }
+        } else {
+          const params = makeBaseParams(nowMode);
+          params.push(['op[tags]', ((nowMode === 'and') ? 'and' : '=')]);
+          selectTags.forEach(t => params.push(['v[tags][]', t]));
+          // console.log(`tag: ${params}`);
+          this.search = '?' + params.map(x => `${encodeURIComponent(x[0])}=${encodeURIComponent(x[1])}`).join('&');
+        }
+      });
+    }
+  };
+
+
+  setTagTooltipOnLoad();
+  setSelectedTagsOnLoad();
+  setSidebarTagsOnLoad();
+  if (_modules_localStorage_js__WEBPACK_IMPORTED_MODULE_0__.wrapLocalStorage.setupFromStorageOnLoad()) {
+    const funcMakeTagElementNowMode = makeTagElementNowMode();
+    setCatalogTabOnLoad();
+    (0,_modules_history_js__WEBPACK_IMPORTED_MODULE_1__.setHistoryOnLoad)(funcMakeTagElementNowMode);
+    setSidebarTagsClickOnLoad();
+  }
+
+  setupSearchTag();
+  setupBtnScrollToTop();
+  setupTagLink();
+
+
+  // 紛らわしいのでredmine標準検索フォームを非表示
+  const quickSearch = document.querySelector('#quick-search form');
+  if (quickSearch) {
+    quickSearch.style.display = 'none';
+  }
+
+});
+
+
+})();
+
+/******/ })()
+;
+//# sourceMappingURL=main.js.map

@@ -13,12 +13,12 @@
     </tr></thead>
     <tbody>
       <% tags.each do |tag| %>
-        <tr id=<%= "tag-#{tag.id}" %> >
+        <tr id=<%= "tag-#{tag.id}" %> class="edit-tag">
           <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, id: nil) %></td>
-          <td class="name edit-tag"><%= tag.name %></td>
-          <td class="description edit-tag"><%= tag.description %></td>
-          <td class="category edit2-tag"><%= tag.catalog_tag_category_names(@project.id) %></td>
-          <td class="group edit3-tag"><%= tag.catalog_tag_group_names(@project.id) %></td>
+          <td class="name tag editable"><%= tag.name %></td>
+          <td class="description tag editable"><%= tag.description %></td>
+          <td class="category tag multiselect"><%= tag.catalog_tag_category_names(@project.id) %></td>
+          <td class="group tag multiselect"><%= tag.catalog_tag_group_names(@project.id) %></td>
         </tr>
       <% end %>
     </tbody>
