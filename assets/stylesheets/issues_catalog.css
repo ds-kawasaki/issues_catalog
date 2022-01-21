@@ -207,6 +207,9 @@ table.catalog-tags {
 table.catalog-tags .select2 .select2-selection .select2-selection__choice__remove {
   display: none;
 }
+table.synonyms {
+  width: max-content;
+}
 
 #btn-scroll-to-top {
   position: fixed;
