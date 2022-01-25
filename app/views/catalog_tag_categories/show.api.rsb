@@ -1,0 +1,5 @@
+api.catalog_tag_category do
+  api.id @catalog_tag_category.id
+  api.name @catalog_tag_category.name
+  api.description @catalog_tag_category.description
+end

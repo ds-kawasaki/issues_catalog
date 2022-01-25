@@ -1,0 +1,66 @@
+<% tags = select_catalog_tags(@project) %>
+<% unless tags.empty? %>
+  <table class="list catalog-tags">
+    <thead><tr>
+      <th class="checkbox hide-when-print">
+        <%= check_box_tag('check_all', '', false, :class => 'toggle-selection', :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}") %>
+      </th>
+      <th><%= l(:field_name) %></th>
+      <th><%= l(:label_optional_description) %></th>
+      <th><%= l(:label_catalog_tag_categories) %></th>
+      <th><%= l(:label_catalog_tag_groups) %></th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+      <% tags.each do |tag| %>
+        <tr id=<%= "tag-#{tag.id}" %> class="edit-tag">
+          <td class="checkbox hide-when-print"><%= check_box_tag("ids[]", tag.id, false, id: nil) %></td>
+          <td class="name tag editable"><%= tag.name %></td>
+          <td class="description tag editable"><%= tag.description %></td>
+          <td class="category tag multiselect"><%= tag.catalog_tag_category_names(@project.id) %></td>
+          <td class="group tag multiselect"><%= tag.catalog_tag_group_names(@project.id) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <% category_items = select_items_catalog_tag_categories %>
+  <% group_items = @project.catalog_tag_groups.collect { |c| [c.name, c.id] } %>
+  <select name="work" id="work-tag-category" multiple style="display:none;">
+    <% category_items.each do |item| %>
+      <option value=<%= item[1] %> ><%= item[0] %></option>
+    <% end %>
+  </select>
+  <select name="work" id="work-tag-group" multiple style="display:none;">
+    <% group_items.each do |item| %>
+      <option value=<%= item[1] %> ><%= item[0] %></option>
+    <% end %>
+  </select>
+  <fieldset class="box tabular">
+    <legend><%= l(:label_bulk_edit_tag_categories) %></legend>
+    <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-categories') do |form| %>
+      <%= hidden_field_tag 'project_id', @project.id %>
+      <%= hidden_field_tag 'operate', 'none' %>
+      <%= error_messages_for 'catalog_tag' %>
+      <%= form.select :catalog_tag_category_ids,
+              category_items,
+              { label: :label_catalog_tag_category }, { multiple: true, id: 'select-catalog-tag-categories' } %>
+      <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-categories' %>
+      <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-categories' %>
+    <% end %>
+  </fieldset>
+  <fieldset class="box tabular">
+    <legend><%= l(:label_bulk_edit_tag_groups) %></legend>
+    <%= form_with(url: catalog_tags_bulk_update_path, method: :patch, remote: true, id: 'form-bulk-edit-tag-groups') do |form| %>
+      <%= hidden_field_tag 'project_id', @project.id %>
+      <%= hidden_field_tag 'operate', 'none' %>
+      <%= error_messages_for 'catalog_tag' %>
+      <%= form.select :catalog_tag_group_ids,
+              group_items,
+              { label: :label_catalog_tag_group }, { multiple: true, id: 'select-catalog-tag-groups' } %>
+      <%= form.button l(:label_btn_bulk_add), type: 'button', value: 'op_add', id: 'btn-submit-buld-add-tag-groups' %>
+      <%= form.button l(:label_btn_bulk_delete), type: 'button', value: 'op_del', id: 'btn-submit-buld-delete-tag-groups' %>
+    <% end %>
+  </fieldset>
+<% else %>
+  <p class="nodata"><%= l :label_no_data %></p>
+<% end %>

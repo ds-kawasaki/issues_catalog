@@ -19,4 +19,30 @@ module IssuesCatalogSettingsHelper
     end
     tags
   end
+
+  def create_issues_catalog_settings_context(project)
+    user = User.current
+    if user.api_token.nil?
+      # Create API access key
+      user.api_key
+    end
+
+    context = {
+      "user" => {
+        "id" => user.id,
+        "login" => user.login,
+        "apiKey" => (user.api_token.value unless user.api_token.nil?),
+        "admin" => user.admin?
+      }
+    }
+
+    if project.present?
+      context["project"] = {
+        "identifier" => project.identifier,
+        "name" => project.name
+      }
+    end
+
+    context
+  end
 end

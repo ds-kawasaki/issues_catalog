@@ -1,0 +1,59 @@
+<% synonyms = Synonym.all.order(:term) %>
+<% if synonyms.present? %>
+  <table class="list synonyms">
+    <thead>
+      <tr>
+        <th><%= l(:field_name) %></th>
+        <th><%= l(:field_synonyms) %></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% synonyms.each do |s| %>
+        <tr class="edit-synonym" data-keyterm="<%= s.term %>">
+          <td class="term synonym editable"><%= s.term %></td>
+          <td class="synonyms synonym multieditable"><%= s.synonyms.join(',') %></td>
+          <td class="buttons">
+            <%= delete_link(synonym_path(s)) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>
+<div>
+  <button type="button" class="add-button" id="add-synonym"><%= l(:label_synonym_new) %></button>
+</div>
+<dialog id="dialog-new-synonym" class="dialog-panel-new">
+  <h2><%=l(:label_synonym_new)%></h2>
+  <% tmp_synonym = Synonym.new %>
+  <%= form_with model: tmp_synonym do |f| %>
+    <%= error_messages_for 'synonym' %>
+    <table class="synonym-form">
+      <tbody>
+        <tr>
+          <td><%= f.label l(:label_term) %></td>
+          <td><%= f.text_field :term, size: 60, required: true %></td>
+        </tr>
+        <tr>
+          <td><%= f.label l(:label_synonyms) %></td>
+          <td><%= f.text_field :synonyms, name: 'synonym[synonyms][]', size: 80, required: true, id: 'synonym-form-synonyms' %></td>
+        </tr>
+      </tbody>
+    </table>
+    <%= javascript_tag do %>
+$(function() {
+  $('#synonym-form-synonyms').tagit({
+    caseSensitive: false,
+    removeConfirmation: true
+  });
+});
+    <% end %>
+    <div class="buttons">
+      <button type="button" class="dialog-button-submit" id="submit-dialog-new-synonym"><%= l(:button_create) %></button>
+      <button type="button" class="dialog-button-cancel" id="cancel-dialog-new-synonym"><%= l(:button_cancel) %></button>
+    </div>
+  <% end %>
+</dialog>
