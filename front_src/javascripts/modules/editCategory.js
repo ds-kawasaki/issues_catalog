@@ -12,9 +12,9 @@ export class EditCategory extends EditTableBase {
     for (const edit of document.querySelectorAll('.edit-category')) {
       new EditCategory(edit);
     }
-    new NewDialog('dialog-new-catalog-tag-category', 'add-catalog-tag-category', 'tab-content-manage_tag_categories', this.#callbackNewDialog);
-    EditTableBase.registEdit('name category editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('description category editable', this.#startEditItem, this.#editedItem);
+    new NewDialog('dialog-new-catalog-tag-category', 'add-catalog-tag-category', 'tab-content-manage_tag_categories', EditCategory.#callbackNewDialog);
+    EditTableBase.registEdit('name category editable', EditCategory.#startEditItem, EditCategory.#editedItem);
+    EditTableBase.registEdit('description category editable', EditCategory.#startEditItem, EditCategory.#editedItem);
   }
 
   static makeTableRow(newItem) {

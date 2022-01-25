@@ -5,15 +5,16 @@ import { NewDialog } from './newDialog.js';
 export class EditSynonym extends EditTableBase {
   constructor(elemTr) {
     super(elemTr);
+    EditSynonym.#setupDelete(elemTr);
   }
 
   static init() {
     for (const edit of document.querySelectorAll('.edit-synonym')) {
       new EditSynonym(edit);
     }
-    new NewDialog('dialog-new-synonym', 'add-synonym', 'tab-content-manage_synonyms', this.#callbackNewDialog);
-    EditTableBase.registEdit('term synonym editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('synonyms synonym multieditable', this.#startEditMulti, this.#editedMulti);
+    new NewDialog('dialog-new-synonym', 'add-synonym', 'tab-content-manage_synonyms', EditSynonym.#callbackNewDialog);
+    EditTableBase.registEdit('term synonym editable', EditSynonym.#startEditItem, EditSynonym.#editedItem);
+    EditTableBase.registEdit('synonyms synonym multieditable', EditSynonym.#startEditMulti, EditSynonym.#editedMulti);
   }
 
   static makeTableRow(newItem) {
@@ -162,5 +163,36 @@ export class EditSynonym extends EditTableBase {
         }
         elem.innerText = oldValue;  //  更新失敗したので元に戻す 
       });
+  }
+
+  //  削除aタグを上書きして、REST APIで削除＞リロード（デフォルトだとredmine_tagsのオプションにリロードされるため）
+  static #setupDelete(elemTr) {
+    const delLink = elemTr.querySelector('a.icon-del');
+    if (!delLink) { return; }
+    delLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const elem = event.target;
+      // console.log(`click: ${elem.href}`);
+      const datConform = elem.getAttribute('data-confirm');
+      if (datConform) {
+        if (!window.confirm(datConform)) {
+          return false;
+        }
+      }
+      // const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.parentElement.getAttribute('data-keyterm'))}.json`;
+      const sendUrl = `${(new URL(elem.href)).pathname}.json`;
+      EditTableBase.updateToServer(sendUrl, {}, 'DELETE',
+        () => {
+          document.location.reload();
+        },
+        (message) => {
+          if (message) {
+            alert(message);
+            console.log(message);
+          }
+        });
+      return false;
+    });
   }
 }

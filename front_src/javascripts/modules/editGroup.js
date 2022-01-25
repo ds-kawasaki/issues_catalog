@@ -12,9 +12,9 @@ export class EditGroup extends EditTableBase {
     for (const edit of document.querySelectorAll('.edit-group')) {
       new EditGroup(edit);
     }
-    new NewDialog('dialog-new-catalog-tag-group', 'add-catalog-tag-group', 'tab-content-manage_tag_groups', this.#callbackNewDialog);
-    EditTableBase.registEdit('name group editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('description group editable', this.#startEditItem, this.#editedItem);
+    new NewDialog('dialog-new-catalog-tag-group', 'add-catalog-tag-group', 'tab-content-manage_tag_groups', EditGroup.#callbackNewDialog);
+    EditTableBase.registEdit('name group editable', EditGroup.#startEditItem, EditGroup.#editedItem);
+    EditTableBase.registEdit('description group editable', EditGroup.#startEditItem, EditGroup.#editedItem);
   }
 
   static makeTableRow(newItem) {

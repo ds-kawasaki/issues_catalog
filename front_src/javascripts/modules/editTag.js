@@ -12,10 +12,10 @@ export class EditTag extends EditTableBase {
     for (const edit of document.querySelectorAll('.edit-tag')) {
       new EditTag(edit);
     }
-    EditTableBase.registEdit('name tag editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('description tag editable', this.#startEditItem, this.#editedItem);
-    EditTableBase.registEdit('category tag multiselect', this.#startSelectCategory, this.#selectedCategory);
-    EditTableBase.registEdit('group tag multiselect', this.#startSelectGroup, this.#selectedGroup);
+    EditTableBase.registEdit('name tag editable', EditTag.#startEditItem, EditTag.#editedItem);
+    EditTableBase.registEdit('description tag editable', EditTag.#startEditItem, EditTag.#editedItem);
+    EditTableBase.registEdit('category tag multiselect', EditTag.#startSelectCategory, EditTag.#selectedCategory);
+    EditTableBase.registEdit('group tag multiselect', EditTag.#startSelectGroup, EditTag.#selectedGroup);
   }
 
 
