@@ -60,10 +60,10 @@ class CatalogTagCategoriesController < ApplicationController
     @catalog_tag_category.safe_attributes = catalog_tag_category_params
     if @catalog_tag_category.save
       respond_to do |format|
-        format.html {
+        format.html do
           flash[:notice] = l(:notice_successful_update)
           redirect_to_settings_in_projects
-        }
+        end
         format.api { render_api_ok }
       end
     else
@@ -75,7 +75,7 @@ class CatalogTagCategoriesController < ApplicationController
   end
 
   def destroy
-    # ここでカテゴリ割り当ててるタグを開放する 
+    # ここでカテゴリ割り当ててるタグを開放する
     @catalog_tag_category.catalog_relation_tag_categories.destroy_all
     @catalog_tag_category.set_status_deleted
     if @catalog_tag_category.save
@@ -107,8 +107,8 @@ class CatalogTagCategoriesController < ApplicationController
     params.require(:catalog_tag_category).permit(:name, :description)
   end
 
-  def redirect_to_settings_in_projects
-    redirect_to settings_project_path(@project, :tab => 'issues_catalog')
+  def redirect_to_settings_in_projects()
+    redirect_to settings_project_path(@project, :tab => 'issues_catalog', :sub_tab => 'manage_tag_categories')
   end
 
   def find_model_object

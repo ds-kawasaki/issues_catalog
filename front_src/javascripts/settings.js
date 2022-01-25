@@ -27,4 +27,17 @@ $(function () {
   EditCategory.init();
   EditGroup.init();
   EditSynonym.init();
+
+
+  const onLoadSetSubTab = () => {
+    const subTab = (new URL(document.location)).searchParams.get('sub_tab');
+    // console.log(`subTab: ${subTab}`);
+    if (subTab) {
+      const targetTab = document.getElementById(`tab-${subTab}`);
+      if (targetTab) {
+        targetTab.click();
+      }
+    }
+  };
+  onLoadSetSubTab();
 });

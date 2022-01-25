@@ -99,7 +99,7 @@ class CatalogTagGroupsController < ApplicationController
   end
 
   def redirect_to_settings_in_projects
-    redirect_to settings_project_path(@project, :tab => 'issues_catalog')
+    redirect_to settings_project_path(@project, :tab => 'issues_catalog', :sub_tab => 'manage_tag_groups')
   end
 
   def find_model_object
