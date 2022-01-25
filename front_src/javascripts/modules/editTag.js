@@ -35,27 +35,9 @@ export class EditTag extends EditTableBase {
       return true;
     }
 
-    const targetId = elem.parentElement.targetId;
     const column = elem.classList.item(0);
     const value = elem.innerText || '__none__';
-    $.ajax({
-      type: 'PATCH',
-      url: '/catalog_tags/field_update/',
-      data: `id=${targetId}&catalog_tag[${column}]=${value}`,
-    }).done(function (data) {
-      if (data.status === 'SUCCESS') {
-      } else {
-        console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
-        if (data.message) {
-          alert(data.message);
-          console.log(data.message);
-        }
-        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-      }
-    }).fail(function (jqXHR, textStatus) {
-      console.log(`${paramName} change failed: ${targetId} : ${column} : ${value} : ${textStatus}`);
-      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-    });
+    EditTag.#updateToServerTags(elem, oldValue, column, value);
   }
 
 
@@ -100,29 +82,7 @@ export class EditTag extends EditTableBase {
     const oldValue = elem.getAttribute('data-value');
     if (oldValue === values) { return; }
 
-    $.ajax({
-      type: 'PATCH',
-      url: '/catalog_tags/field_update/',
-      data: { 'id': elem.parentElement.targetId, 'catalog_tag': { [param_ids]: sendValues } },
-      dataType: 'json',
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      }
-    }).done(function (data) {
-      if (data.status === 'SUCCESS') {
-        // console.log(`tag changed ${elem.parentElement.targetId} : ${sendValues}`);
-      } else {
-        console.log(`${paramName} changed: ${targetId} : ${column} : ${value} : status ${data.status}`);
-        if (data.message) {
-          alert(data.message);
-          console.log(data.message);
-        }
-        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-      }
-    }).fail(function (jqXHR, textStatus) {
-      console.log(`tag change failed: ${elem.parentElement.targetId} : ${sendValues} : ${textStatus}`);
-      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-    });
+    EditTag.#updateToServerTags(elem, oldValue, param_ids, sendValues);
   }
 
   static #makeSelect(orgText, tmpSelect_class, tmpSelect_id, work_id) {
@@ -149,5 +109,32 @@ export class EditTag extends EditTableBase {
       allowClear: false
     });
     //$newSelect.select2('open');
+  }
+
+  //  redmine_tagsのupdateはadmin権限必須なので、一部分updateする別のAPIを使用
+  static #updateToServerTags(elem, oldValue, column, value) {
+    $.ajax({
+      type: 'PATCH',
+      url: '/catalog_tags/field_update/',
+      data: { 'id': elem.parentElement.targetId, 'catalog_tag': { [column]: value } },
+      dataType: 'json',
+      headers: {
+        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+      }
+    }).done(function (data) {
+      if (data.status === 'SUCCESS') {
+        // console.log(`tag changed ${elem.parentElement.targetId} : ${value}`);
+      } else {
+        console.log(`tag change fail: ${elem.parentElement.targetId} : ${column} : ${value} : status ${data.status}`);
+        if (data.message) {
+          alert(data.message);
+          console.log(data.message);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      }
+    }).fail(function (jqXHR, textStatus) {
+      console.log(`tag change failed: ${elem.parentElement.targetId} : ${column} : ${value} : status ${textStatus}`);
+      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+    });
   }
 }
