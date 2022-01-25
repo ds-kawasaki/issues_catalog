@@ -47,40 +47,30 @@ export class EditGroup extends EditTableBase {
 
   static #callbackNewDialog(dialog) {
     if (!dialog) { return; }
-    const datName = dialog.querySelector('input[name=\'catalog_tag_group[name]\']').value;
-    const datDescription = dialog.querySelector('input[name=\'catalog_tag_group[description]\']').value;
-    $.ajax({
-      type: 'POST',
-      url: `/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_groups.json`,
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      },
-      dataType: 'text',
-      format: 'json',
-      data: {
-        catalog_tag_group: {
-          name: datName,
-          description: datDescription
-        }
+    const sendUrl = `/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_groups.json`;
+    const sendData = {
+      catalog_tag_group: {
+        name: dialog.querySelector('input[name=\'catalog_tag_group[name]\']').value,
+        description: dialog.querySelector('input[name=\'catalog_tag_group[description]\']').value
       }
-    }).done((data) => {
-      if (data.startsWith('{')) {
+    };
+    EditTableBase.updateToServer(sendUrl, sendData, 'POST',
+      (data) => {
         const tableBody = document.querySelector('table.catalog-tag-groups')?.querySelector('tbody');
-        if (tableBody) {
-          const retData = JSON.parse(data);
-          const addTr = EditGroup.makeTableRow(retData.catalog_tag_group);
+        if ('catalog_tag_group' in data && tableBody) {
+          const addTr = EditGroup.makeTableRow(data.catalog_tag_group);
           tableBody.appendChild(addTr);
+          EditGroup.#addGroupToWork(data.catalog_tag_group);
+        } else {
+          console.log(data);
         }
-      } else {
-        console.log(data);
-      }
-    }).fail((jqXHR, textStatus) => {
-      const message = (jqXHR.responseText.startsWith('{')) ?
-        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
-        jqXHR.responseText;
-      alert(message);
-      console.log(message);
-    });
+      },
+      (message) => {
+        if (message) {
+          alert(message);
+          console.log(message);
+        }
+      });
   }
 
 
@@ -102,19 +92,30 @@ export class EditGroup extends EditTableBase {
 
     const column = elem.classList.item(0);
     const value = elem.innerText || '__none__';
-    const params = {};
-    params[column] = value;
-    const sendUrl = `/catalog_tag_groups/${elem.parentElement.targetId}.json`
-    EditTableBase.updateToServer(elem, oldValue, sendUrl, { catalog_tag_group: params }, () => {
-      if (column === 'name') {
-        EditGroup.#updateGroupName(oldValue, value);
+    const sendUrl = `/catalog_tag_groups/${elem.parentElement.targetId}.json`;
+    const sendData = {
+      catalog_tag_group: {
+        [column]: value
       }
-    });
+    };
+    EditTableBase.updateToServer(sendUrl, sendData, 'PUT',
+      () => {
+        if (column === 'name') {
+          EditGroup.#updateGroupName(oldValue, value);
+        }
+      },
+      (message) => {
+        if (message) {
+          alert(`「${elem.innerText}」\n ${message}`);
+          console.log(`「${elem.innerText}」 ${message}`);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      });
   }
 
   // タググループ名称変更を各所の表示反映
   static #updateGroupName(oldName, newName) {
-    for (const edit of document.querySelectorAll('.edit3-tag')) {
+    for (const edit of document.querySelectorAll('.group.tag.multiselect')) {
       if (edit.innerText.includes(oldName)) {
         edit.innerText = edit.innerText.replace(oldName, newName);
       }
@@ -129,5 +130,21 @@ export class EditGroup extends EditTableBase {
     }
     $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
   };
-
+  //  タググループ追加を各所の表示反映
+  static #addGroupToWork(newItem) {
+    const orgGroupSelect = document.querySelector('#work-tag-group');
+    if (orgGroupSelect) {
+      orgGroupSelect.appendChild(EditGroup.#makeOption(newItem));
+    }
+    const bulkSelect = document.querySelector('#select-catalog-tag-groups');
+    if (bulkSelect) {
+      bulkSelect.appendChild(EditGroup.#makeOption(newItem));
+    }
+  }
+  static #makeOption(newItem) {
+    const op = document.createElement('option');
+    op.value = newItem.id;
+    op.text = newItem.name;
+    return op;
+  }
 }

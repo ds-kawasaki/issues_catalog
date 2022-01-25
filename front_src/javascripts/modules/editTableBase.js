@@ -15,48 +15,50 @@ export class EditTableBase {
   static #editTypes = null;
 
   static init() {
-    this.#nowTarget = null;
-    this.#callbackBlurNowTarget = null;
-    this.#editTypes = new Map();
+    EditTableBase.#nowTarget = null;
+    EditTableBase.#callbackBlurNowTarget = null;
+    EditTableBase.#editTypes = new Map();
 
-    document.addEventListener('click', (event) => this.#clicked(event));
+    document.addEventListener('click', (event) => EditTableBase.#clicked(event));
   }
 
   static registEdit(className, callbackFocus, callbackBlur) {
     if (!className) { return; }
-    this.#editTypes.set(className, {
+    EditTableBase.#editTypes.set(className, {
       callbackFocus: callbackFocus,
       callbackBlur: callbackBlur
     });
   }
 
-  static updateToServer(elem, oldValue, sendUrl, sendData, callbackOk) {
-    const targetTerm = elem.parentElement.getAttribute('data-keyterm');
+  static updateToServer(sendUrl, sendData, sendType = 'PUT', callbackOk = null, callbackNg = null) {
     $.ajax({
-      type: 'PUT',
+      type: sendType,
       url: sendUrl,
       headers: {
         'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
       },
-      dataType: 'json',
+      dataType: 'text', // json指定してREST APIの戻りが空っぽだとfailになるのでtextで
       format: 'json',
       data: sendData
     }).done((data, textStatus, jqXHR) => {
       // console.log(`jqXHR.status: ${jqXHR.status}`);
       if ((jqXHR.status >= 200 && jqXHR.status < 300) || jqXHR.status === 304) {
         if (callbackOk) {
-          callbackOk();
+          const datData = typeof data === 'string' && data.startsWith('{') ? JSON.parse(data) : {};
+          callbackOk(datData);
         }
       } else {
-        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+        if (callbackNg) {
+          callbackNg(null);
+        }
       }
     }).fail((jqXHR) => {
       const message = (jqXHR.responseText.startsWith('{')) ?
         Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
         jqXHR.responseText;
-      alert(`「${elem.innerText}」\n ${message}`);
-      console.log(`「${elem.innerText}」 ${message}`);
-      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      if (callbackNg) {
+        callbackNg(message);
+      }
     });
   }
 
@@ -64,43 +66,43 @@ export class EditTableBase {
 
   static #clicked(event) {
     const target = event.target;
-    if (target === this.#nowTarget) {
+    if (target === EditTableBase.#nowTarget) {
       // console.log(`click(same): ${target.className}`);
     } else {
-      const callbacks = this.#canEdit(target);
+      const callbacks = EditTableBase.#canEdit(target);
       if (callbacks) {
-        if (this.#callbackBlurNowTarget && this.#nowTarget) {
-          this.#callbackBlurNowTarget(this.#nowTarget);
+        if (EditTableBase.#callbackBlurNowTarget && EditTableBase.#nowTarget) {
+          EditTableBase.#callbackBlurNowTarget(EditTableBase.#nowTarget);
         }
         // console.log(`click(newTarget): ${target.className}`);
         if (callbacks.callbackFocus) {
           callbacks.callbackFocus(event);
         }
-        this.#nowTarget = target;
-        this.#callbackBlurNowTarget = callbacks.callbackBlur;
-      } else if (this.#isSosenNowTarget(target)) {
+        EditTableBase.#nowTarget = target;
+        EditTableBase.#callbackBlurNowTarget = callbacks.callbackBlur;
+      } else if (EditTableBase.#isSosenNowTarget(target)) {
         // console.log(`click(sosenNowTarget): ${target.className}`);
-      } else if (this.#isSosenSelect2Open(target)) {  //  Select2のドロップダウン中はbodyの最後になるっぽいので、それは無視する 
+      } else if (EditTableBase.#isSosenSelect2Open(target)) {  //  Select2のドロップダウン中はbodyの最後になるっぽいので、それは無視する 
         // console.log(`click(sosenSelect2Open): ${target.className}`);
       } else {
         // console.log(`click(other): ${target.className}`);
-        if (this.#callbackBlurNowTarget && this.#nowTarget) {
-          this.#callbackBlurNowTarget(this.#nowTarget);
+        if (EditTableBase.#callbackBlurNowTarget && EditTableBase.#nowTarget) {
+          EditTableBase.#callbackBlurNowTarget(EditTableBase.#nowTarget);
         }
-        this.#nowTarget = null;
-        this.#callbackBlurNowTarget = null;
+        EditTableBase.#nowTarget = null;
+        EditTableBase.#callbackBlurNowTarget = null;
       }
     }
   }
 
   static #canEdit(target) {
     let ret = null;
-    let callbacks = this.#editTypes.get(target.className);
+    let callbacks = EditTableBase.#editTypes.get(target.className);
     if (callbacks !== undefined) {
       return callbacks;
     }
     target.classList.forEach((c) => {
-      callbacks = this.#editTypes.get(c);
+      callbacks = EditTableBase.#editTypes.get(c);
       if (callbacks !== undefined) {
         ret = callbacks;
       }
@@ -110,7 +112,7 @@ export class EditTableBase {
 
   static #isSosenNowTarget(target) {
     for (let t = target; t; t = t.parentElement) {
-      if (t === this.#nowTarget) { return true; }
+      if (t === EditTableBase.#nowTarget) { return true; }
     }
     return false;
   }

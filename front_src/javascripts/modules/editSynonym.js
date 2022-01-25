@@ -46,41 +46,29 @@ export class EditSynonym extends EditTableBase {
 
   static #callbackNewDialog(dialog) {
     if (!dialog) { return; }
-    const datTerm = dialog.querySelector('input[name=\'synonym[term]\']').value;
-    const datSynonyms = dialog.querySelector('input[name=\'synonym[synonyms][]\']').value.split(',');
-    $.ajax({
-      type: 'POST',
-      url: `/synonyms.json`,
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      },
-      dataType: 'text',
-      format: 'json',
-      data: {
-        synonym: {
-          term: datTerm,
-          synonyms: datSynonyms
-        }
+    const sendData = {
+      synonym: {
+        term: dialog.querySelector('input[name=\'synonym[term]\']').value,
+        synonyms: dialog.querySelector('input[name=\'synonym[synonyms][]\']').value.split(',')
       }
-    }).done((data) => {
-      if (data.startsWith('{')) {
+    };
+    EditTableBase.updateToServer('/synonyms.json', sendData, 'POST',
+      (data) => {
         const tableBody = document.querySelector('table.synonyms')?.querySelector('tbody');
-        if (tableBody) {
-          const retData = JSON.parse(data);
-          const addTr = EditSynonym.makeTableRow(retData.synonym);
+        if ('synonym' in data && tableBody) {
+          const addTr = EditSynonym.makeTableRow(data.synonym);
           tableBody.appendChild(addTr);
           EditSynonym.clearDialog(dialog);  //  次の追加に備えてダイアログクリア
+        } else {
+          console.log(data);
         }
-      } else {
-        console.log(data);
-      }
-    }).fail((jqXHR, textStatus) => {
-      const message = (jqXHR.responseText.startsWith('{')) ?
-        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
-        jqXHR.responseText;
-      alert(message);
-      console.log(message);
-    });
+      },
+      (message) => {
+        if (message) {
+          alert(message);
+          console.log(message);
+        }
+      });
   }
 
   static clearDialog(dialog) {
@@ -119,12 +107,21 @@ export class EditSynonym extends EditTableBase {
     const oldValue = elem.getAttribute('data-value');
     if (oldValue === value) { return; }
 
-    // const targetTerm = elem.parentElement.getAttribute('data-keyterm');
-    const column = elem.classList.item(0);
-    const params = {};
-    params[column] = value.split(',');
-    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`
-    EditTableBase.updateToServer(elem, oldValue, sendUrl, { synonym: params });
+    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`;
+    const sendData = {
+      synonym: {
+        [elem.classList.item(0)]: value.split(',')
+      }
+    };
+    EditTableBase.updateToServer(sendUrl, sendData, 'PUT',
+      null,
+      (message) => {
+        if (message) {
+          alert(`「${elem.innerText}」\n ${message}`);
+          console.log(`「${elem.innerText}」 ${message}`);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      });
   }
 
 
@@ -146,13 +143,24 @@ export class EditSynonym extends EditTableBase {
 
     const column = elem.classList.item(0);
     const value = elem.innerText || '__none__';
-    const params = {};
-    params[column] = value;
-    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`
-    EditTableBase.updateToServer(elem, oldValue, sendUrl, { synonym: params }, () => {
-      if (column === 'term') {
-        elem.parentElement.setAttribute('data-keyterm', value);
+    const sendUrl = `/synonyms/${encodeURIComponent(elem.parentElement.getAttribute('data-keyterm'))}.json`;
+    const sendData = {
+      synonym: {
+        [column]: value
       }
-    });
+    };
+    EditTableBase.updateToServer(sendUrl, sendData, 'PUT',
+      () => {
+        if (column === 'term') {
+          elem.parentElement.setAttribute('data-keyterm', value);
+        }
+      },
+      (message) => {
+        if (message) {
+          alert(`「${elem.innerText}」\n ${message}`);
+          console.log(`「${elem.innerText}」 ${message}`);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      });
   }
 }

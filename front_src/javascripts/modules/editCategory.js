@@ -36,11 +36,10 @@ export class EditCategory extends EditTableBase {
     tdButtons.appendChild(aDelBtn);
     const retTr = document.createElement('tr');
     retTr.id = `catalog_tag_category-${newItem.id}`;
-    retTr.className =  'edit-category';
+    retTr.className = 'edit-category';
     retTr.appendChild(tdName);
     retTr.appendChild(tdDescription);
     retTr.appendChild(tdButtons);
-    //  TODO: イベントリスナー登録 
     new EditCategory(retTr);
     return retTr;
   }
@@ -48,40 +47,30 @@ export class EditCategory extends EditTableBase {
 
   static #callbackNewDialog(dialog) {
     if (!dialog) { return; }
-    const datName = dialog.querySelector('input[name=\'catalog_tag_category[name]\']').value;
-    const datDescription = dialog.querySelector('input[name=\'catalog_tag_category[description]\']').value;
-    $.ajax({
-      type: 'POST',
-      url: `/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_categories.json`,
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
-      },
-      dataType: 'text',
-      format: 'json',
-      data: {
-        catalog_tag_category: {
-          name: datName,
-          description: datDescription
-        }
+    const sendUrl = `/projects/${IssuesCatalogSettingParam.project?.identifier}/catalog_tag_categories.json`;
+    const sendData = {
+      catalog_tag_category: {
+        name: dialog.querySelector('input[name=\'catalog_tag_category[name]\']').value,
+        description: dialog.querySelector('input[name=\'catalog_tag_category[description]\']').value
       }
-    }).done((data) => {
-      if (data.startsWith('{')) {
+    };
+    EditTableBase.updateToServer(sendUrl, sendData, 'POST',
+      (data) => {
         const tableBody = document.querySelector('table.catalog-tag-categories')?.querySelector('tbody');
-        if (tableBody) {
-          const retData = JSON.parse(data);
-          const addTr = EditCategory.makeTableRow(retData.catalog_tag_category);
+        if ('catalog_tag_category' in data && tableBody) {
+          const addTr = EditCategory.makeTableRow(data.catalog_tag_category);
           tableBody.insertBefore(addTr, tableBody.lastElementChild);  //  最後（常時表示）の手前に挿入
+          EditCategory.#addCategoryToWork(data.catalog_tag_category);
+        } else {
+          console.log(data);
         }
-      } else {
-        console.log(data);
-      }
-    }).fail((jqXHR, textStatus) => {
-      const message = (jqXHR.responseText.startsWith('{')) ?
-        Object.entries(JSON.parse(jqXHR.responseText)).map(([key, value]) => `${key} : ${value}`).join('\n') :
-        jqXHR.responseText;
-      alert(message);
-      console.log(message);
-    });
+      },
+      (message) => {
+        if (message) {
+          alert(message);
+          console.log(message);
+        }
+      });
   }
 
 
@@ -103,19 +92,30 @@ export class EditCategory extends EditTableBase {
 
     const column = elem.classList.item(0);
     const value = elem.innerText || '__none__';
-    const params = {};
-    params[column] = value;
-    const sendUrl = `/catalog_tag_categories/${elem.parentElement.targetId}.json`
-    EditTableBase.updateToServer(elem, oldValue, sendUrl, { catalog_tag_category: params }, () => {
-      if (column === 'name') {
-        EditCategory.#updateCategoryName(oldValue, value);
+    const sendUrl = `/catalog_tag_categories/${elem.parentElement.targetId}.json`;
+    const sendData = {
+      catalog_tag_category: {
+        [column]: value
       }
-    });
+    };
+    EditTableBase.updateToServer(sendUrl, sendData, 'PUT',
+      () => {
+        if (column === 'name') {
+          EditCategory.#updateCategoryName(oldValue, value);
+        }
+      },
+      (message) => {
+        if (message) {
+          alert(`「${elem.innerText}」\n ${message}`);
+          console.log(`「${elem.innerText}」 ${message}`);
+        }
+        elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+      });
   }
 
   // タグカテゴリ名称変更を各所の表示反映
   static #updateCategoryName(oldName, newName) {
-    for (const edit of document.querySelectorAll('.edit2-tag')) {
+    for (const edit of document.querySelectorAll('.category.tag.multiselect')) {
       if (edit.innerText.includes(oldName)) {
         edit.innerText = edit.innerText.replace(oldName, newName);
       }
@@ -130,5 +130,21 @@ export class EditCategory extends EditTableBase {
     }
     $(bulkSelect)?.val(null).trigger('change');  // Select2の深層の名称変更が大変なので、選択解除させる
   };
-
+  //  カテゴリ追加を各所の表示反映
+  static #addCategoryToWork(newItem) {
+    const orgCategorySelect = document.querySelector('#work-tag-category');
+    if (orgCategorySelect) {
+      orgCategorySelect.insertBefore(EditCategory.#makeOption(newItem), orgCategorySelect.lastElementChild);  //  最後（常時表示）の手前に挿入
+    }
+    const bulkSelect = document.querySelector('#select-catalog-tag-categories');
+    if (bulkSelect) {
+      bulkSelect.insertBefore(EditCategory.#makeOption(newItem), bulkSelect.lastElementChild);  //  最後（常時表示）の手前に挿入
+    }
+  }
+  static #makeOption(newItem) {
+    const op = document.createElement('option');
+    op.value = newItem.id;
+    op.text = newItem.name;
+    return op;
+  }
 }

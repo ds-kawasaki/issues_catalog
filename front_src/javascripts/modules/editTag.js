@@ -108,33 +108,36 @@ export class EditTag extends EditTableBase {
       closeOnSelect: false,
       allowClear: false
     });
-    //$newSelect.select2('open');
+    $newSelect.select2('open');
   }
 
   //  redmine_tagsのupdateはadmin権限必須なので、一部分updateする別のAPIを使用
   static #updateToServerTags(elem, oldValue, column, value) {
-    $.ajax({
-      type: 'PATCH',
-      url: '/catalog_tags/field_update/',
-      data: { 'id': elem.parentElement.targetId, 'catalog_tag': { [column]: value } },
-      dataType: 'json',
-      headers: {
-        'X-Redmine-API-Key': IssuesCatalogSettingParam.user.apiKey
+    const sendData = {
+      id: elem.parentElement.targetId,
+      catalog_tag: {
+        [column]: value
       }
-    }).done(function (data) {
-      if (data.status === 'SUCCESS') {
-        // console.log(`tag changed ${elem.parentElement.targetId} : ${value}`);
-      } else {
-        console.log(`tag change fail: ${elem.parentElement.targetId} : ${column} : ${value} : status ${data.status}`);
-        if (data.message) {
-          alert(data.message);
-          console.log(data.message);
+    };
+    EditTableBase.updateToServer('/catalog_tags/field_update/', sendData, 'PATCH',
+      (data) => {
+        if (data.status === 'SUCCESS') {
+          // console.log(`tag changed ${elem.parentElement.targetId} : ${value}`);
+        } else {
+          console.log(`tag change fail: ${elem.parentElement.targetId} : ${column} : ${value} : status ${data.status}`);
+          if (data.message) {
+            alert(data.message);
+            console.log(data.message);
+          }
+          elem.innerText = oldValue;  //  更新失敗したので元に戻す 
+        }
+      },
+      (message) => {
+        if (message) {
+          alert(message);
+          console.log(message);
         }
         elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-      }
-    }).fail(function (jqXHR, textStatus) {
-      console.log(`tag change failed: ${elem.parentElement.targetId} : ${column} : ${value} : status ${textStatus}`);
-      elem.innerText = oldValue;  //  更新失敗したので元に戻す 
-    });
+      });
   }
 }
