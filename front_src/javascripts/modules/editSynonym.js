@@ -81,8 +81,7 @@ export class EditSynonym extends EditTableBase {
 
 
   //  multieditableの編集開始トリガー 
-  static #startEditMulti(event) {
-    const elem = event.target;
+  static #startEditMulti(elem) {
     const tmp = elem.querySelector('.tmp-edit');
     if (tmp) { return; }
     elem.setAttribute('data-value', elem.innerText);
@@ -127,8 +126,7 @@ export class EditSynonym extends EditTableBase {
 
 
   //  シンプルなテキスト編集開始トリガー 
-  static #startEditItem(event) {
-    const elem = event.target;
+  static #startEditItem(elem) {
     elem.setAttribute('data-value', elem.innerText);
   }
   //  シンプルなテキスト変更トリガー 

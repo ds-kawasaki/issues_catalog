@@ -20,8 +20,7 @@ export class EditTag extends EditTableBase {
 
 
   //  シンプルなテキスト編集開始トリガー 
-  static #startEditItem(event) {
-    const elem = event.target;
+  static #startEditItem(elem) {
     elem.setAttribute('data-value', elem.innerText);
   }
   //  シンプルなテキスト変更トリガー 
@@ -42,8 +41,8 @@ export class EditTag extends EditTableBase {
 
 
   //  categoryの編集開始トリガー 
-  static #startSelectCategory(event) {
-    EditTag.#startSelectMulti(event, '#work-tag-category');
+  static #startSelectCategory(elem) {
+    EditTag.#startSelectMulti(elem, '#work-tag-category');
   }
   //  categoryの編集完了トリガー 
   static #selectedCategory(elem) {
@@ -51,16 +50,15 @@ export class EditTag extends EditTableBase {
   }
 
   //  categoryの編集開始トリガー 
-  static #startSelectGroup(event) {
-    EditTag.#startSelectMulti(event, '#work-tag-group');
+  static #startSelectGroup(elem) {
+    EditTag.#startSelectMulti(elem, '#work-tag-group');
   }
   //  categoryの編集完了トリガー 
   static #selectedGroup(elem) {
     EditTag.#selectedMulti(elem, 'catalog_tag_group_ids');
   }
 
-  static #startSelectMulti(event, work_id) {
-    const elem = event.target;
+  static #startSelectMulti(elem, work_id) {
     const tmp = elem.querySelector('.tmp-select');
     if (tmp) { return; }
     elem.setAttribute('data-value', elem.innerText);

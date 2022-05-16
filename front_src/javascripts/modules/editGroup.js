@@ -75,8 +75,7 @@ export class EditGroup extends EditTableBase {
 
 
   //  シンプルなテキスト編集開始トリガー 
-  static #startEditItem(event) {
-    const elem = event.target;
+  static #startEditItem(elem) {
     elem.setAttribute('data-value', elem.innerText);
   }
   //  シンプルなテキスト変更トリガー 
