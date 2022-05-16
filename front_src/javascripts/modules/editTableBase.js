@@ -5,6 +5,8 @@ export class EditTableBase {
       elem.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {  //  改行させない 
           event.preventDefault();
+        } else if (event.key === 'Tab') { //  タブ無視
+          event.preventDefault();
         }
       });
     }
