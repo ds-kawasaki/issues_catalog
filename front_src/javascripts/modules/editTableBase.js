@@ -19,7 +19,23 @@ export class EditTableBase {
     EditTableBase.#callbackBlurNowTarget = null;
     EditTableBase.#editTypes = new Map();
 
-    document.addEventListener('click', (event) => EditTableBase.#clicked(event.target));
+    // document.addEventListener('click', (event) => EditTableBase.#clicked(event.target));
+    let isClick = false;
+    let startTarget = null;
+    document.addEventListener('mousedown', (event) => {
+      startTarget = event.target;
+      isClick = true;
+    });
+    document.addEventListener('mousemove', (event) => {
+      isClick = false;
+    });
+    document.addEventListener('mouseup', (event) => {
+      if (isClick) {
+        EditTableBase.#clicked(event.target);
+      } else {
+        EditTableBase.#clicked(startTarget);
+      }
+    });
   }
 
   static registEdit(className, callbackFocus, callbackBlur) {
