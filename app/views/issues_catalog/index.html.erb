@@ -15,7 +15,7 @@
       <%= form.hidden_field 'f[]', value: 'status_id' %>
       <%= form.hidden_field 'op[status_id]', value: 'o' %>
     <% end %>
-    <%= form.label :search_input, l(:label_search_tag) << ':' %>
+    <%= form.label :search_input, l(:label_search_tag) << ':', for: "catalog-input-search-tag" %>
     <%= form.text_field :search_input, id: "catalog-input-search-tag" %>
     <%= form.submit '', disabled: true, style: 'display: none' %>
   <% end %>
