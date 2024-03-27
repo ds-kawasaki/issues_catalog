@@ -250,6 +250,11 @@ $(function () {
         }
         tagsSelected.appendChild(divGroup);
       }
+    } else {
+      const dispThumbs = document.querySelector('#catalog_btn_thumbnails');
+      if (dispThumbs) {
+        dispThumbs.style.display = 'none';
+      }
     }
     const alwaysSelector = document.querySelector('div.catalog-always-selector');
     if (alwaysSelector) {
@@ -291,13 +296,23 @@ $(function () {
 
 
   // サムネイルオンリーボタン 
-  $('#catalog-btn-thumbnails').on('click', function () {
-    $(this).toggleClass('only-thumbnails');
-    // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
-    $('table.catalog-issues td.id').toggle();
-    $('table.catalog-issues td.subject').toggle();
-    $('table.catalog-issues td.tags').toggle();
-    $('.pagination.top').toggle();
+  $('#catalog-thubnails-btn1').on('click', function () {
+    $('table.catalog-issues td.id').show();
+    $('table.catalog-issues td.subject').show();
+    $('table.catalog-issues td.tags').show();
+    $('.pagination.top').show();
+  });
+  $('#catalog-thubnails-btn2').on('click', function () {
+    $('table.catalog-issues td.id').show();
+    $('table.catalog-issues td.subject').show();
+    $('table.catalog-issues td.tags').hide();
+    $('.pagination.top').hide();
+  });
+  $('#catalog-thubnails-btn3').on('click', function () {
+    $('table.catalog-issues td.id').hide();
+    $('table.catalog-issues td.subject').hide();
+    $('table.catalog-issues td.tags').hide();
+    $('.pagination.top').hide();
   });
 
 
