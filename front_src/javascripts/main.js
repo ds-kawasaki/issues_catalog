@@ -167,19 +167,6 @@ $(function () {
         }
       }
     }
-    if (cateNum > 1) {
-      const sidebarCatalogSelector = document.querySelector('div.catalog-selector');
-      if (sidebarCatalogSelector) {
-        sidebarCatalogSelector.appendChild(createElementWithClassText('hr', 'catalog-separator', ''));
-        const divOtherTags = createElementWithClassText('div', 'other-tags', '');
-        for (const tag of IssuesCatalogParam.tags) {
-          if (tag.categories.length == 0) {
-            divOtherTags.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
-          }
-        }
-        sidebarCatalogSelector.appendChild(divOtherTags);
-      }
-    }
   };
   //  ページ読み込み時に選択タグ（常時表示）展開
   const setSelectedTagsOnLoad = () => {
