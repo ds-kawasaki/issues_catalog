@@ -12,7 +12,7 @@ Redmine::Plugin.register :issues_catalog do
   name 'Issues Catalog plugin'
   author 'ds-kawasaki'
   description 'issues catalog plugin for Redmine'
-  version '1.1.5'
+  version '1.1.6'
   url 'https://github.com/ds-kawasaki/issues_catalog'
   author_url 'https://github.com/ds-kawasaki'
 
