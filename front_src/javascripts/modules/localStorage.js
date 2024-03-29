@@ -1,6 +1,7 @@
 export class wrapLocalStorage {
   static #localStorageKeyCategoryTab = 'catalog-category-tabs-state';
   static #localStorageKeyHistory = 'catalog-history';
+  static #localStorageKeyBtnThumbnails = 'catalog-btn-thumbnails';
 
   static #storageAvailable(type) {
     let storage;
@@ -37,6 +38,7 @@ export class wrapLocalStorage {
         }).sort().join('-');
         wrapLocalStorage.#localStorageKeyCategoryTab += postfixProject;
         wrapLocalStorage.#localStorageKeyHistory += postfixProject;
+        wrapLocalStorage.#localStorageKeyBtnThumbnails += postfixProject;
       } catch (e) {
         // in case of error (probably IE8), continue with the unmodified key
       }
@@ -62,6 +64,16 @@ export class wrapLocalStorage {
   static setCategoryTab(tab) {
     if (tab) {
       localStorage.setItem(wrapLocalStorage.#localStorageKeyCategoryTab, tab);
+    }
+  }
+
+
+  static getBtnThumbnails() {
+    return localStorage.getItem(wrapLocalStorage.#localStorageKeyBtnThumbnails);
+  }
+  static setBtnThumbnails(value) {
+    if (value) {
+      localStorage.setItem(wrapLocalStorage.#localStorageKeyBtnThumbnails, value);
     }
   }
 }

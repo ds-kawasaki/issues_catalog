@@ -20,19 +20,11 @@
     <%= form.submit '', disabled: true, style: 'display: none' %>
   <% end %>
 </div>
-<div class="catalog-head">
+<div class="catalog-head" id="catalog_head">
   <div class="catalog-tag-selected">
     <fieldset class="box" id="catalog_tags_selected">
       <legend><%= l(:label_selected_tags)%></legend>
     </fieldset>
-  </div>
-  <div class="catalog-btn-thumbnails" id="catalog_btn_thumbnails">
-    <input class="radio-btn-thumbnails" type="radio" name="button-group" value="1" id="catalog-thubnails-btn1" checked />
-    <label class="label-btn-thumbnails" for="catalog-thubnails-btn1"><%= l(:label_all_display) %></label>
-    <input class="radio-btn-thumbnails" type="radio" name="button-group" value="2" id="catalog-thubnails-btn2" />
-    <label class="label-btn-thumbnails" for="catalog-thubnails-btn2"><%= l(:label_title_thumbnails) %></label>
-    <input class="radio-btn-thumbnails" type="radio" name="button-group" value="3" id="catalog-thubnails-btn3" />
-    <label class="label-btn-thumbnails" for="catalog-thubnails-btn3"><%= l(:label_only_thumbnails) %></label>
   </div>
 </div>
 <div class="catalog-always-selector">
