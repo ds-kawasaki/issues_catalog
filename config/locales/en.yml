@@ -17,6 +17,8 @@ en:
   label_operator_and: "Operator And"
   label_operator_or: "Operator Or"
   label_operator_one: "Operator One"
+  label_all_display: "All Display"
+  label_title_thumbnails: "Title & Thumbnails"
   label_only_thumbnails: "Only Thumbnails"
   label_search_tag: "search tag"
   label_bulk_edit_tag_categories: "Bulk Edit Tag Categories"

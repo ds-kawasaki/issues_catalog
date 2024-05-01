@@ -167,19 +167,6 @@ $(function () {
         }
       }
     }
-    if (cateNum > 1) {
-      const sidebarCatalogSelector = document.querySelector('div.catalog-selector');
-      if (sidebarCatalogSelector) {
-        sidebarCatalogSelector.appendChild(createElementWithClassText('hr', 'catalog-separator', ''));
-        const divOtherTags = createElementWithClassText('div', 'other-tags', '');
-        for (const tag of IssuesCatalogParam.tags) {
-          if (tag.categories.length == 0) {
-            divOtherTags.appendChild(funcMakeTagElementNowMode(tag.name, 'span'));
-          }
-        }
-        sidebarCatalogSelector.appendChild(divOtherTags);
-      }
-    }
   };
   //  ページ読み込み時に選択タグ（常時表示）展開
   const setSelectedTagsOnLoad = () => {
@@ -192,7 +179,7 @@ $(function () {
       radio.checked = (nowMode === mode);
       parent.appendChild(radio);
       const label = createElementWithClassText('label', 'label-select-mode', labelText);
-      label.htmlFor = `radio-select-mode-${mode}`;
+      label.htmlFor = radio.id;
       parent.appendChild(label);
     };
     const nowMode = getNowSelectMode();
@@ -250,6 +237,11 @@ $(function () {
         }
         tagsSelected.appendChild(divGroup);
       }
+    } else {
+      const dispThumbs = document.querySelector('#catalog_btn_thumbnails');
+      if (dispThumbs) {
+        dispThumbs.style.display = 'none';
+      }
     }
     const alwaysSelector = document.querySelector('div.catalog-always-selector');
     if (alwaysSelector) {
@@ -287,18 +279,62 @@ $(function () {
     $('.category-content').removeClass('show-content').eq(index).addClass('show-content');
   };
 
-
-
-
   // サムネイルオンリーボタン 
-  $('#catalog-btn-thumbnails').on('click', function () {
-    $(this).toggleClass('only-thumbnails');
-    // isOnlyThumbnails = $(this).hasClass('only-thumbnails');
-    $('table.catalog-issues td.id').toggle();
-    $('table.catalog-issues td.subject').toggle();
-    $('table.catalog-issues td.tags').toggle();
-    $('.pagination.top').toggle();
-  });
+  const setupBtnThumbnails = () => {
+    const setState = (value) => {
+      switch (value) {
+        default:
+          value = 'thumb-all';
+        case 'thumb-all':
+          $('table.catalog-issues td.id').show();
+          $('table.catalog-issues td.subject').show();
+          $('table.catalog-issues td.tags').show();
+          $('.pagination.top').show();
+          break;
+        case 'thumb-title':
+          $('table.catalog-issues td.id').show();
+          $('table.catalog-issues td.subject').show();
+          $('table.catalog-issues td.tags').hide();
+          $('.pagination.top').hide();
+          break;
+        case 'thumb-only':
+          $('table.catalog-issues td.id').hide();
+          $('table.catalog-issues td.subject').hide();
+          $('table.catalog-issues td.tags').hide();
+          $('.pagination.top').hide();
+          break;
+      }
+      wrapLocalStorage.setBtnThumbnails(value);
+    };
+    const makeRadioLabel2 = (parent, mode, labelText) => {
+      const radio = createElementWithClassText('input', 'radio-btn-thumbnails', '');
+      radio.type = 'radio';
+      radio.name = 'btn-thumbnails';
+      radio.id = `radio-btn-thumbnails-${mode}`;
+      radio.value = mode;
+      radio.checked = (nowMode === mode);
+      parent.appendChild(radio);
+      const label = createElementWithClassText('label', 'label-btn-thumbnails', labelText);
+      label.htmlFor = radio.id;
+      parent.appendChild(label);
+    };
+    const nowMode = wrapLocalStorage.getBtnThumbnails() ?? 'thumb-all';
+    const filterTags = getFilterTags();
+    const catalogHead = document.querySelector('#catalog_head');
+    if (catalogHead && filterTags.length > 0) {
+      const divBtnThumbnails = createElementWithClassText('div', 'catalog-btn-thumbnails', '');
+      makeRadioLabel2(divBtnThumbnails, 'thumb-all', IssuesCatalogParam.label_all_display);
+      makeRadioLabel2(divBtnThumbnails, 'thumb-title', IssuesCatalogParam.label_title_thumbnails);
+      makeRadioLabel2(divBtnThumbnails, 'thumb-only', IssuesCatalogParam.label_only_thumbnails);
+      catalogHead.appendChild(divBtnThumbnails);
+      setState(nowMode);
+      for (const radio of document.querySelectorAll('.radio-btn-thumbnails')) {
+        radio.addEventListener('click', function (event) {
+          setState(this.value);
+        });
+      }
+    }
+  };
 
 
   // タグ検索関連
@@ -498,6 +534,7 @@ $(function () {
     setCatalogTabOnLoad();
     setHistoryOnLoad(funcMakeTagElementNowMode);
     setSidebarTagsClickOnLoad();
+    setupBtnThumbnails();
   }
 
   setupSearchTag();

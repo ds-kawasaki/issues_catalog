@@ -17,6 +17,8 @@ ja:
   label_operator_and: "and検索"
   label_operator_or: "or検索"
   label_operator_one: "単体検索"
+  label_all_display: "全表示"
+  label_title_thumbnails: "題名とサムネイル"
   label_only_thumbnails: "サムネイルのみ"
   label_search_tag: "タグ検索"
   label_bulk_edit_tag_categories: "チェックしたタグに一括タグカテゴリ編集"
